@@ -1,0 +1,19 @@
+{
+  "name": "gwitch",
+  "version": "0.0.0",
+  "description": "electron git client",
+  "main": "index.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-packager . $npm_package_name --prune --asar --ignore=node_modules/electron-prebuilt --ignore=node_modules/electron-packager --ignore=.git"
+  },
+  "keywords": [
+    "git",
+    "electron"
+  ],
+  "author": "Jon Spencer",
+  "license": "ISC",
+  "devDependencies": {
+    "electron-prebuilt": "^0.26.1"
+  }
+}
