@@ -9,6 +9,8 @@ html, body {
 .patch {
 	font-family: "dejavu sans mono", "liberation mono", monospace;
 	margin: 0;
+	display: table;
+	width: 100%;
 	-webkit-user-select: initial;
 	tab-size: 4;
 
@@ -20,6 +22,7 @@ html, body {
 	padding: 8px;
 	margin-top: 1em;
 	margin-bottom: 2em;
+	box-sizing: border-box;
 }
 
 .patch .hunk {
