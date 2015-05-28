@@ -2,3 +2,65 @@ html, body {
 	padding: 0;
 	margin: 0;
 }
+
+.patch {
+	overflow: auto;
+	font-family: "dejavu sans mono", "liberation mono", monospace;
+	font-size: 0.8em;
+	margin: 0;
+	-webkit-user-select: initial;
+	tab-size: 4;
+
+	border-radius: 0.6em;
+	border-width: 2px;
+	border-color: #dedede;
+	border-style: solid;
+
+	padding: 8px;
+	margin-top: 1em;
+	margin-bottom: 2em;
+}
+
+.patch .hunk {
+	background-color: #ececec;
+}
+
+.patch table {
+	border-collapse:collapse;
+}
+
+.patch tr:first-child td:nth-child(-n+2) {
+	border-width: 1px 1px 0 1px;
+}
+
+.patch tr:last-child td:nth-child(-n+2) {
+	border-width: 0 1px 1px 1px;
+}
+
+.patch td:nth-child(-n+2) {
+	border-width: 0 1px 0 1px;
+	border-color: #dddddd;
+	border-style: solid;
+
+	background-color: #ececec;
+	text-align: right;
+}
+
+.patch td:nth-child(4) {
+	white-space: pre;
+	width: 100%;
+}
+
+.patch .new td:nth-child(n+3) {
+	background-color: #ddffdd;
+	color: #06772c;
+}
+
+.patch .old td:nth-child(n+3) {
+	background-color: #ffeeee;
+	color: #bb0704;
+}
+
+.diff-view {
+	padding: 5px;
+}
