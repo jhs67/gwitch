@@ -1,12 +1,13 @@
 html, body {
 	padding: 0;
 	margin: 0;
+	font-size: 12px;
+	font-family: "dejavu sans", sans-serif;
+	-webkit-user-select: none;
 }
 
 .patch {
-	overflow: auto;
 	font-family: "dejavu sans mono", "liberation mono", monospace;
-	font-size: 0.8em;
 	margin: 0;
 	-webkit-user-select: initial;
 	tab-size: 4;
@@ -61,6 +62,45 @@ html, body {
 	color: #bb0704;
 }
 
+.client-view {
+	display: flex;
+	flex-flow: row nowrap;
+	box-sizing: border-box;
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	font-size: 1.2rem;
+}
+
 .diff-view {
+	flex: 1 1 auto;
 	padding: 5px;
+	overflow: auto;
+}
+
+.refs-view {
+	flex: 0 0 auto;
+	padding: 5px;
+	max-width: 30vw;
+	min-width: 12rem;
+	background-color: #eef1f1;
+}
+
+.refs-view .stage {
+	background-image: url(assets/stage.png);
+	background-position: left center;
+	background-repeat: no-repeat;
+	padding-left: 1.5em;
+	margin-left: 0.5rem;
+}
+
+.refs-view .title {
+	font-variant: small-caps;
+	font-weight: bold;
+	margin-bottom: 0.2rem;
+}
+
+.refs-view .section {
+	margin-bottom: 0.5rem;
 }

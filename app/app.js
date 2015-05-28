@@ -8,6 +8,7 @@ var NodeGit = require('nodegit');
 
 require("handlebars");
 var diffHbs = require('./diff.hbs');
+var refsHbs = require('./refs.hbs');
 
 function unwrap(o, a) {
 	if (typeof a !== 'function')
@@ -77,7 +78,7 @@ function dumpStatus(status) {
 var DiffView = Backbone.View.extend({
 	className: 'diff-view',
 
-	init: function() {
+	initialize: function() {
 	},
 
 	record: function() {
@@ -116,8 +117,28 @@ var DiffView = Backbone.View.extend({
 	}
 });
 
-var ClientView = Backbone.View.extend({
+var RefsView = Backbone.View.extend({
+	className: 'refs-view',
+
 	initialize: function() {
+		return this.render();
+	},
+
+	record: function() {
+		return { title: "tucheze" };
+	},
+
+	render: function(mode, f) {
+		this.$el.html(refsHbs(this.record()));
+	},
+});
+
+var ClientView = Backbone.View.extend({
+	className: 'client-view',
+
+	initialize: function() {
+		this.refs = new RefsView();
+		this.$el.append(this.refs.el);
 		this.diff = new DiffView();
 		this.$el.append(this.diff.el);
 		return this.render();
