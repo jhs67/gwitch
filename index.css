@@ -91,11 +91,33 @@ html, body {
 }
 
 .refs-view .stage {
-	background-image: url(assets/stage.png);
+	background-image: url(assets/stage.svg);
 	background-position: left center;
 	background-repeat: no-repeat;
 	padding-left: 1.5em;
 	margin-left: 0.5rem;
+}
+
+.refs-view .local-branch {
+	flex: 0 0 auto;
+	background-image: url(assets/branch.svg);
+	background-position: left center;
+	background-repeat: no-repeat;
+	padding-left: 1.5em;
+	margin-left: 0.5rem;
+}
+
+.refs-view .active-badge {
+	flex: 1 1 auto;
+	background-image: url(assets/active.svg);
+	background-position: right center;
+	background-repeat: no-repeat;
+	min-width: 2em;
+}
+
+.refs-view .branch-line {
+	display: flex;
+	flex-flow: row nowrap;
 }
 
 .refs-view .title {

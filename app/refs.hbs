@@ -4,6 +4,17 @@
 </div>
 <div class="branches section">
 	<div class="title">Branches</div>
+	{{#each branches}}
+	{{#if isRemote}}
+	{{else}}
+	<div class="branch-line">
+		<div class="local-branch">{{name}}</div>
+		{{#if selected}}
+		<div class="active-badge" />
+		{{/if}}
+	</div>
+	{{/if}}
+	{{/each}}
 </div>
 <div class="remotes section">
 	<div class="remote-title title">Remotes</div>

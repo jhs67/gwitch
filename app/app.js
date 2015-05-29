@@ -12,6 +12,58 @@ var NodeGit = require('nodegit');
 var DiffView = require("./DiffView");
 var RefsView = require("./RefsView");
 
+
+var BranchModel = Backbone.Model.extend({
+});
+
+var BranchCollection = Backbone.Collection.extend({
+	model: BranchModel,
+});
+
+var WorkingCopyModel = Backbone.Model.extend({
+});
+
+var app = module.exports;
+
+app.repo = null;
+app.branches = new BranchCollection();
+app.workingCopy = new WorkingCopyModel();
+
+function localBranchName(branch) {
+	if (branch.substr(0, "refs/heads/".length) == "refs/heads/")
+		return branch.substr("refs/heads/".length);
+	return branch;
+}
+
+app.open = function(file) {
+	app.workingCopy.set('name', path.basename(file, ".git"));
+	console.log("open " + file);
+	console.log("name " + app.workingCopy.get('name'));
+	NodeGit.Repository.open(file).then(function(repo) {
+		app.repo = repo;
+		return Promise.all([
+			repo.getReferences(NodeGit.Reference.TYPE.ALL).then(function(refs) {
+				var branches = refs.filter(function(ref) { return ref.isBranch(); }).map(function(ref) {
+					var name = ref.name();
+					return {
+						refName: name,
+						name: localBranchName(name),
+						isRemote: ref.isRemote(),
+					};
+				});
+
+				app.branches.add(branches);
+			}),
+			repo.head().then(function(ref) {
+				console.log("head.. " + ref.name());
+				app.workingCopy.set('head', ref.name());
+			}),
+		]);
+	}).catch(function(err) {
+		console.log("error: " + err);
+	});
+};
+
 var ClientView = Backbone.View.extend({
 	className: 'client-view',
 
@@ -40,6 +92,7 @@ var ClientView = Backbone.View.extend({
 });
 
 addEventListener('load', function() {
+	app.open(path.resolve(path.dirname(__dirname)));
 	var c = new ClientView({});
 	$('#container').append(c.$el);
 });
