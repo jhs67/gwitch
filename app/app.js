@@ -11,6 +11,7 @@ var NodeGit = require('nodegit');
 
 var DiffView = require("./DiffView");
 var RefsView = require("./RefsView");
+var SplitterView = require("./SplitterView");
 
 
 var BranchModel = Backbone.Model.extend({
@@ -37,8 +38,6 @@ function localBranchName(branch) {
 
 app.open = function(file) {
 	app.workingCopy.set('name', path.basename(file, ".git"));
-	console.log("open " + file);
-	console.log("name " + app.workingCopy.get('name'));
 	NodeGit.Repository.open(file).then(function(repo) {
 		app.repo = repo;
 		return Promise.all([
@@ -55,7 +54,6 @@ app.open = function(file) {
 				app.branches.add(branches);
 			}),
 			repo.head().then(function(ref) {
-				console.log("head.. " + ref.name());
 				app.workingCopy.set('head', ref.name());
 			}),
 		]);
@@ -70,8 +68,11 @@ var ClientView = Backbone.View.extend({
 	initialize: function() {
 		this.refs = new RefsView();
 		this.$el.append(this.refs.el);
+
 		this.diff = new DiffView();
-		this.$el.append(this.diff.el);
+		this.splitter = new SplitterView({ top: this.diff.$el });
+		this.$el.append(this.splitter.el);
+
 		return this.render();
 	},
 

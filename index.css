@@ -4,6 +4,7 @@ html, body {
 	font-size: 12px;
 	font-family: "dejavu sans", sans-serif;
 	-webkit-user-select: none;
+	box-sizing: border-box;
 }
 
 .patch {
@@ -77,7 +78,6 @@ html, body {
 }
 
 .diff-view {
-	flex: 1 1 auto;
 	padding: 5px;
 	overflow: auto;
 }
@@ -86,8 +86,9 @@ html, body {
 	flex: 0 0 auto;
 	padding: 5px;
 	max-width: 30vw;
-	min-width: 12rem;
+	min-width: 15rem;
 	background-color: #eef1f1;
+	border-right: 1px solid #d5d5d5;
 }
 
 .refs-view .stage {
@@ -128,4 +129,46 @@ html, body {
 
 .refs-view .section {
 	margin-bottom: 0.5rem;
+}
+
+.splitter-view {
+	display: flex;
+	flex-flow: column nowrap;
+	flex: 1 1 auto;
+}
+
+.splitter-top {
+	flex: 1 1 auto;
+}
+
+.splitter-bottom {
+	flex: 0 0 auto;
+}
+
+.splitter-bar {
+	flex: 0 0 auto;
+	background: linear-gradient(#fcfcfc, #e0e0e0);
+	height: 5px;
+
+	border-top: 1px solid;
+	border-bottom: 1px solid;
+	border-color: #a8a8a8;
+	padding: 1px;
+	cursor: row-resize;
+}
+
+.splitter-bar:hover, .splitter-bar.dragged {
+	background: linear-gradient(#ddd, #bbb);
+}
+
+.splitter-dot {
+	width: 4.5px;
+	height: 4.5px;
+	border-radius: 50%;
+	margin: auto;
+	background: linear-gradient(#afafaf, #cfcfcf);
+}
+
+.splitter-dot:hover, .splitter-bar:hover .splitter-dot, .dragged .splitter-dot {
+	background: linear-gradient(#ddd, #fff);
 }
