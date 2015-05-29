@@ -1,6 +1,8 @@
 <div class="working section">
 	<div class="title">{{title}}</div>
-	<div class="stage">Stage</div>
+	<div class="stage-line">
+		<div class="stage">Stage</div>
+	</div>
 </div>
 <div class="branches section">
 	<div class="title">Branches</div>
@@ -9,9 +11,7 @@
 	{{else}}
 	<div class="branch-line">
 		<div class="local-branch">{{name}}</div>
-		{{#if selected}}
 		<div class="active-badge" />
-		{{/if}}
 	</div>
 	{{/if}}
 	{{/each}}

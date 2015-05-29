@@ -5,6 +5,7 @@ html, body {
 	font-family: "dejavu sans", sans-serif;
 	-webkit-user-select: none;
 	box-sizing: border-box;
+	cursor: default;
 }
 
 .patch {
@@ -108,7 +109,7 @@ html, body {
 	margin-left: 0.5rem;
 }
 
-.refs-view .active-badge {
+.refs-view .active-ref .active-badge {
 	flex: 1 1 auto;
 	background-image: url(assets/active.svg);
 	background-position: right center;
@@ -129,6 +130,14 @@ html, body {
 
 .refs-view .section {
 	margin-bottom: 0.5rem;
+}
+
+.refs-view .selected {
+	background-color: #ccd7da;
+}
+
+.refs-view .stage-line, .refs-view .branch-line {
+	padding: 2px;
 }
 
 .splitter-view {

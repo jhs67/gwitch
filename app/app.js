@@ -24,11 +24,15 @@ var BranchCollection = Backbone.Collection.extend({
 var WorkingCopyModel = Backbone.Model.extend({
 });
 
+var RepoSettingsModel = Backbone.Model.extend({
+});
+
 var app = module.exports;
 
 app.repo = null;
 app.branches = new BranchCollection();
 app.workingCopy = new WorkingCopyModel();
+app.repoSettings = new RepoSettingsModel();
 
 function localBranchName(branch) {
 	if (branch.substr(0, "refs/heads/".length) == "refs/heads/")
