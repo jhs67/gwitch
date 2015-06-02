@@ -1,0 +1,8 @@
+{{#each commits}}
+<div class="commit-line">
+	{{#each graph}}
+	<img src="assets/c{{glyph}}.svg" />
+	{{/each}}
+	<span class="message">{{index}}: {{message}}</span>
+</div>
+{{/each}}

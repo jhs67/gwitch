@@ -181,3 +181,18 @@ html, body {
 .splitter-dot:hover, .splitter-bar:hover .splitter-dot, .dragged .splitter-dot {
 	background: linear-gradient(#ddd, #fff);
 }
+
+.history-view {
+	padding: 5px;
+	overflow: auto;
+}
+
+.history-view img {
+	height: 1.5em;
+	width: auto;
+}
+
+.history-view .message {
+	overflow: :hidden;
+	white-space: nowrap;
+}
