@@ -21,6 +21,7 @@
     "backbone": "^1.2.0",
     "handlebars": "^3.0.3",
     "jquery": "^2.1.4",
+    "moment": "^2.10.3",
     "nodegit": "git+https://github.com/nodegit/nodegit.git",
     "underscore": "^1.8.3"
   },

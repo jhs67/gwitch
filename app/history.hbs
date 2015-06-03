@@ -1,8 +1,29 @@
-{{#each commits}}
-<div class="commit-line">
-	{{#each graph}}
-	<img src="assets/c{{glyph}}.svg" />
-	{{/each}}
-	<span class="message">{{index}}: {{message}}</span>
+<div class="header">
+<table>
+	<tr>
+		<th class="short-hash">Short SHA</th>
+		<th class="subject">Subject</th>
+		<th class="author">Author</th>
+		<th class="date">Date</th>
+	</tr>
+</table>
 </div>
-{{/each}}
+<div class="wrapper">
+<table>
+	{{#each commits}}
+	<tr>
+		<td class="short-hash">{{shortHash}}</td>
+		<td class="subject">
+			<div class="commit-line"><!--
+				{{#each graph}}
+				--><img src="assets/c{{glyph}}.svg" /><!--
+				{{/each}}
+				--><span class="message">{{message}}</span>
+			</div>
+		</td>
+		<td class="author">{{author}}</td>
+		<td class="date">{{date}}</td>
+	</tr>
+	{{/each}}
+</table>
+</div>

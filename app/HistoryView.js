@@ -1,5 +1,6 @@
 "use strict";
 
+var moment = require("moment");
 var Backbone = require("backbone");
 var historyHbs = require('./history.hbs');
 
@@ -17,9 +18,11 @@ var HistoryView = Backbone.View.extend({
 				var commit = c.get('commit');
 				return {
 					graph: c.get('graph').map(function(g) { return { glyph: g }; }),
-					message: commit.message().substr(0, 80),
-					author: commit.author(),
+					message: commit.summary(),
+					author: commit.author().name(),
 					index: c.get("index"),
+					shortHash: c.id.substr(0, 7),
+					date: moment(commit.date()).format('LLL'),
 				};
 			}),
 		};
