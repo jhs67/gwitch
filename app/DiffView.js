@@ -7,11 +7,14 @@ var DiffsView = Backbone.View.extend({
 	className: 'diff-view',
 
 	initialize: function() {
+		this.listenTo(this.collection, "all", this.render);
+		this.render();
 	},
 
 	record: function() {
 		return {
-			patches: this.model.patches().map(function(patch) {
+			patches: this.collection.map(function(r) {
+				let patch = r.get("patch");
 				return {
 					oldFile: patch.oldFile().path(),
 					newFile: patch.newFile().path(),

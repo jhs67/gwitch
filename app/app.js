@@ -29,6 +29,13 @@ var CommitCollection = Backbone.Collection.extend({
 	model: CommitModel,
 });
 
+var PatchModel = Backbone.Model.extend({
+});
+
+var PatchCollection = Backbone.Collection.extend({
+	model: PatchModel,
+});
+
 var WorkingCopyModel = Backbone.Model.extend({
 });
 
@@ -42,6 +49,7 @@ app.commits = new CommitCollection();
 app.branches = new BranchCollection();
 app.workingCopy = new WorkingCopyModel();
 app.repoSettings = new RepoSettingsModel();
+app.patches = new PatchCollection();
 
 function localBranchName(branch) {
 	if (branch.substr(0, "refs/heads/".length) == "refs/heads/")
@@ -296,33 +304,46 @@ function getCommits(repo, refs) {
 	});
 }
 
+function loadCommits() {
+	return Promise.all([
+		app.repo.getReferences(NodeGit.Reference.TYPE.ALL).then(function(refs) {
+			var branches = refs.filter(function(ref) { return ref.isBranch(); }).map(function(ref) {
+				var name = ref.name();
+				return {
+					refName: name,
+					name: localBranchName(name),
+					isRemote: ref.isRemote(),
+				};
+			});
+
+			app.branches.add(branches);
+		}),
+		app.repo.head().then(function(ref) {
+			app.workingCopy.set('head', ref.name());
+		}),
+	])
+	.then(function() {
+		return getCommits(app.repo, app.branches.map(function(b) { return b.get('refName'); })).then(function(commits) {
+			app.commits.reset(commits);
+		});
+	});
+}
+
+function loadDiff() {
+	return NodeGit.Diff.indexToWorkdir(app.repo, null, null)
+	.then(function(diff) {
+		app.patches.reset(diff.patches().map(function(p) { return { patch: p }; }));
+	});
+}
+
 app.open = function(file) {
 	app.workingCopy.set('name', path.basename(file, ".git"));
 	NodeGit.Repository.open(file).then(function(repo) {
 		app.repo = repo;
 		return Promise.all([
-			repo.getReferences(NodeGit.Reference.TYPE.ALL).then(function(refs) {
-				var branches = refs.filter(function(ref) { return ref.isBranch(); }).map(function(ref) {
-					var name = ref.name();
-					return {
-						refName: name,
-						name: localBranchName(name),
-						isRemote: ref.isRemote(),
-					};
-				});
-
-				app.branches.add(branches);
-			}),
-			repo.head().then(function(ref) {
-				app.workingCopy.set('head', ref.name());
-			}),
+			loadCommits(),
+			loadDiff(),
 		]);
-	})
-	.then(function() {
-		return getCommits(app.repo, app.branches.map(function(b) { return b.get('refName'); })).then(function(commits) {
-			console.log("commits: " + commits.length);
-			app.commits.reset(commits);
-		});
 	})
 	.catch(function(err) {
 		console.log("error: " + err);
@@ -342,7 +363,7 @@ var ClientView = Backbone.View.extend({
 		this.hsplitter.$el.addClass("history-view");
 		this.$el.append(this.hsplitter.el);
 
-		this.diff = new DiffView();
+		this.diff = new DiffView({ collection: app.patches });
 		this.dsplitter = new SplitterView({ top: this.diff.$el });
 		this.dsplitter.$el.addClass("stage-view");
 		this.$el.append(this.dsplitter.el);
