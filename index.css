@@ -77,6 +77,14 @@ html, body {
 	overflow: hidden;
 }
 
+.client-view.stage-mode .history-view {
+	display: none;
+}
+
+.client-view.history-mode .stage-view {
+	display: none;
+}
+
 .diff-view {
 	padding: 5px;
 	overflow: auto;

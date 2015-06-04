@@ -64,6 +64,12 @@ var SplitterView = Backbone.View.extend({
 		this.height = height;
 		this.bottom.css("height", this.height + "px");
 	},
+
+	remove: function() {
+		this.top.remove();
+		this.bottom.remove();
+		Backbone.View.prototype.remove.apply(this, arguments);
+	},
 });
 
 module.exports = SplitterView;

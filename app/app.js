@@ -337,13 +337,45 @@ var ClientView = Backbone.View.extend({
 		this.refs = new RefsView();
 		this.$el.append(this.refs.el);
 
-//		this.diff = new DiffView();
-//		this.splitter = new SplitterView({ top: this.diff.$el });
 		this.history = new HistoryView({ collection: app.commits });
-		this.splitter = new SplitterView({ top: this.history.$el });
-		this.$el.append(this.splitter.el);
+		this.hsplitter = new SplitterView({ top: this.history.$el });
+		this.hsplitter.$el.addClass("history-view");
+		this.$el.append(this.hsplitter.el);
 
-//		return this.render();
+		this.diff = new DiffView();
+		this.dsplitter = new SplitterView({ top: this.diff.$el });
+		this.dsplitter.$el.addClass("stage-view");
+		this.$el.append(this.dsplitter.el);
+
+		this.branchChange();
+		this.listenTo(app.repoSettings, "change:activeBranch", this.branchChange);
+	},
+
+	branchChange: function() {
+		var b = app.repoSettings.get('activeBranch');
+		this.$el.addClass(b ? 'history-mode' : "stage-mode");
+		this.$el.removeClass(!b ? 'history-mode' : "stage-mode");
+	},
+
+	setSplitter: function() {
+		if (this.splitter) {
+			this.splitter.remove();
+			this.splitter = null;
+			this.history = null;
+			this.diff = null;
+		}
+
+		var b = app.repoSettings.get('activeBranch');
+		if (b) {
+			this.history = new HistoryView({ collection: app.commits });
+			this.splitter = new SplitterView({ top: this.history.$el });
+			this.$el.append(this.splitter.el);
+		}
+		else {
+			this.diff = new DiffView();
+			this.splitter = new SplitterView({ top: this.diff.$el });
+			this.$el.append(this.splitter.el);
+		}
 	},
 
 	render: function(mode, f) {
