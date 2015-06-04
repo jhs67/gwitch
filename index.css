@@ -207,7 +207,7 @@ html, body {
 	background-color: #f4f4f4;
 }
 
-.history-view img {
+.history-view svg {
 	vertical-align: middle;
 	height: 1.65em;
 }
@@ -217,6 +217,10 @@ html, body {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+}
+
+.history-view .commit-line span {
+	padding-left: 4px;
 }
 
 .history-view td, .history-view th {
@@ -250,4 +254,22 @@ html, body {
 
 .history-view table td.short-hash {
 	font-family: "Lucida Console", Monaco, monospace;
+}
+
+.history-view .graph-path {
+	fill: none;
+	stroke-width: 2px;
+	stroke: #ee2e2b;
+}
+
+.history-view .graph-node {
+	fill: none;
+	stroke-width: 1px;
+	stroke: #000000;
+}
+
+.history-view .graph-leg {
+	fill: none;
+	stroke-width: 2px;
+	stroke: #ee2e2b;
 }
