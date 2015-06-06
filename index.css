@@ -77,11 +77,11 @@ html, body {
 	overflow: hidden;
 }
 
-.client-view.stage-mode .history-view {
+.client-view.stage-mode .history-splitter {
 	display: none;
 }
 
-.client-view.history-mode .stage-view {
+.client-view.history-mode .stage-splitter {
 	display: none;
 }
 
@@ -280,4 +280,56 @@ html, body {
 	fill: none;
 	stroke-width: 2px;
 	stroke: #ee2e2b;
+}
+
+.commit-view {
+	overflow: auto;
+}
+
+.commit-view .commit-info {
+	display: flex;
+	flex-flow: row wrap;
+	margin: 1em 1em 0 1em;
+	border-bottom: solid #dfdfdf 1px;
+	border-collapse:collapse;
+}
+
+.commit-view .commit-info > table {
+	flex: 0 0 auto;
+	margin: 0 2em 0 1em;
+}
+
+.commit-info .label {
+	text-align: right;
+	font-weight: bold;
+	color: #838394;
+}
+
+.commit-info .subject .info {
+	font-weight: bold;
+	max-width: 30em;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.commit-summary {
+	margin: 1em;
+	margin-bottom: 0;
+}
+
+.commit-summary .message {
+	white-space: pre;
+	font-family: "Lucida Console", Monaco, monospace;
+	margin: 1.5em 0 1.4em 0;
+}
+
+.commit-summary .file {
+	color: #6a6a6a;
+	margin-left: 2em;
+}
+
+.commit-view .diff-view {
+	margin-left: 0.5em;
+	margin-right: 0.5em;
 }

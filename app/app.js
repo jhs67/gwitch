@@ -11,6 +11,7 @@ var NodeGit = require('nodegit');
 
 var DiffView = require("./DiffView");
 var HistoryView = require("./HistoryView");
+var CommitView = require("./CommitView");
 var RefsView = require("./RefsView");
 var SplitterView = require("./SplitterView");
 
@@ -50,6 +51,7 @@ app.branches = new BranchCollection();
 app.workingCopy = new WorkingCopyModel();
 app.repoSettings = new RepoSettingsModel();
 app.patches = new PatchCollection();
+app.focusPatch = new PatchCollection();
 
 function localBranchName(branch) {
 	if (branch.substr(0, "refs/heads/".length) == "refs/heads/")
@@ -313,6 +315,7 @@ function loadCommits() {
 					refName: name,
 					name: localBranchName(name),
 					isRemote: ref.isRemote(),
+					target: ref.target,
 				};
 			});
 
@@ -325,6 +328,12 @@ function loadCommits() {
 	.then(function() {
 		return getCommits(app.repo, app.branches.map(function(b) { return b.get('refName'); })).then(function(commits) {
 			app.commits.reset(commits);
+			let focusCommit = app.repoSettings.get('focusCommit');
+			if (focusCommit && !app.commits.get(focusCommit))
+				focusCommit = null;
+			if (!focusCommit && app.commits.length > 0)
+				focusCommit = app.commits.at(0).id;
+			app.repoSettings.set('focusCommit', focusCommit);
 		});
 	});
 }
@@ -334,6 +343,25 @@ function loadDiff() {
 	.then(function(diff) {
 		app.patches.reset(diff.patches().map(function(p) { return { patch: p }; }));
 	});
+}
+
+function loadFocusCommit() {
+	app.focusPatch.reset([]);
+	let focusCommit = app.repoSettings.get('focusCommit');
+	let c = app.commits.get(focusCommit);
+	if (!c) return;
+	let commit = c.get('commit');
+	let p = commit.parents();
+	if (p.length === 1) {
+		commit.getTree().then(function(thisTree) {
+			let pc = app.commits.get(p[0].tostrS());
+			pc.get('commit').getTree().then(function(parentTree) {
+				thisTree.diff(parentTree).then(function(diff) {
+					app.focusPatch.reset(diff.patches().map(function(p) { return { patch: p }; }));
+				});
+			});
+		});
+	}
 }
 
 app.open = function(file) {
@@ -346,9 +374,10 @@ app.open = function(file) {
 		]);
 	})
 	.catch(function(err) {
-		console.log("error: " + err);
 		console.log("error: " + err.stack);
 	});
+
+	app.repoSettings.on("change:focusCommit", loadFocusCommit);
 };
 
 var ClientView = Backbone.View.extend({
@@ -358,14 +387,15 @@ var ClientView = Backbone.View.extend({
 		this.refs = new RefsView();
 		this.$el.append(this.refs.el);
 
+		this.commit = new CommitView();
 		this.history = new HistoryView({ collection: app.commits });
-		this.hsplitter = new SplitterView({ top: this.history.$el });
-		this.hsplitter.$el.addClass("history-view");
+		this.hsplitter = new SplitterView({ top: this.history.$el, bottom: this.commit.$el });
+		this.hsplitter.$el.addClass("history-splitter");
 		this.$el.append(this.hsplitter.el);
 
 		this.diff = new DiffView({ collection: app.patches });
 		this.dsplitter = new SplitterView({ top: this.diff.$el });
-		this.dsplitter.$el.addClass("stage-view");
+		this.dsplitter.$el.addClass("stage-splitter");
 		this.$el.append(this.dsplitter.el);
 
 		this.branchChange();
@@ -377,46 +407,10 @@ var ClientView = Backbone.View.extend({
 		this.$el.addClass(b ? 'history-mode' : "stage-mode");
 		this.$el.removeClass(!b ? 'history-mode' : "stage-mode");
 	},
-
-	setSplitter: function() {
-		if (this.splitter) {
-			this.splitter.remove();
-			this.splitter = null;
-			this.history = null;
-			this.diff = null;
-		}
-
-		var b = app.repoSettings.get('activeBranch');
-		if (b) {
-			this.history = new HistoryView({ collection: app.commits });
-			this.splitter = new SplitterView({ top: this.history.$el });
-			this.$el.append(this.splitter.el);
-		}
-		else {
-			this.diff = new DiffView();
-			this.splitter = new SplitterView({ top: this.diff.$el });
-			this.$el.append(this.splitter.el);
-		}
-	},
-
-	render: function(mode, f) {
-		var self = this;
-
-		var g = path.dirname(__dirname);
-		NodeGit.Repository.open(g).then(function(repo) {
-			return NodeGit.Diff.indexToWorkdir(repo, null, null);
-		}).then(function(diff) {
-			self.diff.model = diff;
-			self.diff.render();
-		}, function(err) {
-			console.log("haa...");
-			self.$el.text(err.message);
-		});
-	}
 });
 
 addEventListener('load', function() {
-	app.open(path.resolve(path.join(__dirname, "..", "..", "tucheze")));
+	app.open(path.resolve(path.join(__dirname, "..")));//, "..", "tucheze")));
 //	app.open("/Old/home/jon/loudcrow/crowsnest");
 	var c = new ClientView({});
 	$('#container').append(c.$el);
