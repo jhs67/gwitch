@@ -206,6 +206,10 @@ html, body {
 	padding: 0;
 }
 
+.history-view table .short-hash {
+	padding-left: 4px;
+}
+
 .history-view .wrapper {
 	flex: 1 1 auto;
 	overflow: auto;
@@ -229,6 +233,11 @@ html, body {
 
 .history-view .commit-line span {
 	padding-left: 4px;
+}
+
+.history-view .wrapper tr.focus {
+	background-color: #096ed3;
+	color: #ffffff;
 }
 
 .history-view td, .history-view th {
@@ -271,7 +280,7 @@ html, body {
 }
 
 .history-view .graph-node {
-	fill: none;
+	fill: #ffffff;
 	stroke-width: 1px;
 	stroke: #000000;
 }
@@ -313,6 +322,18 @@ html, body {
 	overflow: hidden;
 }
 
+.commit-info .identity .info {
+	font-family: "Lucida Console", Monaco, monospace;
+}
+
+.commit-info .parent .info {
+	color: #1a54ab;
+}
+
+.commit-info .parent .info:hover {
+	text-decoration: underline;
+}
+
 .commit-summary {
 	margin: 1em;
 	margin-bottom: 0;
@@ -327,6 +348,12 @@ html, body {
 .commit-summary .file {
 	color: #6a6a6a;
 	margin-left: 2em;
+}
+
+.commit-summary .file:hover {
+	color: #6a6a6a;
+	color: #1a54ab;
+	text-decoration: underline;
 }
 
 .commit-view .diff-view {

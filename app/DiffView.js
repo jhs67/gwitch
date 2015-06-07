@@ -2,6 +2,7 @@
 
 var Backbone = require("backbone");
 var diffHbs = require('./diff.hbs');
+var pathToId = require('./pathToId');
 
 var DiffsView = Backbone.View.extend({
 	className: 'diff-view',
@@ -15,9 +16,12 @@ var DiffsView = Backbone.View.extend({
 		return {
 			patches: this.collection.map(function(r) {
 				let patch = r.get("patch");
+				let oldFile = patch.oldFile().path();
+				let newFile = patch.newFile().path();
 				return {
-					oldFile: patch.oldFile().path(),
-					newFile: patch.newFile().path(),
+					file: newFile || oldFile,
+					newFile: newFile,
+					id: pathToId(newFile || oldFile),
 					hunks: patch.hunks().map(function(hunk) {
 						return {
 							header: hunk.header(),

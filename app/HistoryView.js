@@ -2,6 +2,7 @@
 
 var moment = require("moment");
 var Backbone = require("backbone");
+let app = require('./app');
 
 const pathSegs = [
 	"M 0,12 a 8,8 0 0 1 8,8 l 0,4",
@@ -139,6 +140,7 @@ let HistoryRow = makeProtoRow();
 
 function makeRow(sha, graph, summary, author, date) {
 	let tr = HistoryRow.cloneNode(true);
+	tr.setAttribute("id", sha);
 
 	tr.childNodes[0].appendChild(document.createTextNode(sha.substr(0, 7)));
 
@@ -160,7 +162,24 @@ var HistoryView = Backbone.View.extend({
 
 	initialize: function() {
 		this.listenTo(this.collection, "all", this.render);
+		this.listenTo(app.repoSettings, "change:focusCommit", this.setFocus);
 		this.render();
+	},
+
+	events: {
+		'click .wrapper tr': "clickRow",
+	},
+
+	clickRow: function(ev) {
+		app.repoSettings.set('focusCommit', ev.currentTarget.id);
+	},
+
+	setFocus: function() {
+		if (this.oldFocus)
+			this.$("#" + this.oldFocus).removeClass('focus');
+		this.oldFocus = app.repoSettings.get('focusCommit');
+		if (this.oldFocus)
+			this.$("#" + this.oldFocus).addClass('focus');
 	},
 
 	render: function() {
@@ -181,6 +200,9 @@ var HistoryView = Backbone.View.extend({
 		div.classList.add('wrapper');
 		div.appendChild(table);
 		this.el.appendChild(div);
+
+		this.oldFocus = null;
+		this.setFocus();
 
 		return this;
 	},

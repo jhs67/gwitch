@@ -1,6 +1,6 @@
 {{#each patches}}
-<div class='patch'>
-	<div class='patch-header'>diff "{{oldFile}}" "{{newFile}}"</div>
+<div class='patch' id='{{id}}'>
+	<div class='patch-header'>diff "{{file}}" "{{newFile}}"</div>
 	<table>
 	{{#each hunks}}
 		<tr class="hunk">

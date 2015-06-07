@@ -3,6 +3,7 @@
 var moment = require("moment");
 var Backbone = require("backbone");
 var DiffView = require('./DiffView');
+var pathToId = require('./pathToId');
 var app = require('./app');
 
 var commitInfoHbs = require('./commit-info.hbs');
@@ -14,6 +15,14 @@ var CommitInfoView = Backbone.View.extend({
 	initialize: function() {
 		this.listenTo(app.repoSettings, "change:focusCommit", this.render);
 		return this.render();
+	},
+
+	events: {
+		'click .parent .info': "clickParent",
+	},
+
+	clickParent: function(ev) {
+		app.repoSettings.set('focusCommit', ev.currentTarget.id);
 	},
 
 	record: function() {
@@ -45,6 +54,14 @@ var CommitSummaryView = Backbone.View.extend({
 		return this.render();
 	},
 
+	events: {
+		"click .file": "clickFile",
+	},
+
+	clickFile: function(ev) {
+		this.trigger('target', ev.currentTarget.id);
+	},
+
 	record: function() {
 		let focusCommit = app.repoSettings.get('focusCommit');
 		let c = app.commits.get(focusCommit);
@@ -57,8 +74,9 @@ var CommitSummaryView = Backbone.View.extend({
 				let oldFile = patch.oldFile().path();
 				let newFile = patch.newFile().path();
 				return {
-					oldFile: oldFile,
-					newFile: oldFile !== newFile && newFile,
+					id: pathToId(newFile || oldFile),
+					file: newFile || oldFile,
+					newFile: newFile,
 				};
 			}),
 		};
@@ -80,6 +98,12 @@ var CommitView = Backbone.View.extend({
 		this.$el.append(this.info.$el);
 		this.$el.append(this.summary.$el);
 		this.$el.append(this.diff.$el);
+
+		this.listenTo(this.summary, 'target', this.setTarget);
+	},
+
+	setTarget: function(id) {
+		this.$('.diff-view #' + id)[0].scrollIntoView(true);
 	},
 });
 module.exports = CommitView;

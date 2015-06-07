@@ -1,6 +1,8 @@
 <div class="message">{{message}}</div>
-{{#each files}}
-<div class="files">
-	<span class="file">{{oldFile}}</span>
+<div class="file-section">
+	{{#each files}}
+	<div class="files">
+		<span class="file" id='{{id}}'>{{file}}</span>
+	</div>
+	{{/each}}
 </div>
-{{/each}}
