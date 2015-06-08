@@ -5,6 +5,7 @@ require("handlebars");
 
 var $ = require('jquery');
 var Backbone = require("backbone");
+var ipc = require('ipc');
 
 var path = require("path");
 var NodeGit = require('nodegit');
@@ -198,9 +199,12 @@ var ClientView = Backbone.View.extend({
 	},
 });
 
-addEventListener('load', function() {
-	app.open(path.resolve(path.join(__dirname, "..")));//, "..", "tucheze")));
-//	app.open("/Old/home/jon/loudcrow/crowsnest");
-	var c = new ClientView({});
-	$('#container').append(c.$el);
+var clientView = null;
+
+ipc.on('open-repo', function(repo) {
+	app.open(repo);
+	if (!clientView) {
+		clientView = new ClientView({});
+		$('#container').append(clientView.$el);
+	}
 });
