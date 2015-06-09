@@ -6,6 +6,11 @@ html, body {
 	-webkit-user-select: none;
 	box-sizing: border-box;
 	cursor: default;
+	height: 100%;
+}
+
+#container {
+	height: 100%;
 }
 
 .patch {
@@ -97,6 +102,30 @@ html, body {
 	min-width: 15rem;
 	background-color: #eef1f1;
 	border-right: 1px solid #d5d5d5;
+	display: flex;
+	flex-flow: column nowrap;
+}
+
+.refs-view .refs-sect {
+	flex: 1 1 auto;
+	overflow: auto;
+}
+
+.show-recent path {
+	fill: #00000;
+}
+
+.nav-buttons {
+	flex: 0 0 auto;
+}
+
+.nav-buttons button {
+	padding: 1px;
+}
+
+.nav-buttons svg {
+	vertical-align: middle;
+	height: 1.2em;
 }
 
 .refs-view .stage {
@@ -359,4 +388,71 @@ html, body {
 .commit-view .diff-view {
 	margin-left: 0.5em;
 	margin-right: 0.5em;
+}
+
+.recent-repos {
+	box-sizing: border-box;
+	margin-left: auto;
+	margin-right: auto;
+	padding: 10vh 0 10vh 0;
+	max-width: 40em;
+	height: 100vh;
+}
+
+.recent-repos .repo-list {
+	box-sizing: border-box;
+	margin: 5vh 0 10vh 0;
+	padding: 3px 6px 3px 6px;
+	border-radius: 0.6em;
+	border-width: 2px;
+	border-color: #dedede;
+	border-style: solid;
+	overflow: auto;
+	height: 60vh;
+}
+
+.recent-repos .repo-button {
+	box-sizing: border-box;
+	height: 10vh;
+	text-align: center;
+}
+
+.recent-repos .repo-item {
+	border-radius: 0.4em;
+	border-width: 1px;
+	border-color: #dedede;
+	border-style: solid;
+	background: linear-gradient(#fcfcfc, #e0e0e0);
+	margin-bottom: 4px;
+	margin-top: 4px;
+	text-align: center;
+	padding: 3px;
+}
+
+.recent-repos .repo-item:hover {
+	padding: 2px;
+	border-width: 2px;
+	border-color: #cdcdcd;
+}
+
+.recent-repos .repo-name {
+	font-weight: bold;
+	font-size: 1.2em;
+	padding-bottom: 5px;
+}
+
+.recent-repos .repo-path {
+	font-size: 0.9em;
+	color: #888888;
+}
+
+.recent-repos .no-recent {
+	display: none;
+	font-size: 2em;
+	text-align: center;
+	margin-top: 25vh;
+}
+
+.recent-repos .all-items:empty + .no-recent {
+	display: block;
 }

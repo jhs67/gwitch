@@ -1,7 +1,8 @@
 'use strict';
 
-const path = require("path");
 const app = require('app');
+const ipc = require('ipc');
+const path = require("path");
 const Menu = require('menu');
 const BrowserWindow = require('browser-window');
 const dialog = require('dialog');
@@ -22,7 +23,7 @@ let menuTemplate = [
 	{
 		label: 'New Window',
 		accelerator: 'CmdOrCtrl+N',
-		click: newWindowHandler,
+		click: function() { newWindowHandler(); },
 	},
 	{
 		label: 'Open Repository',
@@ -73,10 +74,9 @@ let menuTemplate = [
 ];
 
 let openWindows = new Map();
+let recentRepos = null;
 
 function newWindowHandler(repo) {
-	repo = repo || path.resolve(__dirname);
-
 	let window = new BrowserWindow({
 		width: 1200,
 		height: 800,
@@ -86,7 +86,11 @@ function newWindowHandler(repo) {
 	openWindows.set(window.id, window);
 
 	window.webContents.on('did-finish-load', function() {
-		window.webContents.send('open-repo', repo);
+		if (repo)
+			window.webContents.send('open-repo', repo);
+		else {
+			window.webContents.send('recent', recentRepos.repoList);
+		}
 	});
 
 	window.on('closed', function () {
@@ -98,7 +102,9 @@ function openRepoHandler() {
 	dialog.showOpenDialog({ title: "Open Repository", properties: [ "openDirectory" ] }, function(files) {
 		if (files) {
 			files.forEach(function(f) {
-				newWindowHandler(path.resolve(f));
+				f = path.resolve(f);
+				newWindowHandler(f);
+				recentRepos.add(f);
 			});
 		}
 	});
@@ -111,7 +117,38 @@ function closeWindowHandler() {
 }
 
 app.on('ready', function () {
+	recentRepos = new (require('./app/recentRepos')).RecentRepos();
+
 	let menu = Menu.buildFromTemplate(menuTemplate);
 	Menu.setApplicationMenu(menu);
 	newWindowHandler();
+});
+
+ipc.on('open-other', function(ev) {
+	dialog.showOpenDialog({ title: "Open Repository", properties: [ "openDirectory" ] }, function(files) {
+		if (files) {
+			let f = files.shift();
+			if (f) {
+				f = path.resolve(f);
+				ev.sender.send('open-repo', f);
+				recentRepos.add(f);
+			}
+			files.forEach(function(f) {
+				f = path.resolve(f);
+				newWindowHandler(f);
+				recentRepos.add(f);
+			});
+		}
+	});
+});
+
+ipc.on('open-repo', function(ev, repo) {
+	let f = path.resolve(repo);
+	ev.sender.send('open-repo', f);
+	recentRepos.add(f);
+});
+
+
+ipc.on('open-recent', function(ev) {
+	ev.sender.send('recent', recentRepos.repoList);
 });

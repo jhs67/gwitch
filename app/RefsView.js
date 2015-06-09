@@ -4,6 +4,7 @@ var $ = require('jquery');
 var Backbone = require("backbone");
 var refsHbs = require('./refs.hbs');
 var app = require('./app');
+var ipc = require('ipc');
 
 var RefsView = Backbone.View.extend({
 	className: 'refs-view',
@@ -18,6 +19,7 @@ var RefsView = Backbone.View.extend({
 	events: {
 		"click .stage": "clickStage",
 		"click .branch-line": "clickBranch",
+		"click .show-recent": "clickRecentList",
 	},
 
 	clickStage: function(ev) {
@@ -27,6 +29,10 @@ var RefsView = Backbone.View.extend({
 	clickBranch: function(ev) {
 		var index = $(ev.currentTarget).index() - 1;
 		app.repoSettings.set({ "activeBranch" : app.branches.at(index).get("refName") });
+	},
+
+	clickRecentList: function(ev) {
+		ipc.send('open-recent');
 	},
 
 	invalidate: function() {

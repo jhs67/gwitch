@@ -15,6 +15,7 @@ var HistoryView = require("./HistoryView");
 var CommitView = require("./CommitView");
 var RefsView = require("./RefsView");
 var SplitterView = require("./SplitterView");
+var RecentReposView = require("./RecentReposView");
 var graph = require('./graph');
 
 
@@ -54,6 +55,18 @@ app.workingCopy = new WorkingCopyModel();
 app.repoSettings = new RepoSettingsModel();
 app.patches = new PatchCollection();
 app.focusPatch = new PatchCollection();
+
+app.close = function() {
+	app.repo = null;
+	app.commits.reset([]);
+	app.patches.reset([]);
+	app.focusPatch.reset([]);
+	app.branches.reset([]);
+	app.repoSettings.unset('focusCommit');
+	app.repoSettings.unset('activeBranch');
+	app.workingCopy.unset('name');
+	app.repoSettings.unset('head');
+};
 
 function localBranchName(branch) {
 	if (branch.substr(0, "refs/heads/".length) == "refs/heads/")
@@ -197,14 +210,43 @@ var ClientView = Backbone.View.extend({
 		this.$el.addClass(b ? 'history-mode' : "stage-mode");
 		this.$el.removeClass(!b ? 'history-mode' : "stage-mode");
 	},
+
+	remove: function() {
+		this.refs.remove();
+		this.hsplitter.remove();
+		this.dsplitter.remove();
+		Backbone.View.prototype.remove.apply(this, arguments);
+	},
 });
 
 var clientView = null;
+var recentView = null;
 
 ipc.on('open-repo', function(repo) {
+	app.close();
 	app.open(repo);
+	if (recentView) {
+		recentView.remove();
+		recentView = null;
+	}
+
 	if (!clientView) {
 		clientView = new ClientView({});
 		$('#container').append(clientView.$el);
 	}
+});
+
+ipc.on('recent', function(repoList) {
+	app.close();
+	if (clientView) {
+		clientView.remove();
+		clientView = null;
+	}
+	if (recentView) {
+		recentView.remove();
+		recentView = null;
+	}
+
+	recentView = new RecentReposView({ collection: repoList });
+	$('#container').append(recentView.$el);
 });
