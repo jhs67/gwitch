@@ -14,6 +14,7 @@ var DiffView = require("./DiffView");
 var HistoryView = require("./HistoryView");
 var CommitView = require("./CommitView");
 var RefsView = require("./RefsView");
+var IndexView = require("./IndexView");
 var SplitterView = require("./SplitterView");
 var RecentReposView = require("./RecentReposView");
 var graph = require('./graph');
@@ -197,7 +198,8 @@ var ClientView = Backbone.View.extend({
 		this.$el.append(this.hsplitter.el);
 
 		this.diff = new DiffView({ collection: app.patches });
-		this.dsplitter = new SplitterView({ top: this.diff.$el });
+		this.index = new IndexView({});
+		this.dsplitter = new SplitterView({ top: this.diff.$el, bottom: this.index.$el });
 		this.dsplitter.$el.addClass("stage-splitter");
 		this.$el.append(this.dsplitter.el);
 

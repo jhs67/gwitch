@@ -212,10 +212,53 @@ html, body {
 	border-radius: 50%;
 	margin: auto;
 	background: linear-gradient(#afafaf, #cfcfcf);
+	flex: 0 0 auto;
 }
 
-.splitter-dot:hover, .splitter-bar:hover .splitter-dot, .dragged .splitter-dot {
+.splitter-dot:hover, .splitter-bar:hover .splitter-dot, .hsplitter-bar:hover .splitter-dot, .dragged .splitter-dot {
 	background: linear-gradient(#ddd, #fff);
+}
+
+.index-view {
+	display: flex;
+	flex-flow: row nowrap;
+	height: 100%;
+}
+
+.index-view > div {
+	background-color: #ededed;
+}
+
+.hsplitter-bar {
+	flex: 0 0 auto;
+	height: 100%;
+	width: 5px;
+
+	padding: 1px;
+	cursor: col-resize;
+
+	display: flex;
+	flex-flow: column nowrap;
+}
+
+.hsplitter-bar:hover, .hsplitter-bar.dragged {
+	background-color: #ddd;
+}
+
+.hsplitter-bar .gap {
+	flex: 1 1 auto;
+}
+
+.index-view .working-files {
+	flex: 0 0 auto;
+}
+
+.index-view .commit-message {
+	flex: 1 1 auto;
+}
+
+.index-view .index-files {
+	flex: 0 0 auto;
 }
 
 .history-view {
