@@ -10,7 +10,7 @@ var ipc = require('ipc');
 var path = require("path");
 var NodeGit = require('nodegit');
 
-var DiffView = require("./DiffView");
+var PickView = require("./PickView");
 var HistoryView = require("./HistoryView");
 var CommitView = require("./CommitView");
 var RefsView = require("./RefsView");
@@ -55,12 +55,14 @@ app.branches = new BranchCollection();
 app.workingCopy = new WorkingCopyModel();
 app.repoSettings = new RepoSettingsModel();
 app.patches = new PatchCollection();
+app.indexPatches = new PatchCollection();
 app.focusPatch = new PatchCollection();
 
 app.close = function() {
 	app.repo = null;
 	app.commits.reset([]);
 	app.patches.reset([]);
+	app.indexPatches.reset([]);
 	app.focusPatch.reset([]);
 	app.branches.reset([]);
 	app.repoSettings.unset('focusCommit');
@@ -142,10 +144,21 @@ function loadCommits() {
 	});
 }
 
-function loadDiff() {
+function loadWorkingDiff() {
 	return NodeGit.Diff.indexToWorkdir(app.repo, null, null)
 	.then(function(diff) {
 		app.patches.reset(diff.patches().map(function(p) { return { patch: p }; }));
+	});
+}
+
+function loadIndexDiff() {
+	return app.repo.getHeadCommit()
+	.then(function (commit) {
+		return commit.getTree().then(function(headTree) {
+			return NodeGit.Diff.treeToIndex(app.repo, headTree, null, null).then(function(diff) {
+				app.indexPatches.reset(diff.patches().map(function(p) { return { patch: p }; }));
+			});
+		});
 	});
 }
 
@@ -174,7 +187,8 @@ app.open = function(file) {
 		app.repo = repo;
 		return Promise.all([
 			loadCommits(),
-			loadDiff(),
+			loadWorkingDiff(),
+			loadIndexDiff(),
 		]);
 	})
 	.catch(function(err) {
@@ -197,7 +211,7 @@ var ClientView = Backbone.View.extend({
 		this.hsplitter.$el.addClass("history-splitter");
 		this.$el.append(this.hsplitter.el);
 
-		this.diff = new DiffView({ collection: app.patches });
+		this.diff = new PickView({ collection: app.patches });
 		this.index = new IndexView({});
 		this.dsplitter = new SplitterView({ top: this.diff.$el, bottom: this.index.$el });
 		this.dsplitter.$el.addClass("stage-splitter");

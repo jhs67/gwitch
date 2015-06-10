@@ -251,14 +251,61 @@ html, body {
 
 .index-view .working-files {
 	flex: 0 0 auto;
+	display: flex;
+	flex-flow: column nowrap;
+}
+
+.index-view .index-header {
+	flex: 0 0 auto;
+	padding-left: 6px;
+	padding-top: 3px;
+	padding-bottom: 3px;
+}
+
+.index-view .unstaged, .index-view .staged, .index-view .message {
+	flex: 1 1 auto;
+	background-color: white;
+	border-width: 1px;
+	border-color: #bbb;
+	border-style: solid;
+}
+
+.index-view .unstaged {
+	border-left: 0;
+}
+
+.index-view .unstaged, .index-view .staged {
+	overflow: auto;
+	outline-color: #888;
 }
 
 .index-view .commit-message {
 	flex: 1 1 auto;
+	display: flex;
+	flex-flow: column nowrap;
+	box-sizing: border-box;
+}
+
+.index-view .message {
+	box-sizing: border-box;
+	outline-color: #888;
+	resize: none;
+}
+
+.index-view .commit-buttons {
+	vertical-align: middle;
+	padding-top: 9px;
+	padding-bottom: 9px;
+}
+
+.index-view .commit-button {
+	float: right;
 }
 
 .index-view .index-files {
 	flex: 0 0 auto;
+	display: flex;
+	flex-flow: column nowrap;
 }
 
 .history-view {

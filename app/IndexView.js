@@ -2,28 +2,84 @@
 
 let $ = require('jquery');
 let Backbone = require("backbone");
+let filesListHbs = require('./files-list');
+let commitMessageHbs = require('./commit-message');
+let app = require('./app');
 
-let WorkingFilesView = Backbone.View.extend({
-	className: 'working-files',
+let MultiFilesView = Backbone.View.extend({
 
 	initialize: function() {
-		this.$el.html("working files");
+		this.listenTo(this.collection, "all", this.render);
+		this.listenTo(app.repoSettings, "change:focusFiles", this.setSelected);
+		return this.render();
 	},
+
+	events: {
+		"change select": "onChange",
+	},
+
+	onChange: function(ev) {
+		var focusFiles = {};
+		focusFiles[this.key] = this.$("option:selected").map(function() { return this.value; }).get();
+		app.repoSettings.set("focusFiles", focusFiles);
+	},
+
+	setSelected: function() {
+		var a = app.repoSettings.get("focusFiles");
+		var selected = (a && a[this.key]) || [];
+		this.$("option").each(function() {
+			$(this).prop("selected", selected.indexOf(this.value) !== -1);
+		});
+	},
+
+	record: function() {
+		return {
+			files: this.collection.map(function(r) {
+				let patch = r.get("patch");
+				let oldFile = patch.oldFile().path();
+				let newFile = patch.newFile().path();
+				return {
+					path: newFile || oldFile
+				};
+			}),
+		};
+	},
+
+	render: function() {
+		var record = this.record();
+		this.$el.html(filesListHbs(record));
+		this.$("select").addClass(this.key);
+		this.$(".index-header").text(this.title);
+		this.setSelected();
+		return this;
+	},
+});
+
+let WorkingFilesView = MultiFilesView.extend({
+	className: "working-files",
+	key: "unstaged",
+	title: "Unstaged Files",
+});
+
+let IndexFilesView = MultiFilesView.extend({
+	className: "index-files",
+	title: "Staged Files",
+	key: "staged",
 });
 
 let CommitMessageView = Backbone.View.extend({
 	className: 'commit-message',
 
 	initialize: function() {
-		this.$el.html("commit message");
+		return this.render();
 	},
-});
 
-let IndexFilesView = Backbone.View.extend({
-	className: 'index-files',
+	record: function() {
+		return { files: [] };
+	},
 
-	initialize: function() {
-		this.$el.html("staged files");
+	render: function() {
+		this.$el.html(commitMessageHbs(this.record()));
 	},
 });
 
@@ -34,11 +90,11 @@ let IndexView = Backbone.View.extend({
 	className: 'index-view',
 
 	initialize: function() {
-		this.working = new WorkingFilesView();
+		this.working = new WorkingFilesView({ collection: app.patches });
 		this.lbar = $('<div class="hsplitter-bar"><div class="gap"/><div class="splitter-dot"/><div class="gap"/></div>');
 		this.commit = new CommitMessageView();
 		this.rbar = $('<div class="hsplitter-bar"><div class="gap"/><div class="splitter-dot"/><div class="gap"/></div>');
-		this.index = new IndexFilesView();
+		this.index = new IndexFilesView({ collection: app.indexPatches });
 
 		this.dragSize = [ 24, 24 ];
 		this.dragSign = [ +1, -1 ];

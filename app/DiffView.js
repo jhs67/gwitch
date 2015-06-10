@@ -4,7 +4,7 @@ var Backbone = require("backbone");
 var diffHbs = require('./diff.hbs');
 var pathToId = require('./pathToId');
 
-var DiffsView = Backbone.View.extend({
+var DiffView = Backbone.View.extend({
 	className: 'diff-view',
 
 	initialize: function() {
@@ -16,32 +16,7 @@ var DiffsView = Backbone.View.extend({
 		return {
 			patches: this.collection.map(function(r) {
 				let patch = r.get("patch");
-				let oldFile = patch.oldFile().path();
-				let newFile = patch.newFile().path();
-				return {
-					file: newFile || oldFile,
-					newFile: newFile,
-					id: pathToId(newFile || oldFile),
-					hunks: patch.hunks().map(function(hunk) {
-						return {
-							header: hunk.header(),
-							lines: hunk.lines().map(function(line) {
-								var classes = [];
-								if (line.origin() === 43)
-									classes.push('new');
-								if (line.origin() === 45)
-									classes.push('old');
-								return {
-									origin: String.fromCharCode(line.origin()),
-									content: line.content(),
-									classes: classes.join(' '),
-									oldLineno: line.oldLineno() < 0 ? "" : line.oldLineno(),
-									newLineno: line.newLineno() < 0 ? "" : line.newLineno(),
-								};
-							}),
-						};
-					}),
-				};
+				return DiffView.patchRecord(patch);
 			}),
 		};
 	},
@@ -51,4 +26,34 @@ var DiffsView = Backbone.View.extend({
 		return this;
 	}
 });
-module.exports = DiffsView;
+module.exports = DiffView;
+
+DiffView.patchRecord = function(patch) {
+	let oldFile = patch.oldFile().path();
+	let newFile = patch.newFile().path();
+	let file = newFile || oldFile;
+	return {
+		file: file,
+		newFile: newFile,
+		id: pathToId(file),
+		hunks: patch.hunks().map(function(hunk) {
+			return {
+				header: hunk.header(),
+				lines: hunk.lines().map(function(line) {
+					var classes = [];
+					if (line.origin() === 43)
+						classes.push('new');
+					if (line.origin() === 45)
+						classes.push('old');
+					return {
+						origin: String.fromCharCode(line.origin()),
+						content: line.content(),
+						classes: classes.join(' '),
+						oldLineno: line.oldLineno() < 0 ? "" : line.oldLineno(),
+						newLineno: line.newLineno() < 0 ? "" : line.newLineno(),
+					};
+				}),
+			};
+		}),
+	};
+};
