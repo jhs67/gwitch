@@ -14,8 +14,8 @@ function createGraph(byId, heads) {
 	}
 	function getTips(o) { return concat.apply([], o.map(getTip)); }
 
-	function oidToRecord(oid) { return byId.get(oid.tostrS()); }
-	function ordering(l, r) { return l.commit.timeMs() < r.commit.timeMs(); }
+	function idToRecord(id) { return byId.get(id); }
+	function ordering(l, r) { return l.commit.authorStamp < r.commit.authorStamp; }
 	function reverseOrdering(l, r) { return !ordering(l, r); }
 	function addHead(c) { heads.unshift(c); }
 
@@ -33,13 +33,13 @@ function createGraph(byId, heads) {
 		else {
 			c.index = byOrder.length;
 			byOrder.push(c);
-			c.parents = c.commit.parents().map(oidToRecord).sort(reverseOrdering);
+			c.parents = c.commit.parents.map(idToRecord).sort(reverseOrdering);
 			c.parents.forEach(addHead);
 		}
 	}
 
 	function chooseStrandParent(c) {
-		return c.commit.parents().map(oidToRecord).reduce(function(p, k) {
+		return c.parents.reduce(function(p, k) {
 			return p || graphDepth(k.graph) !== -1 ? p : k;
 		}, null);
 	}
@@ -105,9 +105,8 @@ function createGraph(byId, heads) {
 					depth = findPassableLane(k, p, depth);
 			}
 
-			var parents = p.commit.parents();
-			for (let i in parents) {
-				let k = oidToRecord(parents[i]);
+			for (let i in p.parents) {
+				let k = p.parents[i];
 				if (graphDepth(k.graph) !== -1)
 					depth = findPassableLane(p, k, depth);
 			}
@@ -179,9 +178,8 @@ function createGraph(byId, heads) {
 			}
 
 			// Draw a connection to each parent.
-			let parents = p.commit.parents();
-			for (let j in parents) {
-				let k = oidToRecord(parents[j]);
+			for (let j in p.parents) {
+				let k = p.parents[j];
 				let kdepth = graphDepth(k.graph);
 				if (kdepth === -1)
 					continue;

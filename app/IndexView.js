@@ -36,8 +36,8 @@ let MultiFilesView = Backbone.View.extend({
 		return {
 			files: this.collection.map(function(r) {
 				let patch = r.get("patch");
-				let oldFile = patch.oldFile().path();
-				let newFile = patch.newFile().path();
+				let oldFile = patch.oldFile;
+				let newFile = patch.newFile;
 				return {
 					path: newFile || oldFile
 				};

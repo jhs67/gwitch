@@ -29,28 +29,28 @@ var DiffView = Backbone.View.extend({
 module.exports = DiffView;
 
 DiffView.patchRecord = function(patch) {
-	let oldFile = patch.oldFile().path();
-	let newFile = patch.newFile().path();
+	let oldFile = patch.oldFile;
+	let newFile = patch.newFile;
 	let file = newFile || oldFile;
 	return {
 		file: file,
 		newFile: newFile,
 		id: pathToId(file),
-		hunks: patch.hunks().map(function(hunk) {
+		hunks: patch.hunks.map(function(hunk) {
 			return {
-				header: hunk.header(),
-				lines: hunk.lines().map(function(line) {
+				header: hunk.header,
+				lines: hunk.lines.map(function(line) {
 					var classes = [];
-					if (line.origin() === 43)
+					if (line.origin === "+")
 						classes.push('new');
-					if (line.origin() === 45)
+					if (line.origin === "-")
 						classes.push('old');
 					return {
-						origin: String.fromCharCode(line.origin()),
-						content: line.content(),
+						origin: line.origin,
+						content: line.content,
 						classes: classes.join(' '),
-						oldLineno: line.oldLineno() < 0 ? "" : line.oldLineno(),
-						newLineno: line.newLineno() < 0 ? "" : line.newLineno(),
+						oldLineno: line.oldLineno < 0 ? "" : line.oldLineno,
+						newLineno: line.newLineno < 0 ? "" : line.newLineno,
 					};
 				}),
 			};

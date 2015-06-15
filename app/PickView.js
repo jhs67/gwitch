@@ -24,12 +24,12 @@ var PickView = DiffView.extend({
 
 		app.patches.forEach(function(r) {
 			let patch = r.get("patch");
-			if (unstaged.indexOf(patch.newFile().path() || patch.oldFile().path()) !== -1)
+			if (unstaged.indexOf(patch.newFile || patch.oldFile) !== -1)
 				patches.push(DiffView.patchRecord(patch));
 		});
 		app.indexPatches.forEach(function(r) {
 			let patch = r.get("patch");
-			if (staged.indexOf(patch.newFile().path() || patch.oldFile().path()) !== -1)
+			if (staged.indexOf(patch.newFile || patch.oldFile) !== -1)
 				patches.push(DiffView.patchRecord(patch));
 		});
 		return { patches: patches };

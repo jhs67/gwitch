@@ -32,10 +32,10 @@ var CommitInfoView = Backbone.View.extend({
 		let commit = c.get('commit');
 		return {
 			sha: c.id,
-			summary: commit.summary(),
-			author: commit.author(),
-			authorDate: moment(new Date(commit.author().when().time() * 1000)).format('LLL'),
-			parents: commit.parents().map(function(p) { return { sha: p }; }),
+			summary: commit.subject,
+			author: commit.authorName + " <" + commit.authorEmail + ">",
+			authorDate: moment(new Date(commit.authorStamp * 1000)).format('LLL'),
+			parents: commit.parents.map(function(p) { return { sha: p }; }),
 		};
 	},
 
@@ -68,11 +68,11 @@ var CommitSummaryView = Backbone.View.extend({
 		if (!c) return {};
 		let commit = c.get('commit');
 		return {
-			message: commit.message(),
+			message: commit.subject,
 			files: app.focusPatch.map(function(r) {
 				let patch = r.get("patch");
-				let oldFile = patch.oldFile().path();
-				let newFile = patch.newFile().path();
+				let oldFile = patch.oldFile;
+				let newFile = patch.newFile;
 				return {
 					id: pathToId(newFile || oldFile),
 					file: newFile || oldFile,

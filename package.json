@@ -14,8 +14,7 @@
   "author": "Jon Spencer",
   "license": "ISC",
   "devDependencies": {
-    "electron-prebuilt": "^0.26.1",
-    "electron-rebuild": "^0.1.4"
+    "electron-prebuilt": "^0.26.1"
   },
   "dependencies": {
     "backbone": "^1.2.0",
@@ -23,7 +22,6 @@
     "handlebars": "^3.0.3",
     "jquery": "^2.1.4",
     "moment": "^2.10.3",
-    "nodegit": "git+https://github.com/nodegit/nodegit.git",
     "underscore": "^1.8.3"
   },
   "engines": {

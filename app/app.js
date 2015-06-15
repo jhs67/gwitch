@@ -8,7 +8,6 @@ var Backbone = require("backbone");
 var ipc = require('ipc');
 
 var path = require("path");
-var NodeGit = require('nodegit');
 
 var PickView = require("./PickView");
 var HistoryView = require("./HistoryView");
@@ -18,6 +17,7 @@ var IndexView = require("./IndexView");
 var SplitterView = require("./SplitterView");
 var RecentReposView = require("./RecentReposView");
 var graph = require('./graph');
+var Gwit = require('./Gwit');
 
 
 var BranchModel = Backbone.Model.extend({
@@ -67,68 +67,42 @@ app.close = function() {
 	app.branches.reset([]);
 	app.repoSettings.unset('focusCommit');
 	app.repoSettings.unset('activeBranch');
+	app.repoSettings.unset('focusFiles');
 	app.workingCopy.unset('name');
 	app.repoSettings.unset('head');
 };
 
-function localBranchName(branch) {
-	if (branch.substr(0, "refs/heads/".length) == "refs/heads/")
-		return branch.substr("refs/heads/".length);
-	return branch;
-}
-
 function getCommits(repo, refs) {
-	var byId = new Map();
-
 	return Promise.all(refs.map(function(r) {
-		return repo.getReferenceCommit(r).then(function(commit) {
-			var id = commit.id().tostrS();
-			var d = { commit: commit, id: id, children: [], search: 0, index: -1, graph: [] };
-			byId.set(id, d);
-			return d;
-		});
-	})).then(function(heads) {
-		return Promise.all(heads.map(getParents)).then(function() { return heads; });
-
-		function getParents(c) {
-			return Promise.all(c.commit.parents().map(function(oid) {
-				var id = oid.tostrS();
-				var d = byId.get(id);
-				if (d) {
-					d.children.push(c);
-					return;
-				}
-
-				d = { commit: null, id: id, children: [ c ], search: 0, index: -1, graph: [] };
-				byId.set(id, d);
-				return repo.getCommit(oid).then(function(commit) {
-					d.commit = commit;
-					return getParents(d);
+		return repo.lookupRef(r);
+	}))
+	.then(function(heads) {
+		return repo.log(refs).then(function(log) {
+			var byId = new Map();
+			log.forEach(function(commit) {
+				var d = { commit: commit, id: commit.hash, children: [], search: 0, index: -1, graph: [] };
+				byId.set(commit.hash, d);
+			});
+			log.forEach(function(commit) {
+				commit.parents.forEach(function(p) {
+					var d = byId.get(p);
+					d.children.push(byId.get(commit.hash));
 				});
-			}));
-		}
-	}).then(function(heads) {
-		return graph.createGraph(byId, heads);
+			});
+
+			return graph.createGraph(byId, heads.map(function(h) { return byId.get(h); }));
+		});
 	});
 }
 
 function loadCommits() {
 	return Promise.all([
-		app.repo.getReferences(NodeGit.Reference.TYPE.ALL).then(function(refs) {
-			var branches = refs.filter(function(ref) { return ref.isBranch(); }).map(function(ref) {
-				var name = ref.name();
-				return {
-					refName: name,
-					name: localBranchName(name),
-					isRemote: ref.isRemote(),
-					target: ref.target,
-				};
-			});
-
+		app.repo.getRefs().then(function(refs) {
+			var branches = refs.filter(function(ref) { return ref.type === 'heads'; });
 			app.branches.add(branches);
 		}),
 		app.repo.head().then(function(ref) {
-			app.workingCopy.set('head', ref.name());
+			app.workingCopy.set('head', ref);
 		}),
 	])
 	.then(function() {
@@ -145,20 +119,14 @@ function loadCommits() {
 }
 
 function loadWorkingDiff() {
-	return NodeGit.Diff.indexToWorkdir(app.repo, null, null)
-	.then(function(diff) {
-		app.patches.reset(diff.patches().map(function(p) { return { patch: p }; }));
+	app.repo.diffIndexToWorkdir().then(function(diff) {
+		app.patches.reset(diff.patches.map(function(p) { return { patch: p }; }));
 	});
 }
 
 function loadIndexDiff() {
-	return app.repo.getHeadCommit()
-	.then(function (commit) {
-		return commit.getTree().then(function(headTree) {
-			return NodeGit.Diff.treeToIndex(app.repo, headTree, null, null).then(function(diff) {
-				app.indexPatches.reset(diff.patches().map(function(p) { return { patch: p }; }));
-			});
-		});
+	app.repo.diffHeadToIndex().then(function(diff) {
+		app.indexPatches.reset(diff.patches.map(function(p) { return { patch: p }; }));
 	});
 }
 
@@ -168,22 +136,17 @@ function loadFocusCommit() {
 	let c = app.commits.get(focusCommit);
 	if (!c) return;
 	let commit = c.get('commit');
-	let p = commit.parents();
+	let p = commit.parents;
 	if (p.length === 1) {
-		commit.getTree().then(function(thisTree) {
-			let pc = app.commits.get(p[0].tostrS());
-			pc.get('commit').getTree().then(function(parentTree) {
-				thisTree.diff(parentTree).then(function(diff) {
-					app.focusPatch.reset(diff.patches().map(function(p) { return { patch: p }; }));
-				});
-			});
+		app.repo.diffCommits(p[0], focusCommit).then(function(diff) {
+			app.focusPatch.reset(diff.patches.map(function(p) { return { patch: p }; }));
 		});
 	}
 }
 
 app.open = function(file) {
 	app.workingCopy.set('name', path.basename(file, ".git"));
-	NodeGit.Repository.open(file).then(function(repo) {
+	Gwit.open(file).then(function(repo) {
 		app.repo = repo;
 		return Promise.all([
 			loadCommits(),

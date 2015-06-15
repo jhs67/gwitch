@@ -190,7 +190,7 @@ var HistoryView = Backbone.View.extend({
 		let table = document.createElement('table');
 		this.collection.map(function(c) {
 			let commit = c.get('commit');
-			let tr = makeRow(c.id, c.get('graph'), commit.summary(), commit.author().name(), commit.date());
+			let tr = makeRow(c.id, c.get('graph'), commit.subject, commit.authorName, new Date(commit.authorStamp * 1000));
 			table.appendChild(tr);
 			return tr;
 		});
