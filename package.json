@@ -14,7 +14,7 @@
   "author": "Jon Spencer",
   "license": "ISC",
   "devDependencies": {
-    "electron-prebuilt": "^0.26.1"
+    "electron-prebuilt": ">0.26.1"
   },
   "dependencies": {
     "backbone": "^1.2.0",
