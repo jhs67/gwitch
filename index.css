@@ -255,6 +255,21 @@ html, body {
 	flex-flow: column nowrap;
 }
 
+.file-list svg {
+	height: 0.9em;
+	vertical-align: middle;
+}
+
+.file-list path {
+	fill: #00df49;
+	stroke-width: 1px;
+	stroke: #086a2d;
+}
+
+.file-list path.flap {
+	fill: white;
+}
+
 .index-view .index-header {
 	flex: 0 0 auto;
 	padding-left: 6px;
@@ -270,13 +285,28 @@ html, body {
 	border-style: solid;
 }
 
-.index-view .unstaged {
-	border-left: 0;
+.multi-file-view {
+	display: flex;
+	flex-flow: column nowrap;
 }
 
-.index-view .unstaged, .index-view .staged {
+.multi-file-view .file-list {
+	flex: 1 1 auto;
+	background-color: white;
+	border-width: 1px;
+	border-color: #bbb;
+	border-style: solid;
 	overflow: auto;
 	outline-color: #888;
+}
+
+.multi-file-view .file-item.selected {
+	background-color: #0b82f5;
+	color: white;
+}
+
+.index-view .unstaged {
+	border-left: 0;
 }
 
 .index-view .commit-message {
@@ -546,3 +576,4 @@ html, body {
 .recent-repos .all-items:empty + .no-recent {
 	display: block;
 }
+
