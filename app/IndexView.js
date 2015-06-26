@@ -169,19 +169,36 @@ let IndexView = Backbone.View.extend({
 		this.rbar = $('<div class="hsplitter-bar"><div class="gap"/><div class="splitter-dot"/><div class="gap"/></div>');
 		this.index = new IndexFilesView({ collection: app.indexPatches });
 
-		this.dragSize = [ 24, 24 ];
+		this.dragKey = [ 'workingList', 'stageList' ];
 		this.dragSign = [ +1, -1 ];
 		this.dragBars = [ this.lbar, this.rbar ];
 		this.dragSides = [ this.working, this.index ];
-		this.dragSides[0].$el.css("width", this.dragSize[0] + "%");
-		this.dragSides[1].$el.css("width", this.dragSize[1] + "%");
 		this.dragIndex = -1;
+
+		this.loadSize();
+
+		this.listenTo(app.windowLayout, "change:" + this.dragKey[0], this.loadSize);
+		this.listenTo(app.windowLayout, "change:" + this.dragKey[1], this.loadSize);
 
 		this.$el.append(this.working.$el);
 		this.$el.append(this.lbar);
 		this.$el.append(this.commit.$el);
 		this.$el.append(this.rbar);
 		this.$el.append(this.index.$el);
+	},
+
+	loadSize: function() {
+		this.dragSize = [
+			parseFloat(app.windowLayout.get(this.dragKey[0])),
+			parseFloat(app.windowLayout.get(this.dragKey[1]))
+		];
+		if (isNaN(this.dragSize[0]) || this.dragSize[0] < 10 || this.dragSize[0] > 70)
+			this.dragSize[0] = 24;
+		if (isNaN(this.dragSize[1]) || this.dragSize[1] < 10 || this.dragSize[1] > 80 - this.dragSize[0])
+			this.dragSize[1] = Math.min(24, 80 - this.dragSize[0]);
+
+		this.dragSides[0].$el.css("width", this.dragSize[0] + "%");
+		this.dragSides[1].$el.css("width", this.dragSize[1] + "%");
 	},
 
 	events: {
@@ -217,6 +234,10 @@ let IndexView = Backbone.View.extend({
 
 		this.dragBars[this.dragIndex].removeClass("dragged");
 		$(document.documentElement).css("cursor", "");
+
+		app.windowLayout.set(this.dragKey[this.dragIndex], this.dragSize[this.dragIndex]);
+		app.windowLayout.save();
+
 		this.dragIndex = -1;
 	},
 

@@ -2,6 +2,7 @@
 
 var $ = require('jquery');
 var Backbone = require("backbone");
+var app = require('./app');
 
 let moveEvents = [ 'mousemove', 'touchmove' ];
 let upEvents = [ 'mouseup', 'touchend', 'touchleave', 'touchcancel' ];
@@ -13,15 +14,27 @@ var SplitterView = Backbone.View.extend({
 		this.top = opts.top || $("<div/>");
 		this.bottom = opts.bottom || $("<div/>");
 		this.bar = $('<div class="splitter-bar"><div class="splitter-dot"/></div>');
-
-		this.height = 200;
+		this.key = opts.key;
 
 		this.top.addClass("splitter-top");
 		this.bottom.addClass("splitter-bottom");
-		this.bottom.css("height", this.height + "px");
 		this.$el.append(this.top);
 		this.$el.append(this.bar);
 		this.$el.append(this.bottom);
+
+		this.loadSize();
+		this.listenTo(app.windowLayout, "change:" + this.key, this.loadSize);
+	},
+
+	loadSize: function() {
+		this.height = parseFloat(app.windowLayout.get(this.key));
+		if (isNaN(this.height) || this.height < 10 || this.height > 80)
+			this.height = 25;
+		this.setSize();
+	},
+
+	setSize: function() {
+		this.bottom.css("height", (this.height * this.$el.height() / 100) + "px");
 	},
 
 	events: {
@@ -31,7 +44,9 @@ var SplitterView = Backbone.View.extend({
 	mouseDown: function(ev) {
 		ev.stopPropagation();
 		ev.preventDefault();
-		this.dragoff = this.height + ev.clientY;
+		let outerHeight = this.$el.height();
+		let hpx = this.height * outerHeight / 100;
+		this.dragoff = hpx + ev.clientY;
 
 		$(document.documentElement)
 		.bind(upEvents.map(function(v) { return v + '.splitter'; }).join(' '), this.mouseUp.bind(this))
@@ -51,18 +66,22 @@ var SplitterView = Backbone.View.extend({
 
 		this.bar.removeClass("dragged");
 		$(document.documentElement).css("cursor", "");
+
+		app.windowLayout.set(this.key, this.height);
+		app.windowLayout.save();
 	},
 
 	mouseMove: function(ev) {
 		ev.stopPropagation();
 		ev.preventDefault();
 
-		var height = this.dragoff - ev.clientY;
 		var outerHeight = this.$el.height();
-		height = Math.max(outerHeight * 0.1, height);
-		height = Math.min(outerHeight * 0.8, height);
+		let hpx = this.dragoff - ev.clientY;
+		var height = 100.0 * hpx / outerHeight;
+		height = Math.max(10, height);
+		height = Math.min(80, height);
 		this.height = height;
-		this.bottom.css("height", this.height + "px");
+		this.setSize();
 	},
 
 	remove: function() {

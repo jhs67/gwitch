@@ -16,6 +16,8 @@ var RefsView = require("./RefsView");
 var IndexView = require("./IndexView");
 var SplitterView = require("./SplitterView");
 var RecentReposView = require("./RecentReposView");
+var pathToId = require('./pathToId');
+var JetSync = require('./JetSync');
 var graph = require('./graph');
 var Gwit = require('./Gwit');
 
@@ -47,6 +49,14 @@ var WorkingCopyModel = Backbone.Model.extend({
 var RepoSettingsModel = Backbone.Model.extend({
 });
 
+var WindowLayoutModel = Backbone.Model.extend({
+	url: function() {
+		return pathToId(app.workingCopy.get('path'));
+	},
+
+	sync: JetSync,
+});
+
 var app = module.exports;
 
 app.repo = null;
@@ -57,6 +67,7 @@ app.repoSettings = new RepoSettingsModel();
 app.patches = new PatchCollection();
 app.indexPatches = new PatchCollection();
 app.focusPatch = new PatchCollection();
+app.windowLayout = new WindowLayoutModel();
 
 app.close = function() {
 	app.repo = null;
@@ -68,8 +79,13 @@ app.close = function() {
 	app.repoSettings.unset('focusCommit');
 	app.repoSettings.unset('activeBranch');
 	app.repoSettings.unset('focusFiles');
+	app.workingCopy.unset('path');
 	app.workingCopy.unset('name');
 	app.repoSettings.unset('head');
+	app.windowLayout.unset('commitBar');
+	app.windowLayout.unset('historyBar');
+	app.windowLayout.unset('workingList');
+	app.windowLayout.unset('stageList');
 };
 
 function getCommits(repo, refs) {
@@ -145,6 +161,7 @@ function loadFocusCommit() {
 }
 
 app.open = function(file) {
+	app.workingCopy.set('path', file);
 	app.workingCopy.set('name', path.basename(file, ".git"));
 	Gwit.open(file).then(function(repo) {
 		app.repo = repo;
@@ -158,6 +175,7 @@ app.open = function(file) {
 		console.log("error: " + err.stack);
 	});
 
+	app.windowLayout.fetch();
 	app.repoSettings.on("change:focusCommit", loadFocusCommit);
 };
 
@@ -170,13 +188,13 @@ var ClientView = Backbone.View.extend({
 
 		this.commit = new CommitView();
 		this.history = new HistoryView({ collection: app.commits });
-		this.hsplitter = new SplitterView({ top: this.history.$el, bottom: this.commit.$el });
+		this.hsplitter = new SplitterView({ top: this.history.$el, bottom: this.commit.$el, key: "historyBar" });
 		this.hsplitter.$el.addClass("history-splitter");
 		this.$el.append(this.hsplitter.el);
 
 		this.diff = new PickView({ collection: app.patches });
 		this.index = new IndexView({});
-		this.dsplitter = new SplitterView({ top: this.diff.$el, bottom: this.index.$el });
+		this.dsplitter = new SplitterView({ top: this.diff.$el, bottom: this.index.$el, key: "commitBar" });
 		this.dsplitter.$el.addClass("stage-splitter");
 		this.$el.append(this.dsplitter.el);
 
@@ -184,10 +202,16 @@ var ClientView = Backbone.View.extend({
 		this.listenTo(app.repoSettings, "change:activeBranch", this.branchChange);
 	},
 
+	setSize: function() {
+		this.hsplitter.setSize();
+		this.dsplitter.setSize();
+	},
+
 	branchChange: function() {
 		var b = app.repoSettings.get('activeBranch');
 		this.$el.addClass(b ? 'history-mode' : "stage-mode");
 		this.$el.removeClass(!b ? 'history-mode' : "stage-mode");
+		this.setSize();
 	},
 
 	remove: function() {
@@ -212,6 +236,7 @@ ipc.on('open-repo', function(repo) {
 	if (!clientView) {
 		clientView = new ClientView({});
 		$('#container').append(clientView.$el);
+		clientView.setSize();
 	}
 });
 
