@@ -23,6 +23,7 @@ Gwit.open = function(repodir) {
 		});
 	});
 };
+
 Gwit.prototype.git = function() {
 	let gwit = this;
 	let args = [].concat.apply([], arguments);
@@ -31,6 +32,18 @@ Gwit.prototype.git = function() {
 		child_process.execFile(gwit.cmd, args, opts, function(err, out) {
 			if (err) return reject(err);
 			resolve(out);
+		});
+	});
+};
+
+Gwit.prototype.gitRc = function() {
+	let gwit = this;
+	let args = [].concat.apply([], arguments);
+	let opts = { cwd: gwit.repodir, maxBuffer: 200 * 1024 * 1024 };
+	return new Promise(function(resolve, reject) {
+		child_process.execFile(gwit.cmd, args, opts, function(err, out, stderr) {
+			if (err && typeof err.code !== 'number') return reject(err);
+			resolve({ code: (err && err.code) || 0, out: out });
 		});
 	});
 };
@@ -181,5 +194,41 @@ Gwit.prototype.diffIndexToWorkdir = function() {
 Gwit.prototype.diffHeadToIndex = function() {
 	return this.git("diff", "--cached").then(function(out) {
 		return parseDiff(out);
+	});
+};
+
+Gwit.prototype.isIgnored = function(path) {
+	return this.gitRc("check-ignore", path).then(function(res) {
+		return res.code === 0;
+	});
+};
+
+Gwit.prototype.getIgnored = function(paths) {
+	return this.gitRc("check-ignore", paths).then(function(res) {
+		return res.out ? res.out.substr(0, res.out.length - 1).split('\n') : [];
+	});
+};
+
+Gwit.prototype.getGitDir = function() {
+	return this.git("rev-parse", "--git-dir").then(function(out) {
+		return out.trim();
+	});
+};
+
+Gwit.prototype.getSubmodules = function() {
+	return this.git("submodule", "status").then(function(out) {
+		let subs = [];
+		out.split('\n').forEach(function(subline) {
+			let match = subline.match(/([ +-U])([a-fA-F0-9]*) ([^ ]*) \(([^)]*)\)/);
+			if (match) subs.push({ path: match[3], hash: match[2], status: match[1] });
+		});
+		return subs;
+	});
+};
+
+Gwit.prototype.getIndexFiles = function() {
+	return this.git("ls-files", "-z").then(function(out) {
+		if (!out) return [];
+		return out.substr(0, out.length - 1).split('\x00');
 	});
 };

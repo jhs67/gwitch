@@ -17,7 +17,10 @@ var IndexView = require("./IndexView");
 var SplitterView = require("./SplitterView");
 var RecentReposView = require("./RecentReposView");
 var pathToId = require('./pathToId');
+var LazyUpdater = require('./LazyUpdater');
 var JetSync = require('./JetSync');
+var Watcher = require('./Watcher');
+let walkTree = require('./walkTree');
 var graph = require('./graph');
 var Gwit = require('./Gwit');
 
@@ -65,9 +68,19 @@ app.branches = new BranchCollection();
 app.workingCopy = new WorkingCopyModel();
 app.repoSettings = new RepoSettingsModel();
 app.patches = new PatchCollection();
+app.submodules = new Backbone.Collection();
 app.indexPatches = new PatchCollection();
 app.focusPatch = new PatchCollection();
 app.windowLayout = new WindowLayoutModel();
+
+function loadWorkingDiff() {
+	return app.repo.diffIndexToWorkdir().then(function(diff) {
+		app.patches.reset(diff.patches.map(function(p) { return { patch: p }; }));
+	});
+}
+
+app.workingUpdater = new LazyUpdater(loadWorkingDiff);
+app.workingWatch = new Watcher(function() { app.workingUpdater.poke(); });
 
 app.close = function() {
 	app.repo = null;
@@ -76,16 +89,24 @@ app.close = function() {
 	app.indexPatches.reset([]);
 	app.focusPatch.reset([]);
 	app.branches.reset([]);
+	app.submodules.reset([]);
 	app.repoSettings.unset('focusCommit');
 	app.repoSettings.unset('activeBranch');
 	app.repoSettings.unset('focusFiles');
 	app.workingCopy.unset('path');
 	app.workingCopy.unset('name');
+	app.workingCopy.unset('gitdir');
 	app.repoSettings.unset('head');
 	app.windowLayout.unset('commitBar');
 	app.windowLayout.unset('historyBar');
 	app.windowLayout.unset('workingList');
 	app.windowLayout.unset('stageList');
+	app.workingWatch.close();
+
+	if (app.workingWalk) {
+		app.workingWalk.cancel();
+		app.workingWalk = null;
+	}
 };
 
 function getCommits(repo, refs) {
@@ -134,12 +155,6 @@ function loadCommits() {
 	});
 }
 
-function loadWorkingDiff() {
-	app.repo.diffIndexToWorkdir().then(function(diff) {
-		app.patches.reset(diff.patches.map(function(p) { return { patch: p }; }));
-	});
-}
-
 function loadIndexDiff() {
 	app.repo.diffHeadToIndex().then(function(diff) {
 		app.indexPatches.reset(diff.patches.map(function(p) { return { patch: p }; }));
@@ -160,19 +175,77 @@ function loadFocusCommit() {
 	}
 }
 
+function loadWatches() {
+	return app.repo.getGitDir().then(function(gitdir) {
+		gitdir = path.resolve(app.repo.repodir, gitdir);
+		app.workingCopy.set('gitdir', gitdir);
+
+		return app.repo.getSubmodules();
+	})
+	.then(function(submodules) {
+		submodules.forEach(function(s) { s.fullpath = path.resolve(app.repo.repodir, s.path); });
+		app.submodules.add(submodules);
+
+		return app.repo.getIndexFiles();
+	})
+	.then(function(files) {
+		let root = app.workingCopy.get('path');
+		files.forEach(function(f) { app.workingWatch.add(path.join(root, f)); });
+		app.workingWatch.add(root);
+
+		app.workingWalk = walkTree(root, function(records) {
+			records = records.filter(function(rec) {
+				if (!rec.stat.isDirectory())
+					return false;
+
+				let fullpath = path.join(rec.root, rec.path);
+				if (fullpath == app.workingCopy.get('gitdir'))
+					return false;
+				if (app.submodules.any(function(s) { return s.get('fullpath') === fullpath; }))
+					return false;
+
+				return true;
+			});
+
+			let totest = records.filter(function(rec) { return rec.path; }).map(function(rec) { return rec.path + "/"; });
+			if (totest.length === 0)
+				return records;
+
+			return app.repo.getIgnored(totest)
+			.then(function(ignored) {
+				records = records.filter(function(rec) {
+					return ignored.every(function(f) { return rec.path !== f.substr(0, f.length - 1); });
+				});
+
+				records.forEach(function(r) {
+					app.workingWatch.add(path.join(root, r.path));
+				});
+				return records;
+			});
+		});
+
+		return app.workingWalk;
+
+	}).then(function() {
+		app.workingWalk = null;
+		app.workingUpdater.poke();
+	});
+}
+
 app.open = function(file) {
 	app.workingCopy.set('path', file);
 	app.workingCopy.set('name', path.basename(file, ".git"));
 	Gwit.open(file).then(function(repo) {
 		app.repo = repo;
+		app.workingUpdater.start();
 		return Promise.all([
+			loadWatches(),
 			loadCommits(),
-			loadWorkingDiff(),
 			loadIndexDiff(),
 		]);
 	})
 	.catch(function(err) {
-		console.log("error: " + err.stack);
+		console.log("error: " + (err && err.stack));
 	});
 
 	app.windowLayout.fetch();
