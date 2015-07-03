@@ -2,36 +2,33 @@
 
 var Backbone = require("backbone");
 var DiffView = require("./DiffView");
-var app = require('./app');
 
 var PickView = DiffView.extend({
 
-	initialize: function() {
+	initialize: function(opt) {
+		this.settings = opt.settings;
 		Backbone.View.prototype.initialize.call(this, arguments);
-		this.listenTo(app.patches, "all", this.render);
-		this.listenTo(app.indexPatches, "all", this.render);
-		this.listenTo(app.repoSettings, "change:focusFiles", this.render);
+		this.listenTo(this.collection, "all", this.render);
+		this.listenTo(this.settings, "change:focusFiles", this.render);
 		return this.render();
 	},
 
 	record: function() {
 		var patches = [];
-		var focusFiles = app.repoSettings.get("focusFiles");
+		var focusFiles = this.settings.get("focusFiles");
 		var staged = (focusFiles && focusFiles.staged) || [];
 		var unstaged = (focusFiles && focusFiles.unstaged) || [];
-		if (staged.length === 0 && unstaged.length === 0)
-			return { patches: app.patches.map(function(r) { return DiffView.patchRecord(r.get('patch')); }) };
 
-		app.patches.forEach(function(r) {
-			let patch = r.get("patch");
-			if (unstaged.indexOf(patch.newFile || patch.oldFile) !== -1)
-				patches.push(DiffView.patchRecord(patch));
+		this.collection.forEach(function(r) {
+			let path = r.get('path');
+			if (unstaged.indexOf(path) !== -1 && r.get('workingPatch'))
+				patches.push(DiffView.patchRecord(r.get('workingPatch')));
+			if (staged.indexOf(path) !== -1 && r.get('indexPatch'))
+				patches.push(DiffView.patchRecord(r.get('indexPatch')));
+			if (staged.length === 0 && unstaged.length === 0 && r.get('workingPatch'))
+				patches.push(DiffView.patchRecord(r.get('workingPatch')));
 		});
-		app.indexPatches.forEach(function(r) {
-			let patch = r.get("patch");
-			if (staged.indexOf(patch.newFile || patch.oldFile) !== -1)
-				patches.push(DiffView.patchRecord(patch));
-		});
+
 		return { patches: patches };
 	},
 });

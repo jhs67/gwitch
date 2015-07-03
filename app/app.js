@@ -67,26 +67,90 @@ app.commits = new CommitCollection();
 app.branches = new BranchCollection();
 app.workingCopy = new WorkingCopyModel();
 app.repoSettings = new RepoSettingsModel();
-app.patches = new PatchCollection();
 app.submodules = new Backbone.Collection();
-app.indexPatches = new PatchCollection();
 app.focusPatch = new PatchCollection();
 app.windowLayout = new WindowLayoutModel();
+app.status = new Backbone.Collection();
 
-function loadWorkingDiff() {
-	return app.repo.diffIndexToWorkdir().then(function(diff) {
-		app.patches.reset(diff.patches.map(function(p) { return { patch: p }; }));
+function loadStatus() {
+	return app.repo.getStatus().then(function (files) {
+		return Promise.all(files.map(function(status) {
+			let tasks = [];
+			status.id = pathToId(status.path);
+			if (status.workingStatus === '?') {
+				tasks.push(app.repo.diffFileUntracked(status.path)
+					.then(function(patch) {
+						status.workingPatch = patch;
+						return;
+					}));
+			}
+			else if (status.workingStatus !== ' ') {
+				tasks.push(app.repo.diffFileWorkingToIndex(status.path)
+					.then(function(patch) {
+						status.workingPatch = patch;
+						return;
+					}));
+			}
+			if (status.indexStatus !== ' ') {
+				tasks.push(app.repo.diffFileIndexToHead(status.path, status.fromPath)
+					.then(function(patch) {
+						status.indexPatch = patch;
+						return;
+					}));
+			}
+
+			return Promise.all(tasks)
+			.then(function() {
+				return status;
+			})
+			.catch(function(err) {
+				console.log("hmmm " + err.stack);
+			});
+		}))
+		.then(function(stati) {
+			let a;
+			// Remove any focus files that don't exist.
+			let ff = app.repoSettings.get("focusFiles");
+			if (ff && ff.unstaged) {
+				let nf = ff.unstaged.filter(function(f) {
+					let r = app.status.get(pathToId(f));
+					if (!r) return false;
+					let s = r.get('workingStatus');
+					return s !== ' ';
+				});
+				if (ff.length !== nf.length)
+					a = { unstaged: nf };
+			}
+			if (ff && ff.staged) {
+				let nf = ff.staged.filter(function(f) {
+					let r = app.status.get(pathToId(f));
+					if (!r) return false;
+					let s = r.get('indexStatus');
+					return s !== ' ' && s !== '?';
+				});
+				if (ff.length !== nf.length) {
+					if (!a) a = {};
+					a.staged = nf;
+				}
+			}
+
+			if (a) {
+				app.repoSettings.set("focusFiles", a);
+			}
+
+			// Reset the status collection
+			app.status.reset(stati);
+		});
 	});
 }
 
-app.workingUpdater = new LazyUpdater(loadWorkingDiff);
+app.workingUpdater = new LazyUpdater(loadStatus);
 app.workingWatch = new Watcher(function() { app.workingUpdater.poke(); });
 
 app.close = function() {
 	app.repo = null;
 	app.commits.reset([]);
-	app.patches.reset([]);
-	app.indexPatches.reset([]);
+	app.status.reset([]);
 	app.focusPatch.reset([]);
 	app.branches.reset([]);
 	app.submodules.reset([]);
@@ -152,12 +216,6 @@ function loadCommits() {
 				focusCommit = app.commits.at(0).id;
 			app.repoSettings.set('focusCommit', focusCommit);
 		});
-	});
-}
-
-function loadIndexDiff() {
-	app.repo.diffHeadToIndex().then(function(diff) {
-		app.indexPatches.reset(diff.patches.map(function(p) { return { patch: p }; }));
 	});
 }
 
@@ -241,7 +299,6 @@ app.open = function(file) {
 		return Promise.all([
 			loadWatches(),
 			loadCommits(),
-			loadIndexDiff(),
 		]);
 	})
 	.catch(function(err) {
@@ -265,8 +322,8 @@ var ClientView = Backbone.View.extend({
 		this.hsplitter.$el.addClass("history-splitter");
 		this.$el.append(this.hsplitter.el);
 
-		this.diff = new PickView({ collection: app.patches });
-		this.index = new IndexView({});
+		this.diff = new PickView({ collection: app.status, settings: app.repoSettings });
+		this.index = new IndexView({ collection: app.status, windowLayout: app.windowLayout, settings: app.repoSettings });
 		this.dsplitter = new SplitterView({ top: this.diff.$el, bottom: this.index.$el, key: "commitBar" });
 		this.dsplitter.$el.addClass("stage-splitter");
 		this.$el.append(this.dsplitter.el);

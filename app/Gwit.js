@@ -140,7 +140,7 @@ function parseDiff(diff)  {
 
 		while (i < lines.length) {
 			l = lines[i++];
-			let m = l.match(/(@@\s*-(\d+),(\d+)\s+\+(\d+),(\d+)\s*@@.*)/);
+			let m = l.match(/(@@\s*-(\d+),(\d+)\s+\+(\d+)(?:,(\d+))?\s*@@.*)/);
 			if (!m) throw new Error("invalid hunk header");
 			let hunk = {
 				header: m[1],
@@ -230,5 +230,64 @@ Gwit.prototype.getIndexFiles = function() {
 	return this.git("ls-files", "-z").then(function(out) {
 		if (!out) return [];
 		return out.substr(0, out.length - 1).split('\x00');
+	});
+};
+
+function StatusLine(line, next) {
+	this.indexStatus = line[0];
+	this.workingStatus = line[1];
+	this.path = line.substr(3);
+	if (this.indexStatus === "R")
+		this.fromPath = next;
+}
+
+StatusLine.prototype.isUnmerged = function() {
+	if (this.indexStatus === "U" || this.workingStatus === "U")
+		return true;
+	if (this.indexStatus === "D" && this.workingStatus === "D")
+		return true;
+	if (this.indexStatus === "A" && this.workingStatus === "A")
+		return true;
+	return false;
+};
+
+Gwit.prototype.getStatus = function() {
+	return this.git("status", "-z").then(function(out) {
+		let entries = [];
+		if (!out) return entries;
+
+		out = out.substr(0, out.length - 1).split('\x00');
+		while (out.length > 0) {
+			let line = out.shift();
+			let e = new StatusLine(line, out[0]);
+			if (e.indexStatus === 'R')
+				out.shift();
+			entries.push(e);
+		}
+
+		return entries;
+	});
+};
+
+Gwit.prototype.diffFileWorkingToIndex = function(file) {
+	return this.git("diff", file).then(function(out) {
+		let d = parseDiff(out);
+		return d && d.patches && d.patches[0];
+	});
+};
+
+Gwit.prototype.diffFileIndexToHead = function(file, from) {
+	let args = from ? ["diff", "HEAD", "-M01", "--cached", "--", from, file ] : ["diff", "HEAD", "--cached", "--", file];
+	return this.git(args).then(function(out) {
+		let d = parseDiff(out);
+		return d && d.patches && d.patches[0];
+	});
+};
+
+Gwit.prototype.diffFileUntracked = function(file) {
+	return this.gitRc("diff", "--", "/dev/null", file).then(function(r) {
+		console.log("whatever:\n" + r.out);
+		let d = parseDiff(r.out);
+		return d && d.patches && d.patches[0];
 	});
 };

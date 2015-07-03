@@ -4,20 +4,17 @@ let $ = require('jquery');
 let Backbone = require("backbone");
 let filesListHbs = require('./files-list');
 let commitMessageHbs = require('./commit-message');
-let app = require('./app');
-
-function patchPath(patch) {
-	return patch.newFile || patch.oldFile;
-}
 
 let MultiFilesView = Backbone.View.extend({
 
-	initialize: function() {
+	initialize: function(opt) {
+		this.settings = opt.settings;
 		this.listenTo(this.collection, "all", this.render);
-		this.listenTo(app.repoSettings, "change:focusFiles", this.setSelected);
+		this.listenTo(this.settings, "change:focusFiles", this.setSelected);
 		this.el.classList.add("multi-file-view");
 		this.focus = -1;
 		this.origin = -1;
+		this.filter = this.filter.bind(this);
 		return this.render();
 	},
 
@@ -52,16 +49,16 @@ let MultiFilesView = Backbone.View.extend({
 			let f = [], a = {};
 			for (let i = Math.min(n, this.origin); i <= Math.max(n, this.origin); i += 1) {
 				let r = this.collection.get(items[i].id);
-				f.push(patchPath(r.get('patch')));
+				f.push(r.get('path'));
 			}
 			a[this.key] = f;
-			app.repoSettings.set("focusFiles", a);
+			this.settings.set("focusFiles", a);
 		}
 		else {
 			this.origin = -1;
 			let r = this.collection.get(items[this.focus].id), a = {};
-			a[this.key] = [ patchPath(r.get('patch')) ];
-			app.repoSettings.set("focusFiles", a);
+			a[this.key] = [ r.get('path') ];
+			this.settings.set("focusFiles", a);
 		}
 	},
 
@@ -72,9 +69,9 @@ let MultiFilesView = Backbone.View.extend({
 		this.focus = $(ev.currentTarget).index();
 
 		let r = this.collection.get(ev.currentTarget.id);
-		let path = patchPath(r.get("patch"));
+		let path = r.get('path');
 
-		let a = app.repoSettings.get("focusFiles");
+		let a = this.settings.get("focusFiles");
 		let selected = (a && a[this.key]) || [];
 
 		if (ev.ctrlKey) {
@@ -91,16 +88,16 @@ let MultiFilesView = Backbone.View.extend({
 
 		a = {};
 		a[this.key] = selected;
-		app.repoSettings.set("focusFiles", a);
+		this.settings.set("focusFiles", a);
 	},
 
 	setSelected: function() {
 		let c = this.collection;
-		let a = app.repoSettings.get("focusFiles");
+		let a = this.settings.get("focusFiles");
 		let selected = (a && a[this.key]) || [];
 		this.$(".file-item").each(function() {
 			let r = c.get(this.id);
-			let on = selected.indexOf(patchPath(r.get("patch"))) !== -1;
+			let on = selected.indexOf(r.get('path')) !== -1;
 			if (on) this.classList.add("selected");
 			else this.classList.remove("selected");
 		});
@@ -108,10 +105,10 @@ let MultiFilesView = Backbone.View.extend({
 
 	record: function() {
 		return {
-			files: this.collection.map(function(r) {
+			files: this.collection.filter(this.filter).map(function(r) {
 				return {
 					id: r.cid,
-					path: patchPath(r.get("patch")),
+					path: r.get('path'),
 				};
 			}),
 		};
@@ -132,12 +129,14 @@ let WorkingFilesView = MultiFilesView.extend({
 	className: "working-files",
 	key: "unstaged",
 	title: "Unstaged Files",
+	filter: function(r) { return r.get('workingStatus') !== ' '; },
 });
 
 let IndexFilesView = MultiFilesView.extend({
 	className: "index-files",
 	title: "Staged Files",
 	key: "staged",
+	filter: function(r) { let s = r.get('indexStatus'); return s !== ' ' && s !== '?'; },
 });
 
 let CommitMessageView = Backbone.View.extend({
@@ -162,12 +161,13 @@ let upEvents = [ 'mouseup', 'touchend', 'touchleave', 'touchcancel' ];
 let IndexView = Backbone.View.extend({
 	className: 'index-view',
 
-	initialize: function() {
-		this.working = new WorkingFilesView({ collection: app.patches });
+	initialize: function(opt) {
+		this.windowLayout = opt.windowLayout;
+		this.working = new WorkingFilesView({ collection: this.collection, settings: opt.settings });
 		this.lbar = $('<div class="hsplitter-bar"><div class="gap"/><div class="splitter-dot"/><div class="gap"/></div>');
 		this.commit = new CommitMessageView();
 		this.rbar = $('<div class="hsplitter-bar"><div class="gap"/><div class="splitter-dot"/><div class="gap"/></div>');
-		this.index = new IndexFilesView({ collection: app.indexPatches });
+		this.index = new IndexFilesView({ collection: this.collection, settings: opt.settings });
 
 		this.dragKey = [ 'workingList', 'stageList' ];
 		this.dragSign = [ +1, -1 ];
@@ -177,8 +177,8 @@ let IndexView = Backbone.View.extend({
 
 		this.loadSize();
 
-		this.listenTo(app.windowLayout, "change:" + this.dragKey[0], this.loadSize);
-		this.listenTo(app.windowLayout, "change:" + this.dragKey[1], this.loadSize);
+		this.listenTo(this.windowLayout, "change:" + this.dragKey[0], this.loadSize);
+		this.listenTo(this.windowLayout, "change:" + this.dragKey[1], this.loadSize);
 
 		this.$el.append(this.working.$el);
 		this.$el.append(this.lbar);
@@ -189,8 +189,8 @@ let IndexView = Backbone.View.extend({
 
 	loadSize: function() {
 		this.dragSize = [
-			parseFloat(app.windowLayout.get(this.dragKey[0])),
-			parseFloat(app.windowLayout.get(this.dragKey[1]))
+			parseFloat(this.windowLayout.get(this.dragKey[0])),
+			parseFloat(this.windowLayout.get(this.dragKey[1]))
 		];
 		if (isNaN(this.dragSize[0]) || this.dragSize[0] < 10 || this.dragSize[0] > 70)
 			this.dragSize[0] = 24;
@@ -235,8 +235,8 @@ let IndexView = Backbone.View.extend({
 		this.dragBars[this.dragIndex].removeClass("dragged");
 		$(document.documentElement).css("cursor", "");
 
-		app.windowLayout.set(this.dragKey[this.dragIndex], this.dragSize[this.dragIndex]);
-		app.windowLayout.save();
+		this.windowLayout.set(this.dragKey[this.dragIndex], this.dragSize[this.dragIndex]);
+		this.windowLayout.save();
 
 		this.dragIndex = -1;
 	},
