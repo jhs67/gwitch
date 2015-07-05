@@ -84,6 +84,13 @@ function loadStatus() {
 						return;
 					}));
 			}
+			else if (status.unmerged) {
+				tasks.push(app.repo.diffFileWorkingToHead(status.path)
+					.then(function(patch) {
+						status.workingPatch = patch;
+						return;
+					}));
+			}
 			else if (status.workingStatus !== ' ') {
 				tasks.push(app.repo.diffFileWorkingToIndex(status.path)
 					.then(function(patch) {
@@ -91,7 +98,7 @@ function loadStatus() {
 						return;
 					}));
 			}
-			if (status.indexStatus !== ' ') {
+			if (status.indexStatus !== ' ' && !status.unmerged) {
 				tasks.push(app.repo.diffFileIndexToHead(status.path, status.fromPath)
 					.then(function(patch) {
 						status.indexPatch = patch;

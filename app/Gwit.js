@@ -233,23 +233,25 @@ Gwit.prototype.getIndexFiles = function() {
 	});
 };
 
-function StatusLine(line, next) {
-	this.indexStatus = line[0];
-	this.workingStatus = line[1];
-	this.path = line.substr(3);
-	if (this.indexStatus === "R")
-		this.fromPath = next;
-}
-
-StatusLine.prototype.isUnmerged = function() {
-	if (this.indexStatus === "U" || this.workingStatus === "U")
+function isUnmerged(indexStatus, workingStatus) {
+	if (indexStatus === "U" || workingStatus === "U")
 		return true;
-	if (this.indexStatus === "D" && this.workingStatus === "D")
+	if (indexStatus === "D" && workingStatus === "D")
 		return true;
-	if (this.indexStatus === "A" && this.workingStatus === "A")
+	if (indexStatus === "A" && workingStatus === "A")
 		return true;
 	return false;
-};
+}
+
+function statusLine(line, next) {
+	return {
+		indexStatus : line[0],
+		workingStatus : line[1],
+		path : line.substr(3),
+		unmerged: isUnmerged(line[0], line[1]),
+		fromPath: line[0] === "R" ? next : undefined,
+	};
+}
 
 Gwit.prototype.getStatus = function() {
 	return this.git("status", "-z").then(function(out) {
@@ -259,7 +261,7 @@ Gwit.prototype.getStatus = function() {
 		out = out.substr(0, out.length - 1).split('\x00');
 		while (out.length > 0) {
 			let line = out.shift();
-			let e = new StatusLine(line, out[0]);
+			let e = statusLine(line, out[0]);
 			if (e.indexStatus === 'R')
 				out.shift();
 			entries.push(e);
@@ -270,7 +272,14 @@ Gwit.prototype.getStatus = function() {
 };
 
 Gwit.prototype.diffFileWorkingToIndex = function(file) {
-	return this.git("diff", file).then(function(out) {
+	return this.git("diff", "--", file).then(function(out) {
+		let d = parseDiff(out);
+		return d && d.patches && d.patches[0];
+	});
+};
+
+Gwit.prototype.diffFileWorkingToHead = function(file) {
+	return this.git("diff", "HEAD", "--", file).then(function(out) {
 		let d = parseDiff(out);
 		return d && d.patches && d.patches[0];
 	});
@@ -285,8 +294,7 @@ Gwit.prototype.diffFileIndexToHead = function(file, from) {
 };
 
 Gwit.prototype.diffFileUntracked = function(file) {
-	return this.gitRc("diff", "--", "/dev/null", file).then(function(r) {
-		console.log("whatever:\n" + r.out);
+	return this.gitRc("diff", "--no-index", "--", "/dev/null", file).then(function(r) {
 		let d = parseDiff(r.out);
 		return d && d.patches && d.patches[0];
 	});

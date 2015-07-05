@@ -260,10 +260,58 @@ html, body {
 	vertical-align: middle;
 }
 
-.file-list path {
+.file-list .status-M path {
 	fill: #00df49;
 	stroke-width: 1px;
 	stroke: #086a2d;
+}
+
+.file-list .status-U path {
+	fill: #94e000;
+	stroke-width: 1px;
+	stroke: #628622;
+}
+
+.file-list .status-D path {
+	fill: #e01a00;
+	stroke-width: 1px;
+	stroke: #863022;
+}
+
+.file-list .status-D.unmerged path {
+	fill: #dd00e0;
+	stroke-width: 1px;
+	stroke: #862285;
+}
+
+.file-list .status-A path {
+	fill: #0054e0;
+	stroke-width: 1px;
+	stroke: #224586;
+}
+
+.file-list .status-A.unmerged path {
+	fill: #00e0d3;
+	stroke-width: 1px;
+	stroke: #228683;
+}
+
+.file-list .status-R path {
+	fill: #b800e0;
+	stroke-width: 1px;
+	stroke: #772286;
+}
+
+.file-list .status-C path {
+	fill: #b800e0;
+	stroke-width: 1px;
+	stroke: #772286;
+}
+
+.file-list path {
+	fill: #000000;
+	stroke-width: 1px;
+	stroke: #080808;
 }
 
 .file-list path.flap {

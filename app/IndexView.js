@@ -104,11 +104,14 @@ let MultiFilesView = Backbone.View.extend({
 	},
 
 	record: function() {
+		let statusKey = this.statusKey;
 		return {
 			files: this.collection.filter(this.filter).map(function(r) {
 				return {
 					id: r.cid,
 					path: r.get('path'),
+					status: r.get(statusKey),
+					unmerged: r.get('unmerged'),
 				};
 			}),
 		};
@@ -129,6 +132,7 @@ let WorkingFilesView = MultiFilesView.extend({
 	className: "working-files",
 	key: "unstaged",
 	title: "Unstaged Files",
+	statusKey: "workingStatus",
 	filter: function(r) { return r.get('workingStatus') !== ' '; },
 });
 
@@ -136,6 +140,7 @@ let IndexFilesView = MultiFilesView.extend({
 	className: "index-files",
 	title: "Staged Files",
 	key: "staged",
+	statusKey: "indexStatus",
 	filter: function(r) { let s = r.get('indexStatus'); return s !== ' ' && s !== '?'; },
 });
 
