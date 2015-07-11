@@ -25,13 +25,6 @@ var graph = require('./graph');
 var Gwit = require('./Gwit');
 
 
-var BranchModel = Backbone.Model.extend({
-});
-
-var BranchCollection = Backbone.Collection.extend({
-	model: BranchModel,
-});
-
 var CommitModel = Backbone.Model.extend({
 });
 
@@ -64,7 +57,7 @@ var app = module.exports;
 
 app.repo = null;
 app.commits = new CommitCollection();
-app.branches = new BranchCollection();
+app.refs = new Backbone.Collection();
 app.workingCopy = new WorkingCopyModel();
 app.repoSettings = new RepoSettingsModel();
 app.submodules = new Backbone.Collection();
@@ -159,11 +152,12 @@ app.close = function() {
 	app.commits.reset([]);
 	app.status.reset([]);
 	app.focusPatch.reset([]);
-	app.branches.reset([]);
+	app.refs.reset([]);
 	app.submodules.reset([]);
 	app.repoSettings.unset('focusCommit');
 	app.repoSettings.unset('activeBranch');
 	app.repoSettings.unset('focusFiles');
+	app.repoSettings.unset('hiddenRemotes');
 	app.workingCopy.unset('path');
 	app.workingCopy.unset('name');
 	app.workingCopy.unset('gitdir');
@@ -206,15 +200,14 @@ function getCommits(repo, refs) {
 function loadCommits() {
 	return Promise.all([
 		app.repo.getRefs().then(function(refs) {
-			var branches = refs.filter(function(ref) { return ref.type === 'heads'; });
-			app.branches.add(branches);
+			app.refs.add(refs);
 		}),
 		app.repo.head().then(function(ref) {
 			app.workingCopy.set('head', ref);
 		}),
 	])
 	.then(function() {
-		return getCommits(app.repo, app.branches.map(function(b) { return b.get('refName'); })).then(function(commits) {
+		return getCommits(app.repo, app.refs.map(function(b) { return b.get('refName'); })).then(function(commits) {
 			app.commits.reset(commits);
 			let focusCommit = app.repoSettings.get('focusCommit');
 			if (focusCommit && !app.commits.get(focusCommit))
@@ -320,7 +313,7 @@ var ClientView = Backbone.View.extend({
 	className: 'client-view',
 
 	initialize: function() {
-		this.refs = new RefsView();
+		this.refs = new RefsView({ collection: app.refs, workingCopy: app.workingCopy, repoSettings: app.repoSettings });
 		this.$el.append(this.refs.el);
 
 		this.commit = new CommitView();

@@ -145,12 +145,55 @@ html, body {
 	margin-left: 0.5rem;
 }
 
+.refs-view .remote-header svg {
+	height: 1em;
+	vertical-align: middle;
+}
+
+.refs-view .remote-section.hidden .close-arrow {
+	display: inherit;
+}
+
+.refs-view .remote-section.hidden .open-arrow {
+	display: none;
+}
+
+.refs-view .remote-section .close-arrow {
+	display: none;
+}
+
+.refs-view .remote-section.hidden .remote-line {
+	display: none;
+}
+
+.refs-view .remote-name {
+	flex: 0 0 auto;
+	background-image: url(assets/cloud.svg);
+	background-position: left center;
+	background-repeat: no-repeat;
+	padding-left: 1.5em;
+}
+
+.refs-view .remote-branch {
+	flex: 0 0 auto;
+	background-image: url(assets/branch.svg);
+	background-position: left center;
+	background-repeat: no-repeat;
+	padding-left: 1.5em;
+	margin-left: 1.0rem;
+}
+
 .refs-view .active-ref .active-badge {
 	flex: 1 1 auto;
 	background-image: url(assets/active.svg);
 	background-position: right center;
 	background-repeat: no-repeat;
 	min-width: 2em;
+}
+
+.refs-view .remote-header {
+	display: flex;
+	flex-flow: row nowrap;
 }
 
 .refs-view .branch-line {
@@ -172,7 +215,12 @@ html, body {
 	background-color: #ccd7da;
 }
 
-.refs-view .stage-line, .refs-view .branch-line {
+.refs-view .remote-line {
+	display: flex;
+	flex-flow: row nowrap;
+}
+
+.refs-view .stage-line, .refs-view .branch-line, .refs-view .remote-line, .refs-view .remote-header {
 	padding: 2px;
 }
 

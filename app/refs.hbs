@@ -8,17 +8,28 @@
 <div class="branches section">
 	<div class="title">Branches</div>
 	{{#each branches}}
-	{{#if isRemote}}
-	{{else}}
-	<div class="branch-line">
+	<div class="branch-line" id="{{idName}}">
 		<div class="local-branch">{{name}}</div>
 		<div class="active-badge" />
 	</div>
-	{{/if}}
 	{{/each}}
 </div>
 <div class="remotes section">
 	<div class="remote-title title">Remotes</div>
+	{{#each remotes}}
+	<div class="remote-section" id="{{idName}}">
+		<div class="remote-header">
+			<svg class="close-arrow" viewBox="0 0 24 24"><path d="M 5 4 l 14 8 -14 8 z" /></svg>
+			<svg class="open-arrow" viewBox="0 0 24 24"><path d="M 4 5 l 16 0 -8 14 z" /></svg>
+			<div class="remote-name">{{rname}}</div>
+		</div>
+		{{#each branches}}
+		<div class="remote-line" id="{{idName}}">
+			<div class="remote-branch">{{name}}</div>
+		</div>
+		{{/each}}
+	</div>
+	{{/each}}
 </div>
 <div class="tags section">
 	<div class="tags-title title">Tags</div>
