@@ -50,7 +50,7 @@ Gwit.prototype.gitRc = function() {
 
 Gwit.prototype.getRefs = function() {
 	return this.git("show-ref").then(function(refout) {
-		return refout.split('\n').map(function(line) {
+		return refout.substr(0, refout.length - 1).split('\n').map(function(line) {
 			let split = line.indexOf(' ');
 			let hash = line.substr(0, split);
 			let refName = line.substr(split + 1);
