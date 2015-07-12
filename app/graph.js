@@ -1,5 +1,6 @@
 "use strict";
 
+let assert = require('assert');
 
 exports.createGraph = createGraph;
 function createGraph(byId, heads) {
@@ -21,7 +22,7 @@ function createGraph(byId, heads) {
 
 	heads.sort(ordering);
 	while (heads.length > 0) {
-		var c = heads.shift();
+		let c = heads.shift();
 		if (c.index !== -1) continue;
 
 		search += 1;
@@ -94,28 +95,27 @@ function createGraph(byId, heads) {
 				return d;
 	}
 
+	function isStrandDepthOk(strand, depth) {
+		for (let i = 0; i < strand.length; i += 1) {
+			let c = strand[i];
+			if (c.graph[depth])
+				return false;
+			if (i + 1 < strand.length && !isPassableLane(c, strand[i + 1], depth))
+				return false;
+		}
+		return true;
+	}
+
 	function getStrandDepth(c, strand) {
-		var p, depth = 0;
-
-		while ((p = c)) {
-			strand.push(p);
-			for (let i in p.children) {
-				let k = p.children[i];
-				if (graphDepth(k.graph) !== -1)
-					depth = findPassableLane(k, p, depth);
-			}
-
-			for (let i in p.parents) {
-				let k = p.parents[i];
-				if (graphDepth(k.graph) !== -1)
-					depth = findPassableLane(p, k, depth);
-			}
-
-			c = chooseStrandParent(p);
-			if (c) depth = findPassableLane(p, c, depth);
+		while (c) {
+			strand.push(c);
+			c = chooseStrandParent(c);
 		}
 
-		return depth;
+		for (let depth = 0; ; depth += 1) {
+			if (isStrandDepthOk(strand, depth))
+				return depth;
+		}
 	}
 
 	function branchUp(graph, from, to) {
@@ -160,7 +160,7 @@ function createGraph(byId, heads) {
 		/*jslint bitwise: true */
 
 		// Set the dots.
-		strand.forEach(function(p) { p.graph[depth] = 64; });
+		strand.forEach(function(p) { assert(!p.graph[depth]); p.graph[depth] = 64; });
 
 		strand.forEach(function(p) {
 			// Draw a connection to each child.
@@ -190,8 +190,6 @@ function createGraph(byId, heads) {
 				for (let i = p.index + 1; i < k.index; i += 1)
 					byOrder[i].graph[ldepth] |= 8;
 			}
-
-			c = chooseStrandParent(p);
 		});
 	}
 
