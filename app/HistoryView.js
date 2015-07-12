@@ -186,8 +186,11 @@ var HistoryView = Backbone.View.extend({
 		if (this.oldFocus)
 			this.$("#" + this.oldFocus).removeClass('focus');
 		this.oldFocus = this.repoSettings.get('focusCommit');
-		if (this.oldFocus)
-			this.$("#" + this.oldFocus).addClass('focus');
+		if (this.oldFocus) {
+			let e = this.$("#" + this.oldFocus);
+			e.addClass('focus');
+			if (e[0]) e[0].scrollIntoView();
+		}
 	},
 
 	render: function() {

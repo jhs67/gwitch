@@ -32,6 +32,10 @@ var RefsView = Backbone.View.extend({
 
 	clickBranch: function(ev) {
 		this.repoSettings.set({ "activeBranch" : pathToId.invert(ev.currentTarget.id) });
+		let r = this.collection.get(ev.currentTarget.id);
+		if (r) {
+			this.repoSettings.set('focusCommit', r.get('hash'));
+		}
 	},
 
 	clickRecentList: function(ev) {

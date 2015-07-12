@@ -200,7 +200,7 @@ function getCommits(repo, refs) {
 function loadCommits() {
 	return Promise.all([
 		app.repo.getRefs().then(function(refs) {
-			app.refs.add(refs);
+			app.refs.add(refs.map(function(r) { r.id = pathToId(r.refName); return r; }));
 		}),
 		app.repo.head().then(function(ref) {
 			app.workingCopy.set('head', ref);
