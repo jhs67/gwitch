@@ -57,6 +57,7 @@ Gwit.prototype.getRefs = function() {
 			let names = refName.split('/');
 			let type = (names.shift(), names.shift());
 			let name = names.join('/');
+			if (!name) name = type;
 			return {
 				hash: hash,
 				refName: refName,

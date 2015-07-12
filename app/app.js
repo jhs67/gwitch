@@ -317,7 +317,7 @@ var ClientView = Backbone.View.extend({
 		this.$el.append(this.refs.el);
 
 		this.commit = new CommitView();
-		this.history = new HistoryView({ collection: app.commits });
+		this.history = new HistoryView({ collection: app.commits, repoSettings: app.repoSettings, refs: app.refs });
 		this.hsplitter = new SplitterView({ top: this.history.$el, bottom: this.commit.$el, key: "historyBar" });
 		this.hsplitter.$el.addClass("history-splitter");
 		this.$el.append(this.hsplitter.el);

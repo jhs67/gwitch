@@ -2,7 +2,6 @@
 
 var moment = require("moment");
 var Backbone = require("backbone");
-let app = require('./app');
 
 const pathSegs = [
 	"M 0,12 a 8,8 0 0 1 8,8 l 0,4",
@@ -138,7 +137,7 @@ function makeProtoRow() {
 
 let HistoryRow = makeProtoRow();
 
-function makeRow(sha, graph, summary, author, date) {
+function makeRow(sha, graph, summary, author, date, refs) {
 	let tr = HistoryRow.cloneNode(true);
 	tr.setAttribute("id", sha);
 
@@ -147,6 +146,13 @@ function makeRow(sha, graph, summary, author, date) {
 	let td = tr.childNodes[1].firstChild;
 	graph.forEach(function(g) {
 		td.insertBefore(GraphGlyphs[g].cloneNode(true), td.lastChild);
+	});
+	refs.forEach(function(g) {
+		let s = document.createElement('span');
+		s.classList.add('commit-ref');
+		s.classList.add(g.type);
+		s.appendChild(document.createTextNode(g.name));
+		td.insertBefore(s, td.lastChild);
 	});
 	td.lastChild.appendChild(document.createTextNode(summary));
 
@@ -160,9 +166,11 @@ function makeRow(sha, graph, summary, author, date) {
 var HistoryView = Backbone.View.extend({
 	className: 'history-view',
 
-	initialize: function() {
+	initialize: function(opts) {
+		this.refs = opts.refs;
+		this.repoSettings = opts.repoSettings;
 		this.listenTo(this.collection, "all", this.render);
-		this.listenTo(app.repoSettings, "change:focusCommit", this.setFocus);
+		this.listenTo(this.repoSettings, "change:focusCommit", this.setFocus);
 		this.render();
 	},
 
@@ -171,13 +179,13 @@ var HistoryView = Backbone.View.extend({
 	},
 
 	clickRow: function(ev) {
-		app.repoSettings.set('focusCommit', ev.currentTarget.id);
+		this.repoSettings.set('focusCommit', ev.currentTarget.id);
 	},
 
 	setFocus: function() {
 		if (this.oldFocus)
 			this.$("#" + this.oldFocus).removeClass('focus');
-		this.oldFocus = app.repoSettings.get('focusCommit');
+		this.oldFocus = this.repoSettings.get('focusCommit');
 		if (this.oldFocus)
 			this.$("#" + this.oldFocus).addClass('focus');
 	},
@@ -187,10 +195,16 @@ var HistoryView = Backbone.View.extend({
 		this.el.appendChild(HistoryHeader.cloneNode(true));
 
 		// Create a row for each commit
+		let refs = this.refs.toJSON();
 		let table = document.createElement('table');
 		this.collection.map(function(c) {
 			let commit = c.get('commit');
-			let tr = makeRow(c.id, c.get('graph'), commit.subject, commit.authorName, new Date(commit.authorStamp * 1000));
+			let r = refs.filter(function(r) {
+				return !(r.type === "remotes" && r.name.split('/').pop() === "HEAD") && r.hash === c.id;
+			});
+
+			let tr = makeRow(c.id, c.get('graph'), commit.subject, commit.authorName,
+				new Date(commit.authorStamp * 1000), r);
 			table.appendChild(tr);
 			return tr;
 		});

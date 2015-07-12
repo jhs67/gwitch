@@ -477,7 +477,7 @@ html, body {
 }
 
 .history-view .commit-line span {
-	padding-left: 4px;
+	margin-left: 4px;
 }
 
 .history-view .wrapper tr.focus {
@@ -534,6 +534,29 @@ html, body {
 	fill: none;
 	stroke-width: 2px;
 	stroke: #ee2e2b;
+}
+
+.history-view .commit-ref {
+	padding-left: 4px;
+	padding-right: 4px;
+	border-style: solid;
+	border-width: 0px;
+	border-radius: 5px;
+	background-color: #fefb57;
+	color: black;
+	box-shadow: 0.5px 0.5px 1px 1px #555;
+}
+
+.history-view .commit-ref.heads {
+	background-color: #fdb672;
+}
+
+.history-view .commit-ref.remotes {
+	background-color: #b3daf0;
+}
+
+.history-view .commit-ref.tags {
+	background-color: #fcee94;
 }
 
 .commit-view {
