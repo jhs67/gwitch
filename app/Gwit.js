@@ -1,6 +1,7 @@
 "use strict";
 
 let child_process = require('child_process');
+let path = require('path');
 
 module.exports = Gwit;
 function Gwit() {
@@ -299,4 +300,16 @@ Gwit.prototype.diffFileUntracked = function(file) {
 		let d = parseDiff(r.out);
 		return d && d.patches && d.patches[0];
 	});
+};
+
+Gwit.prototype.stageFile = function(file) {
+	return this.git("add", file);
+};
+
+Gwit.prototype.unstageFile = function(file) {
+	return this.git("reset", "HEAD", file);
+};
+
+Gwit.prototype.discardChanges = function(file) {
+	return this.git("checkout", "--", file);
 };

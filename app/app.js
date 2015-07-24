@@ -324,7 +324,7 @@ var ClientView = Backbone.View.extend({
 		this.$el.append(this.hsplitter.el);
 
 		this.diff = new PickView({ collection: app.status, settings: app.repoSettings });
-		this.index = new IndexView({ collection: app.status, windowLayout: app.windowLayout, settings: app.repoSettings });
+		this.index = new IndexView({ collection: app.status, windowLayout: app.windowLayout, settings: app.repoSettings, app: app });
 		this.dsplitter = new SplitterView({ top: this.diff.$el, bottom: this.index.$el, key: "commitBar" });
 		this.dsplitter.$el.addClass("stage-splitter");
 		this.$el.append(this.dsplitter.el);

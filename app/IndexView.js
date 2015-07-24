@@ -4,10 +4,17 @@ let $ = require('jquery');
 let Backbone = require("backbone");
 let filesListHbs = require('./files-list');
 let commitMessageHbs = require('./commit-message');
+var pathToId = require('./pathToId');
+let remote = require('remote');
+let Menu = remote.require('menu');
+let dialog = remote.require('dialog');
+let shell = require('./shell');
+let path = require('path');
 
 let MultiFilesView = Backbone.View.extend({
 
 	initialize: function(opt) {
+		this.app = opt.app;
 		this.settings = opt.settings;
 		this.listenTo(this.collection, "all", this.render);
 		this.listenTo(this.settings, "change:focusFiles", this.setSelected);
@@ -21,6 +28,49 @@ let MultiFilesView = Backbone.View.extend({
 	events: {
 		"click .file-item": "onClick",
 		'keydown .file-list': 'onKeyPress',
+		'contextmenu .file-item': 'onContext',
+	},
+
+	onContext: function(ev) {
+		ev.stopPropagation();
+		ev.preventDefault();
+
+		let r = this.collection.get(ev.currentTarget.id);
+		let path = r && r.get("path");
+		if (!path) return;
+
+		let a = this.settings.get("focusFiles");
+		let selected = (a && a[this.key]) || [];
+
+		let i = selected.indexOf(path);
+		if (i === -1) {
+			a = {};
+			selected = [ path ];
+			a[this.key] = selected;
+			this.settings.set("focusFiles", a);
+		}
+
+		let menu = Menu.buildFromTemplate(this.contextMenu(a[this.keys]));
+		menu.popup(remote.getCurrentWindow());
+	},
+
+	onOpen: function() {
+		let repodir = this.app.repo.repodir;
+		let a = this.settings.get("focusFiles");
+		let selected = (a && a[this.key]) || [];
+		selected.forEach(function(f) {
+
+			shell.openFile(f, repodir);
+		});
+	},
+
+	onShow: function() {
+		let repodir = this.app.repo.repodir;
+		let a = this.settings.get("focusFiles");
+		let selected = (a && a[this.key]) || [];
+		selected.forEach(function(f) {
+			shell.revealFile(f, repodir);
+		});
 	},
 
 	onKeyPress: function(ev) {
@@ -134,6 +184,62 @@ let WorkingFilesView = MultiFilesView.extend({
 	title: "Unstaged Files",
 	statusKey: "workingStatus",
 	filter: function(r) { return r.get('workingStatus') !== ' '; },
+
+	onStage: function() {
+		let app = this.app;
+		let a = this.settings.get("focusFiles");
+		let selected = (a && a[this.key]) || [];
+		selected.forEach(function(f) {
+			app.repo.stageFile(f);
+		});
+	},
+
+	onDiscard: function() {
+		let app = this.app;
+		let repodir = app.repo.repodir;
+		let a = this.settings.get("focusFiles");
+		let selected = (a && a[this.key]) || [];
+		let detail = selected.join(", ");
+		if (detail.length > 80) detail = detail.substr(0, 77) + "...";
+		let r = dialog.showMessageBox(remote.getCurrentWindow(), {
+			type: "warning", buttons: [ "Cancel", "Continue" ],
+			title: "Discard Changes", message: "Discard Changes? This can not be undone.",
+			detail: detail,
+		});
+		console.log("hmff " + r);
+		if (!r) return;
+
+		let status = this.collection;
+		selected.forEach(function(f) {
+			let r = status.get(pathToId(f));
+			console.log("what... " + f + " : " + r.get('workingStatus'));
+			if (r.get('workingStatus') === '?')
+				shell.deleteFile(path.resolve(repodir, f));
+			else
+				app.repo.discardChanges(f);
+		});
+	},
+
+	contextMenu: function(files) {
+		return [
+			{
+				label: "Stage",
+				click: this.onStage.bind(this),
+			},
+			{
+				label: "Open",
+				click: this.onOpen.bind(this),
+			},
+			{
+				label: "Show",
+				click: this.onShow.bind(this),
+			},
+			{
+				label: "Discard",
+				click: this.onDiscard.bind(this),
+			},
+		];
+	},
 });
 
 let IndexFilesView = MultiFilesView.extend({
@@ -142,6 +248,32 @@ let IndexFilesView = MultiFilesView.extend({
 	key: "staged",
 	statusKey: "indexStatus",
 	filter: function(r) { let s = r.get('indexStatus'); return s !== ' ' && s !== '?'; },
+
+	onUnstage: function() {
+		let app = this.app;
+		let a = this.settings.get("focusFiles");
+		let selected = (a && a[this.key]) || [];
+		selected.forEach(function(f) {
+			app.repo.unstageFile(f);
+		});
+	},
+
+	contextMenu: function(files) {
+		return [
+			{
+				label: "Unstage",
+				click: this.onUnstage.bind(this),
+			},
+			{
+				label: "Open",
+				click: this.onOpen.bind(this),
+			},
+			{
+				label: "Show",
+				click: this.onShow.bind(this),
+			}
+		];
+	},
 });
 
 let CommitMessageView = Backbone.View.extend({
@@ -168,11 +300,11 @@ let IndexView = Backbone.View.extend({
 
 	initialize: function(opt) {
 		this.windowLayout = opt.windowLayout;
-		this.working = new WorkingFilesView({ collection: this.collection, settings: opt.settings });
+		this.working = new WorkingFilesView({ collection: this.collection, settings: opt.settings, app: opt.app });
 		this.lbar = $('<div class="hsplitter-bar"><div class="gap"/><div class="splitter-dot"/><div class="gap"/></div>');
 		this.commit = new CommitMessageView();
 		this.rbar = $('<div class="hsplitter-bar"><div class="gap"/><div class="splitter-dot"/><div class="gap"/></div>');
-		this.index = new IndexFilesView({ collection: this.collection, settings: opt.settings });
+		this.index = new IndexFilesView({ collection: this.collection, settings: opt.settings, app: opt.app });
 
 		this.dragKey = [ 'workingList', 'stageList' ];
 		this.dragSign = [ +1, -1 ];
