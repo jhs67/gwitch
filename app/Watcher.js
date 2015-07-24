@@ -12,14 +12,23 @@ Watcher.prototype.add = function(p) {
 	let watcher = this;
 	if (watcher.files.has(p))
 		return;
+	return setWatch();
 
-	try {
-		watcher.files.set(p, fs.watch(p, { persistent: false }, function(type, path) {
-			watcher.handler(type, p, path);
-		}));
-	}
-	catch(e) {
-		return false;
+	function setWatch() {
+		try {
+			console.log("watch " + p);
+			watcher.files.set(p, fs.watch(p, { persistent: false }, function(type, path) {
+				watcher.handler(type, p, path);
+				if (type === 'rename') {
+					watcher.files.get(p).close();
+					setWatch();
+				}
+			}));
+			return true;
+		}
+		catch(e) {
+			return false;
+		}
 	}
 };
 

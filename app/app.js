@@ -250,6 +250,7 @@ function loadWatches() {
 		let root = app.workingCopy.get('path');
 		files.forEach(function(f) { app.workingWatch.add(path.join(root, f)); });
 		app.workingWatch.add(root);
+		app.workingWatch.add(path.resolve(root, app.workingCopy.get('gitdir'), "index"));
 
 		app.workingWalk = walkTree(root, function(records) {
 			records = records.filter(function(rec) {
