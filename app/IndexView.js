@@ -206,13 +206,11 @@ let WorkingFilesView = MultiFilesView.extend({
 			title: "Discard Changes", message: "Discard Changes? This can not be undone.",
 			detail: detail,
 		});
-		console.log("hmff " + r);
 		if (!r) return;
 
 		let status = this.collection;
 		selected.forEach(function(f) {
 			let r = status.get(pathToId(f));
-			console.log("what... " + f + " : " + r.get('workingStatus'));
 			if (r.get('workingStatus') === '?')
 				shell.deleteFile(path.resolve(repodir, f));
 			else

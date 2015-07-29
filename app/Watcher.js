@@ -16,7 +16,6 @@ Watcher.prototype.add = function(p) {
 
 	function setWatch() {
 		try {
-			console.log("watch " + p);
 			watcher.files.set(p, fs.watch(p, { persistent: false }, function(type, path) {
 				watcher.handler(type, p, path);
 				if (type === 'rename') {
