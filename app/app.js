@@ -108,8 +108,11 @@ function loadStatus() {
 			});
 		}))
 		.then(function(stati) {
-			let a;
+			// Reset the status collection
+			app.status.reset(stati);
+
 			// Remove any focus files that don't exist.
+			let a;
 			let ff = app.repoSettings.get("focusFiles");
 			if (ff && ff.unstaged) {
 				let nf = ff.unstaged.filter(function(f) {
@@ -137,9 +140,6 @@ function loadStatus() {
 			if (a) {
 				app.repoSettings.set("focusFiles", a);
 			}
-
-			// Reset the status collection
-			app.status.reset(stati);
 		});
 	});
 }
