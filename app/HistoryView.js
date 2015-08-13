@@ -189,7 +189,16 @@ var HistoryView = Backbone.View.extend({
 		if (this.oldFocus) {
 			let e = this.$("#" + this.oldFocus);
 			e.addClass('focus');
-			if (e[0]) e[0].scrollIntoView();
+			if (e[0]) {
+				let s = this.$(".wrapper")[0];
+				let top = e[0].offsetTop, height = e[0].offsetHeight;
+				let stop = s.scrollTop, sheight = s.offsetHeight;
+				let itop = top - stop, ibot = itop + height - sheight;
+				if (itop < 0)
+					e[0].scrollIntoView();
+				else if (ibot > 0)
+					e[0].scrollIntoView(false);
+			}
 		}
 	},
 
