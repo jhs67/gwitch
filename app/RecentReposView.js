@@ -1,8 +1,8 @@
 "use strict";
 
-var ipc = require('ipc');
 var path = require('path');
 var Backbone = require("backbone");
+var ipcRenderer = require('electron').ipcRenderer;
 var $ = require('jquery');
 
 var recentReposHbs = require('./recent-repos.hbs');
@@ -20,12 +20,12 @@ var RecentReposView = Backbone.View.extend({
 	},
 
 	openOther: function(ev) {
-		ipc.send('open-other');
+		ipcRenderer.send('open-other');
 	},
 
 	openRecent: function(ev) {
 		var index = $(ev.currentTarget).index();
-		ipc.send('open-repo', this.collection[index]);
+		ipcRenderer.send('open-repo', this.collection[index]);
 	},
 
 	render: function() {

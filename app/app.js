@@ -5,7 +5,7 @@ require("handlebars");
 
 var $ = require('jquery');
 var Backbone = require("backbone");
-var ipc = require('ipc');
+var ipcRenderer = require('electron').ipcRenderer;
 
 var path = require("path");
 
@@ -356,7 +356,7 @@ var ClientView = Backbone.View.extend({
 var clientView = null;
 var recentView = null;
 
-ipc.on('open-repo', function(repo) {
+ipcRenderer.on('open-repo', function(emitter, repo) {
 	app.close();
 	app.open(repo);
 	if (recentView) {
@@ -371,7 +371,7 @@ ipc.on('open-repo', function(repo) {
 	}
 });
 
-ipc.on('recent', function(repoList) {
+ipcRenderer.on('recent', function(emitter, repoList) {
 	app.close();
 	if (clientView) {
 		clientView.remove();

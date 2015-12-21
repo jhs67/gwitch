@@ -1,14 +1,11 @@
 'use strict';
 
 const app = require('app');
-const ipc = require('ipc');
 const path = require("path");
 const Menu = require('menu');
+const ipcMain = require('electron').ipcMain;
 const BrowserWindow = require('browser-window');
 const dialog = require('dialog');
-
-// report crashes to the Electron project
-require('crash-reporter').start();
 
 app.on('window-all-closed', function () {
 	if (process.platform !== 'darwin') {
@@ -61,12 +58,12 @@ let menuTemplate = [
 	submenu: [
 	{
 		label: 'Reload',
-		accelerator: 'CmdOrCtrl+R',
-		//click: function() { BrowserWindow.getFocusedWindow().reloadIgnoringCache(); }
+		accelerator: 'CmdOrCtrl+G',
+		click: function() { BrowserWindow.getFocusedWindow().reloadIgnoringCache(); }
 	},
 	{
 		label: 'Toggle DevTools',
-		accelerator: 'Alt+CmdOrCtrl+I',
+		accelerator: 'CmdOrCtrl+Shift+J',
 		click: function() { BrowserWindow.getFocusedWindow().toggleDevTools(); }
 	}
 	]
@@ -82,8 +79,9 @@ function newWindowHandler(repo) {
 		height: 800,
 	});
 
-	window.loadUrl(`file://${__dirname}/index.html`);
+	window.loadURL(`file://${__dirname}/index.html`);
 	openWindows.set(window.id, window);
+	let id = window.id;
 
 	window.webContents.on('did-finish-load', function() {
 		if (repo)
@@ -94,7 +92,7 @@ function newWindowHandler(repo) {
 	});
 
 	window.on('closed', function () {
-		openWindows.delete(window.id);
+		openWindows.delete(id);
 	});
 }
 
@@ -124,7 +122,7 @@ app.on('ready', function () {
 	newWindowHandler();
 });
 
-ipc.on('open-other', function(ev) {
+ipcMain.on('open-other', function(ev) {
 	dialog.showOpenDialog({ title: "Open Repository", properties: [ "openDirectory" ] }, function(files) {
 		if (files) {
 			let f = files.shift();
@@ -142,13 +140,13 @@ ipc.on('open-other', function(ev) {
 	});
 });
 
-ipc.on('open-repo', function(ev, repo) {
+ipcMain.on('open-repo', function(ev, repo) {
 	let f = path.resolve(repo);
 	ev.sender.send('open-repo', f);
 	recentRepos.add(f);
 });
 
 
-ipc.on('open-recent', function(ev) {
+ipcMain.on('open-recent', function(ev) {
 	ev.sender.send('recent', recentRepos.repoList);
 });

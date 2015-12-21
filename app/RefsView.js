@@ -3,7 +3,7 @@
 var Backbone = require("backbone");
 var refsHbs = require('./refs.hbs');
 var pathToId = require('./pathToId');
-var ipc = require('ipc');
+var ipcRenderer = require('electron').ipcRenderer;
 
 var RefsView = Backbone.View.extend({
 	className: 'refs-view',
@@ -39,7 +39,7 @@ var RefsView = Backbone.View.extend({
 	},
 
 	clickRecentList: function(ev) {
-		ipc.send('open-recent');
+		ipcRenderer.send('open-recent');
 	},
 
 	clickRemoteHeader: function(ev) {
