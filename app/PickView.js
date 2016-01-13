@@ -1,7 +1,6 @@
 "use strict";
 
 var $ = require('jquery');
-var Backbone = require("backbone");
 var DiffView = require("./DiffView");
 
 var PickView = DiffView.extend({
@@ -83,36 +82,113 @@ var PickView = DiffView.extend({
 	},
 
 	buttonClick: function(ev) {
-		console.log("buttonClick");
+		var es = this.lines;
+		var total = "", index = 0;
+
+		let toadd = [];
+		let reverse = this.settings.get("focusFiles") && !this.settings.get("focusFiles").unstaged;
+		this.patches.forEach(function (patch) {
+			var noff = 0, ooff = 0, file = "";
+			patch.hunks.forEach(function(hunk) {
+				var nstart = hunk.newStart + noff;
+				var ostart = hunk.oldStart + ooff;
+				var ncount = 0, ocount = 0, changes = false, content = "";
+				hunk.lines.forEach(function(line) {
+					var on = es[index].classList.contains('selected');
+					index += 1;
+
+					if (line.origin === " ") {
+						content += " " + line.content + '\n';
+						ncount += 1;
+						ocount += 1;
+					}
+					else if (line.origin === '-') {
+						if (on) {
+							content += "-" + line.content + "\n";
+							changes = true;
+							ocount += 1;
+						}
+						else if (!reverse) {
+							content += " " + line.content + '\n';
+							ocount += 1;
+							ncount += 1;
+							noff += 1;
+						}
+						else {
+							ooff -= 1;
+						}
+					}
+					else if (line.origin === '+') {
+						if (on) {
+							content += "+" + line.content + "\n";
+							changes = true;
+							ncount += 1;
+						}
+						else if (reverse) {
+							content += " " + line.content + "\n";
+							ocount += 1;
+							ncount += 1;
+							ooff += 1;
+						}
+						else {
+							noff -= 1;
+						}
+					}
+				});
+
+				if (changes)
+					file += "@@ -" + ostart + "," + ocount + " +" + nstart + "," + ncount + " @@\n" + content;
+			});
+
+			if (file) {
+				let oldFile = patch.oldFile;
+				if (!oldFile) {
+					oldFile = patch.newFile;
+					toadd.push(patch.newFile);
+				}
+				total += "--- a/" + oldFile + "\n+++ b/" + patch.newFile + "\n" + file;
+			}
+		});
+
+		toadd.reduce((p, file) => { return p.then(() => {
+			return this.app.repo.addIntent(file);
+		}); }, Promise.resolve())
+		.then(() => {
+			return this.app.repo.stagePatch(total, reverse);
+		});
 	},
 
 	initialize: function(opt) {
+		this.app = opt.app;
 		this.settings = opt.settings;
-		Backbone.View.prototype.initialize.call(this, arguments);
-		this.listenTo(this.collection, "all", this.render);
 		this.listenTo(this.settings, "change:focusFiles", this.render);
-		return this.render();
+		DiffView.prototype.initialize.apply(this, arguments);
 	},
 
 	record: function() {
-		this.$('.button').removeClass('show');
-
-		var patches = [];
 		var focusFiles = this.settings.get("focusFiles");
 		var staged = (focusFiles && focusFiles.staged) || [];
 		var unstaged = (focusFiles && focusFiles.unstaged) || [];
 
+		var patches = this.patches = [];
 		this.collection.forEach(function(r) {
 			let path = r.get('path');
 			if (unstaged.indexOf(path) !== -1 && r.get('workingPatch'))
-				patches.push(DiffView.patchRecord(r.get('workingPatch')));
+				patches.push(r.get('workingPatch'));
 			if (staged.indexOf(path) !== -1 && r.get('indexPatch'))
-				patches.push(DiffView.patchRecord(r.get('indexPatch')));
+				patches.push(r.get('indexPatch'));
 			if (staged.length === 0 && unstaged.length === 0 && r.get('workingPatch'))
-				patches.push(DiffView.patchRecord(r.get('workingPatch')));
+				patches.push(r.get('workingPatch'));
 		});
 
-		return { patches: patches };
+		return { patches: this.patches.map(function (p) { return DiffView.patchRecord(p); }) };
 	},
+
+	render: function() {
+		DiffView.prototype.render.apply(this, arguments);
+		this.lines = this.$('.diff-line').toArray();
+		this.$('.button').removeClass('show');
+		return this;
+	}
 });
 module.exports = PickView;

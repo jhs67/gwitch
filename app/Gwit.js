@@ -37,6 +37,20 @@ Gwit.prototype.git = function() {
 	});
 };
 
+Gwit.prototype.gitInput = function() {
+	let gwit = this;
+	let args = [].concat.apply([], arguments);
+	let input = args.shift();
+	let opts = { cwd: gwit.repodir, maxBuffer: 200 * 1024 * 1024 };
+	return new Promise(function(resolve, reject) {
+		let child = child_process.execFile(gwit.cmd, args, opts, function(err, out) {
+			if (err) return reject(err);
+			resolve(out);
+		});
+		child.stdin.end(input);
+	});
+};
+
 Gwit.prototype.gitRc = function() {
 	let gwit = this;
 	let args = [].concat.apply([], arguments);
@@ -303,13 +317,23 @@ Gwit.prototype.diffFileUntracked = function(file) {
 };
 
 Gwit.prototype.stageFile = function(file) {
-	return this.git("add", file);
+	return this.git("add", "--", file);
 };
 
 Gwit.prototype.unstageFile = function(file) {
-	return this.git("reset", "HEAD", file);
+	return this.git("reset", "HEAD", "--", file);
 };
 
 Gwit.prototype.discardChanges = function(file) {
 	return this.git("checkout", "--", file);
+};
+
+Gwit.prototype.stagePatch = function(patch, reverse) {
+	if (reverse)
+		return this.gitInput(patch, "apply", "--cached", "--reverse");
+	return this.gitInput(patch, "apply", "--cached");
+};
+
+Gwit.prototype.addIntent = function(file) {
+	return this.git("add", "--intent-to-add", "--", file);
 };

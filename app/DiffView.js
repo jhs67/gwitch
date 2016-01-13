@@ -9,7 +9,7 @@ var DiffView = Backbone.View.extend({
 
 	initialize: function() {
 		this.listenTo(this.collection, "all", this.render);
-		this.render();
+		return this.render();
 	},
 
 	record: function() {
