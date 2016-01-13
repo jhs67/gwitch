@@ -119,7 +119,6 @@ html, body {
 
 .diff-view {
 	padding: 5px;
-	overflow: auto;
 }
 
 .refs-view {
@@ -255,6 +254,7 @@ html, body {
 	display: flex;
 	flex-flow: column nowrap;
 	flex: 1 1 auto;
+	overflow: hidden;
 }
 
 .splitter-top {
