@@ -142,14 +142,14 @@ function parseDiff(diff)  {
 
 		while (i < lines.length) {
 			l = lines[i++];
-			let m = l.match(/(@@\s*-(\d+),(\d+)\s+\+(\d+)(?:,(\d+))?\s*@@.*)/);
-			if (!m) throw new Error("invalid hunk header");
+			let m = l.match(/(@@\s*-(\d+)(?:,(\d+))?\s+\+(\d+)(?:,(\d+))?\s*@@.*)/);
+			if (!m) throw new Error("invalid hunk header: " + l);
 			let hunk = {
 				header: m[1],
 				oldStart: parseInt(m[2]),
-				oldCount: parseInt(m[3]),
+				oldCount: m[3] ? parseInt(m[3]) : 0,
 				newStart: parseInt(m[4]),
-				newCount: parseInt(m[5]),
+				newCount: m[5] ? parseInt(m[5]) : 0,
 				lines: [],
 			};
 
