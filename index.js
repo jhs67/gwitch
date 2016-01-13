@@ -75,6 +75,7 @@ let recentRepos = null;
 
 function newWindowHandler(repo) {
 	let window = new BrowserWindow({
+		icon: __dirname + "/assets/icon.png",
 		width: 1200,
 		height: 800,
 	});
