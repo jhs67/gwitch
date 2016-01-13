@@ -277,7 +277,15 @@ let IndexFilesView = MultiFilesView.extend({
 let CommitMessageView = Backbone.View.extend({
 	className: 'commit-message',
 
-	initialize: function() {
+	events: {
+		"input .message": "onMessageChange",
+		"change .message": "onMessageChange",
+		"click .commit-button": "onCommitClick",
+	},
+
+	initialize: function(opt) {
+		this.app = opt.app;
+		this.listenTo(this.collection, "all", this.updateCommitButton);
 		return this.render();
 	},
 
@@ -285,8 +293,27 @@ let CommitMessageView = Backbone.View.extend({
 		return { files: [] };
 	},
 
+	isValidMessage: function() {
+	},
+
+	updateCommitButton: function() {
+		let ok = this.$('.message').val().length !== 0;
+		ok = ok && this.collection.any(m => { let s = m.get('indexStatus'); return s !== ' ' && s !== '?'; });
+		this.$('.commit-button').prop('disabled', !ok);
+	},
+
+	onMessageChange: function() {
+		this.updateCommitButton();
+	},
+
+	onCommitClick: function() {
+		this.app.repo.commit(this.$('.message').val()).then(() => { this.$(".message").val(""); });
+	},
+
 	render: function() {
 		this.$el.html(commitMessageHbs(this.record()));
+		this.$('.amend').prop('disabled', !this.isValidMessage());
+		this.updateCommitButton();
 	},
 });
 
@@ -300,7 +327,7 @@ let IndexView = Backbone.View.extend({
 		this.windowLayout = opt.windowLayout;
 		this.working = new WorkingFilesView({ collection: this.collection, settings: opt.settings, app: opt.app });
 		this.lbar = $('<div class="hsplitter-bar"><div class="gap"/><div class="splitter-dot"/><div class="gap"/></div>');
-		this.commit = new CommitMessageView();
+		this.commit = new CommitMessageView({ collection: this.collection, app: opt.app });
 		this.rbar = $('<div class="hsplitter-bar"><div class="gap"/><div class="splitter-dot"/><div class="gap"/></div>');
 		this.index = new IndexFilesView({ collection: this.collection, settings: opt.settings, app: opt.app });
 

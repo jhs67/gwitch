@@ -337,3 +337,7 @@ Gwit.prototype.stagePatch = function(patch, reverse) {
 Gwit.prototype.addIntent = function(file) {
 	return this.git("add", "--intent-to-add", "--", file);
 };
+
+Gwit.prototype.commit = function(message) {
+	return this.git("commit", "-m", message);
+};
