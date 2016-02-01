@@ -315,6 +315,7 @@ let CommitMessageView = Backbone.View.extend({
 	onCommitClick: function() {
 		this.app.repo.commit(this.$('.message').val()).then(() => {
 			this.$(".message").val("");
+			this.app.commitsUpdater.commit();
 			this.app.workingUpdater.commit();
 		});
 	},

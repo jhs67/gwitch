@@ -167,10 +167,15 @@ app.close = function() {
 	app.windowLayout.unset('workingList');
 	app.windowLayout.unset('stageList');
 	app.workingWatch.close();
+	app.commitsWatch.close();
 
 	if (app.workingWalk) {
 		app.workingWalk.cancel();
 		app.workingWalk = null;
+	}
+	if (app.commitsWalk) {
+		app.commitsWalk.cancel();
+		app.commitsWatch = null;
 	}
 };
 
@@ -200,7 +205,7 @@ function getCommits(repo, refs) {
 function loadCommits() {
 	return Promise.all([
 		app.repo.getRefs().then(function(refs) {
-			app.refs.add(refs.map(function(r) { r.id = pathToId(r.refName); return r; }));
+			app.refs.reset(refs.map(function(r) { r.id = pathToId(r.refName); return r; }));
 		}),
 		app.repo.head().then(function(ref) {
 			app.workingCopy.set('head', ref);
@@ -219,6 +224,16 @@ function loadCommits() {
 	});
 }
 
+app.commitsUpdater = new LazyUpdater(loadCommits);
+app.commitsWatch = new Watcher(function(ev, file) {
+	app.commitsUpdater.poke();
+	let rel = path.relative(path.resolve(app.workingCopy.get('path'), app.workingCopy.get('gitdir')), file);
+	if (rel === "HEAD")
+		app.workingUpdater.poke();
+	if (rel === app.workingCopy.get('head'))
+		app.workingUpdater.poke();
+});
+
 function loadFocusCommit() {
 	app.focusPatch.reset([]);
 	let focusCommit = app.repoSettings.get('focusCommit');
@@ -233,14 +248,15 @@ function loadFocusCommit() {
 	}
 }
 
-function loadWatches() {
+function getGitDir() {
 	return app.repo.getGitDir().then(function(gitdir) {
 		gitdir = path.resolve(app.repo.repodir, gitdir);
 		app.workingCopy.set('gitdir', gitdir);
+	});
+}
 
-		return app.repo.getSubmodules();
-	})
-	.then(function(submodules) {
+function loadWatches() {
+	return app.repo.getSubmodules().then(function(submodules) {
 		submodules.forEach(function(s) { s.fullpath = path.resolve(app.repo.repodir, s.path); });
 		app.submodules.add(submodules);
 
@@ -291,16 +307,47 @@ function loadWatches() {
 	});
 }
 
+function loadRefWatches() {
+	let root = app.workingCopy.get('path');
+	let gitdir = app.workingCopy.get('gitdir');
+
+	function addRecusive(d) {
+		let p = path.resolve(root, gitdir, d);
+		app.commitsWalk = walkTree(p, function(records) {
+			records.forEach(rec => {
+				app.commitsWatch.add(path.join(rec.root, rec.path));
+			});
+			return records;
+		});
+
+		return app.commitsWalk;
+	}
+
+	app.commitsWatch.add(path.resolve(root, gitdir, 'packed-refs'));
+	app.commitsWatch.add(path.resolve(root, gitdir, 'HEAD'));
+	return addRecusive('refs')
+	.then(() => {
+		return addRecusive('logs');
+	}).then(() => {
+		app.commitsWalk = null;
+		app.commitsUpdater.poke();
+	});
+}
+
 app.open = function(file) {
 	app.workingCopy.set('path', file);
 	app.workingCopy.set('name', path.basename(file, ".git"));
 	Gwit.open(file).then(function(repo) {
 		app.repo = repo;
 		app.workingUpdater.start();
-		return Promise.all([
-			loadWatches(),
-			loadCommits(),
-		]);
+		app.commitsUpdater.start();
+		return getGitDir()
+		.then(() => {
+			return Promise.all([
+				loadWatches(),
+				loadRefWatches(),
+			]);
+		});
 	})
 	.catch(function(err) {
 		console.log("error: " + (err && err.stack));
