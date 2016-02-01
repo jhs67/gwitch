@@ -189,8 +189,10 @@ let WorkingFilesView = MultiFilesView.extend({
 		let app = this.app;
 		let a = this.settings.get("focusFiles");
 		let selected = (a && a[this.key]) || [];
-		selected.forEach(function(f) {
-			app.repo.stageFile(f);
+		Promise.all(selected.map((f) => {
+			return app.repo.stageFile(f);
+		})).then(() => {
+			app.workingUpdater.commit();
 		});
 	},
 
@@ -209,12 +211,14 @@ let WorkingFilesView = MultiFilesView.extend({
 		if (!r) return;
 
 		let status = this.collection;
-		selected.forEach(function(f) {
+		Promise.all(selected.map(function(f) {
 			let r = status.get(pathToId(f));
 			if (r.get('workingStatus') === '?')
-				shell.deleteFile(path.resolve(repodir, f));
+				return shell.deleteFile(path.resolve(repodir, f));
 			else
-				app.repo.discardChanges(f);
+				return app.repo.discardChanges(f);
+		})).then(() => {
+			app.workingUpdater.commit();
 		});
 	},
 
@@ -251,8 +255,10 @@ let IndexFilesView = MultiFilesView.extend({
 		let app = this.app;
 		let a = this.settings.get("focusFiles");
 		let selected = (a && a[this.key]) || [];
-		selected.forEach(function(f) {
-			app.repo.unstageFile(f);
+		Promise.all(selected.map(f => {
+			return app.repo.unstageFile(f);
+		})).then(() => {
+			app.workingUpdater.commit();
 		});
 	},
 
@@ -307,7 +313,10 @@ let CommitMessageView = Backbone.View.extend({
 	},
 
 	onCommitClick: function() {
-		this.app.repo.commit(this.$('.message').val()).then(() => { this.$(".message").val(""); });
+		this.app.repo.commit(this.$('.message').val()).then(() => {
+			this.$(".message").val("");
+			this.app.workingUpdater.commit();
+		});
 	},
 
 	render: function() {

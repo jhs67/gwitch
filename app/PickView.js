@@ -155,6 +155,9 @@ var PickView = DiffView.extend({
 		}); }, Promise.resolve())
 		.then(() => {
 			return this.app.repo.stagePatch(total, reverse);
+		})
+		.then(() => {
+			this.app.workingUpdater.commit();
 		});
 	},
 
