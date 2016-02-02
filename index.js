@@ -73,6 +73,17 @@ let menuTemplate = [
 let openWindows = new Map();
 let recentRepos = null;
 
+function sendOpenRepo(window, repo) {
+	window.setTitle("gwitch - " + path.basename(repo, ".git"));
+	window.webContents.send('open-repo', repo);
+	recentRepos.add(repo);
+}
+
+function sendOpenRecent(window) {
+	window.setTitle("gwitch");
+	window.webContents.send('recent', recentRepos.repoList);
+}
+
 function newWindowHandler(repo) {
 	let window = new BrowserWindow({
 		icon: __dirname + "/assets/icon.png",
@@ -86,9 +97,9 @@ function newWindowHandler(repo) {
 
 	window.webContents.on('did-finish-load', function() {
 		if (repo)
-			window.webContents.send('open-repo', repo);
+			sendOpenRepo(window, repo);
 		else {
-			window.webContents.send('recent', recentRepos.repoList);
+			sendOpenRecent(window);
 		}
 	});
 
@@ -103,7 +114,6 @@ function openRepoHandler() {
 			files.forEach(function(f) {
 				f = path.resolve(f);
 				newWindowHandler(f);
-				recentRepos.add(f);
 			});
 		}
 	});
@@ -133,8 +143,7 @@ ipcMain.on('open-other', function(ev) {
 			let f = files.shift();
 			if (f) {
 				f = path.resolve(f);
-				ev.sender.send('open-repo', f);
-				recentRepos.add(f);
+				sendOpenRepo(ev.sender.getOwnerBrowserWindow(), f);
 			}
 			files.forEach(function(f) {
 				f = path.resolve(f);
@@ -146,12 +155,12 @@ ipcMain.on('open-other', function(ev) {
 });
 
 ipcMain.on('open-repo', function(ev, repo) {
+	console.log("open-repo", ev.sender);
 	let f = path.resolve(repo);
-	ev.sender.send('open-repo', f);
-	recentRepos.add(f);
+	sendOpenRepo(ev.sender.getOwnerBrowserWindow(), f);
 });
 
 
 ipcMain.on('open-recent', function(ev) {
-	ev.sender.send('recent', recentRepos.repoList);
+	sendOpenRecent(ev.sender.getOwnerBrowserWindow());
 });
