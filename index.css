@@ -694,6 +694,8 @@ html, body {
 	margin-top: 4px;
 	text-align: center;
 	padding: 3px;
+
+	position: relative;
 }
 
 .recent-repos .repo-item:hover {
@@ -724,3 +726,22 @@ html, body {
 	display: block;
 }
 
+.recent-repos .repo-rm {
+	position: absolute;
+	right: 10px;
+	top: 12px;
+	display: none;
+	width: 14px;
+	height: 14px;
+}
+
+.recent-repos .repo-item:hover .repo-rm {
+	display: inline-block;
+}
+
+.recent-repos .repo-rm:hover {
+	right: 9px;
+	top: 11px;
+	width: 16px;
+	height: 16px;
+}

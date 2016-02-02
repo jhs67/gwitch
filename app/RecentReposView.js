@@ -1,6 +1,5 @@
 "use strict";
 
-var path = require('path');
 var Backbone = require("backbone");
 var ipcRenderer = require('electron').ipcRenderer;
 var $ = require('jquery');
@@ -11,12 +10,14 @@ var RecentReposView = Backbone.View.extend({
 	className: 'recent-repos',
 
 	initialize: function() {
+		this.listenTo(this.collection, "all", this.render);
 		return this.render();
 	},
 
 	events: {
 		"click .repo-button": "openOther",
 		"click .repo-item": "openRecent",
+		"click .repo-rm": "removeRecent",
 	},
 
 	openOther: function(ev) {
@@ -24,19 +25,22 @@ var RecentReposView = Backbone.View.extend({
 	},
 
 	openRecent: function(ev) {
+		ev.stopPropagation();
 		var index = $(ev.currentTarget).index();
-		ipcRenderer.send('open-repo', this.collection[index]);
+		let m = this.collection.at(index);
+		ipcRenderer.send('open-repo', m.get('path'));
+	},
+
+	removeRecent: function(ev) {
+		ev.stopPropagation();
+		var index = $(ev.currentTarget).parent().index();
+		let m = this.collection.at(index);
+		ipcRenderer.send('rm-repo', m.get('path'));
+		this.collection.remove(m);
 	},
 
 	render: function() {
-		this.$el.html(recentReposHbs({
-			repos: this.collection.map(function(r) {
-				return {
-					name: path.basename(r, ".git"),
-					path: r,
-				};
-			})
-		}));
+		this.$el.html(recentReposHbs({ repos: this.collection.toJSON() }));
 	},
 });
 module.exports = RecentReposView;

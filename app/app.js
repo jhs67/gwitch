@@ -429,7 +429,8 @@ ipcRenderer.on('recent', function(emitter, repoList) {
 		recentView = null;
 	}
 
-	recentView = new RecentReposView({ collection: repoList });
+	let c = new Backbone.Collection(repoList.map(p => { return { path: p, name: path.basename(p, ".git") }; }));
+	recentView = new RecentReposView({ collection: c });
 	$('#container').append(recentView.$el);
 });
 

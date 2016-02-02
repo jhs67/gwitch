@@ -155,12 +155,14 @@ ipcMain.on('open-other', function(ev) {
 });
 
 ipcMain.on('open-repo', function(ev, repo) {
-	console.log("open-repo", ev.sender);
 	let f = path.resolve(repo);
 	sendOpenRepo(ev.sender.getOwnerBrowserWindow(), f);
 });
 
-
 ipcMain.on('open-recent', function(ev) {
 	sendOpenRecent(ev.sender.getOwnerBrowserWindow());
+});
+
+ipcMain.on('rm-repo', function(ev, repo) {
+	recentRepos.remove(repo);
 });
