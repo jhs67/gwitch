@@ -175,7 +175,7 @@ app.close = function() {
 	}
 	if (app.commitsWalk) {
 		app.commitsWalk.cancel();
-		app.commitsWatch = null;
+		app.commitsWalk = null;
 	}
 };
 
@@ -431,4 +431,11 @@ ipcRenderer.on('recent', function(emitter, repoList) {
 
 	recentView = new RecentReposView({ collection: repoList });
 	$('#container').append(recentView.$el);
+});
+
+ipcRenderer.on('reload', function(emitter) {
+	if (app.repo) {
+		app.workingUpdater.commit();
+		app.commitsUpdater.commit();
+	}
 });

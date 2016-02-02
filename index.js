@@ -59,7 +59,7 @@ let menuTemplate = [
 	{
 		label: 'Reload',
 		accelerator: 'CmdOrCtrl+G',
-		click: function() { BrowserWindow.getFocusedWindow().reloadIgnoringCache(); }
+		click: function() { BrowserWindow.getFocusedWindow().webContents.reloadIgnoringCache(); }
 	},
 	{
 		label: 'Toggle DevTools',
@@ -109,7 +109,11 @@ function openRepoHandler() {
 	});
 }
 
-function reloadHandler() {}
+function reloadHandler() {
+	let window = BrowserWindow.getFocusedWindow();
+	if (window)
+		window.webContents.send('reload');
+}
 
 function closeWindowHandler() {
 	BrowserWindow.getFocusedWindow().close();
