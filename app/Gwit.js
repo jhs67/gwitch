@@ -95,7 +95,7 @@ Gwit.prototype.lookupRef = function(ref) {
 	});
 };
 
-const LogFields = {
+let LogFields = {
 	hash: "%H",
 	tree: "%T",
 	authorName: "%an",

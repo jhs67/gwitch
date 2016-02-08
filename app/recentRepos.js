@@ -1,7 +1,7 @@
 "use strict";
 
-const app = require('app');
-const jetpack = require('fs-jetpack');
+let app = require('app');
+let jetpack = require('fs-jetpack');
 
 exports.RecentRepos = RecentRepos;
 function RecentRepos() {

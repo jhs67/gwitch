@@ -3,7 +3,7 @@
 var moment = require("moment");
 var Backbone = require("backbone");
 
-const pathSegs = [
+let pathSegs = [
 	"M 0,12 a 8,8 0 0 1 8,8 l 0,4",
 	"M 0,12 l 16,0",
 	"M 0,12 a 8,8 0 0 0 8,-8 l 0,-4",
@@ -12,7 +12,7 @@ const pathSegs = [
 	"M 16,12 a 8 8 0 0 0 -8,8 l 0,4",
 ];
 
-const nodeSegs = [
+let nodeSegs = [
 	"M 8,0 l 0,6",
 	"M 0,12 l 2,0",
 	"M 16,12 l -2,0",
@@ -70,7 +70,7 @@ function makeSVGs() {
 	return r;
 }
 
-const GraphGlyphs = makeSVGs();
+let GraphGlyphs = makeSVGs();
 
 function makeHeader() {
 	let row = document.createElement('tr');
@@ -105,7 +105,7 @@ function makeHeader() {
 	return div;
 }
 
-const HistoryHeader = makeHeader();
+let HistoryHeader = makeHeader();
 
 function makeProtoRow() {
 	// Create the prototype row

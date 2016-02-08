@@ -1,8 +1,8 @@
 "use strict";
 
-const remote = require('remote');
-const app = remote.require('app');
-const jetpack = require('fs-jetpack');
+let remote = require('remote');
+let app = remote.require('app');
+let jetpack = require('fs-jetpack');
 
 module.exports = JetSync;
 function JetSync(method, model, options) {
