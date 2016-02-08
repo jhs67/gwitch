@@ -14,7 +14,7 @@ function walkTree(root, filter) {
 	let r = new Promise(function(resolve, reject) {
 		stat.drain = readdir.drain = function() {
 			if (readdir.idle() && stat.idle()) {
-				stat.drain = readdir.drain = null;
+				stat.drain = readdir.drain = function() {};
 				resolve(null);
 			}
 		};
