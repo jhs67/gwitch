@@ -77,7 +77,7 @@ var PickView = DiffView.extend({
 			l -= 1;
 
 		var top = 1;
-		for (var e = es[l]; e && !e.classList.contains('patches'); e = e.parentElement)
+		for (var e = es[l]; e && !e.classList.contains('patch'); e = e.parentElement)
 			top += e.offsetTop;
 
 		var b = this.$('.stage.button');
