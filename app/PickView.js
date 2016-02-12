@@ -9,6 +9,11 @@ var PickView = DiffView.extend({
 		"mousedown .diff-line": "dragStart",
 		"click .button": "buttonClick",
 		"keydown": "keyDown",
+		"scroll": "onScroll",
+	},
+
+	onScroll: function(ev) {
+		this.positionButton();
 	},
 
 	keyDown: function(ev) {
@@ -71,22 +76,40 @@ var PickView = DiffView.extend({
 	dragEnd: function(ev) {
 		$(window).off('mousemove.pick');
 
-		var es = this.lines;
-		var l = this.anchor;
-		while (l > 0 && es[l - 1].classList.contains('selected'))
-			l -= 1;
-
-		var top = 1;
-		for (var e = es[l]; e && !e.classList.contains('patch'); e = e.parentElement)
-			top += e.offsetTop;
-
 		var b = this.$('.stage.button');
-		b.css('top', top);
 		b.addClass('show');
 
 		var text = this.settings.get("focusFiles") && this.settings.get("focusFiles").staged ? "unstage" : "stage";
 		text += (this.last === this.anchor) ? " line" : " lines";
 		b.text(text);
+
+		this.positionButton();
+	},
+
+	positionButton: function() {
+		let b = this.$('.stage.button');
+		if (!b[0].classList.contains("show"))
+			return;
+
+		let top = 0;
+		let es = this.lines, l = 0, h = b[0].offsetHeight;
+		let limit = this.el.scrollTop - this.$(".patches")[0].offsetTop;
+		while (l < es.length) {
+			let e = es[l++];
+			if (e.classList.contains('selected')) {
+				top = 1;
+				for (let p = e; p && !p.classList.contains('patch'); p = p.parentElement)
+					top += p.offsetTop;
+				if (top >= limit)
+					break;
+				if (top + h + 1 >= limit && es[l] == e.nextElementSibling && es[l].classList.contains('selected')) {
+					top = limit;
+					break;
+				}
+			}
+		}
+
+		b.css('top', top);
 	},
 
 	buttonClick: function(ev) {
