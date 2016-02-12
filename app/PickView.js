@@ -8,12 +8,20 @@ var PickView = DiffView.extend({
 	events: {
 		"mousedown .diff-line": "dragStart",
 		"click .button": "buttonClick",
+		"keydown": "keyDown",
+	},
+
+	keyDown: function(ev) {
+		let c = String.fromCharCode(ev.keyCode);
+		let ctrl = ev.ctrlKey, meta = ev.metaKey, alt = ev.altKey;
+		if (c === 'S' && !ctrl && !meta && !alt) {
+			this.buttonClick(ev);
+		}
 	},
 
 	dragStart: function(ev) {
 		if (ev.button !== 0)
 			return;
-		ev.preventDefault();
 
 		this.lines = this.$('.diff-line').toArray();
 		this.anchor = this.lines.indexOf(ev.currentTarget);
@@ -86,7 +94,7 @@ var PickView = DiffView.extend({
 		var total = "", index = 0;
 
 		let toadd = [];
-		let reverse = this.settings.get("focusFiles") && !this.settings.get("focusFiles").unstaged;
+		let forward = !this.settings.get("focusFiles") || !this.settings.get("focusFiles").staged;
 		this.patches.forEach(function (patch) {
 			var noff = 0, ooff = 0, file = "";
 			patch.hunks.forEach(function(hunk) {
@@ -108,7 +116,7 @@ var PickView = DiffView.extend({
 							changes = true;
 							ocount += 1;
 						}
-						else if (!reverse) {
+						else if (forward) {
 							content += " " + line.content + '\n';
 							ocount += 1;
 							ncount += 1;
@@ -124,7 +132,7 @@ var PickView = DiffView.extend({
 							changes = true;
 							ncount += 1;
 						}
-						else if (reverse) {
+						else if (!forward) {
 							content += " " + line.content + "\n";
 							ocount += 1;
 							ncount += 1;
@@ -154,7 +162,7 @@ var PickView = DiffView.extend({
 			return this.app.repo.addIntent(file);
 		}); }, Promise.resolve())
 		.then(() => {
-			return this.app.repo.stagePatch(total, reverse);
+			return this.app.repo.stagePatch(total, !forward);
 		})
 		.then(() => {
 			this.app.workingUpdater.commit();
@@ -191,6 +199,7 @@ var PickView = DiffView.extend({
 		DiffView.prototype.render.apply(this, arguments);
 		this.lines = this.$('.diff-line').toArray();
 		this.$('.button').removeClass('show');
+		this.$('.patches').attr('tabindex', 1);
 		return this;
 	}
 });

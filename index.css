@@ -13,6 +13,12 @@ html, body {
 	height: 100%;
 }
 
+.stage-splitter .patches:focus {
+	outline-width: 0;
+	box-shadow: 0 0 0 1px rgba(160,160,160,0.5);
+	border-radius: 0.6em;
+}
+
 .patch {
 	font-family: "Lucida Console", Monaco, monospace;
 	margin: 0;

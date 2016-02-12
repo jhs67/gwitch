@@ -74,6 +74,13 @@ let MultiFilesView = Backbone.View.extend({
 	},
 
 	onKeyPress: function(ev) {
+		let c = String.fromCharCode(ev.keyCode);
+		if (c == "S" && typeof this.hotkeyS === 'function') {
+			ev.stopPropagation();
+			this.hotkeyS();
+			return;
+		}
+
 		if (ev.keyCode !== 40 && ev.keyCode !== 38)
 			return;
 
@@ -196,6 +203,10 @@ let WorkingFilesView = MultiFilesView.extend({
 		});
 	},
 
+	hotkeyS: function() {
+		this.onStage();
+	},
+
 	onDiscard: function() {
 		let app = this.app;
 		let repodir = app.repo.repodir;
@@ -226,6 +237,7 @@ let WorkingFilesView = MultiFilesView.extend({
 		return [
 			{
 				label: "Stage",
+				accelerator: 'Ctrl+S',
 				click: this.onStage.bind(this),
 			},
 			{
@@ -262,10 +274,15 @@ let IndexFilesView = MultiFilesView.extend({
 		});
 	},
 
+	hotkeyS: function() {
+		this.onUnstage();
+	},
+
 	contextMenu: function(files) {
 		return [
 			{
 				label: "Unstage",
+				accelerator: 'Ctrl+S',
 				click: this.onUnstage.bind(this),
 			},
 			{
