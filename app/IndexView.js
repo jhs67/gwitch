@@ -49,9 +49,16 @@ let MultiFilesView = Backbone.View.extend({
 			selected = [ path ];
 			a[this.key] = selected;
 			this.settings.set("focusFiles", a);
+
+			// A hack to let the page re-render before the context menu blocks it
+			setTimeout(() => {
+				let menu = Menu.buildFromTemplate(this.contextMenu(a[this.key]));
+				menu.popup(remote.getCurrentWindow());
+			}, 50);
+			return;
 		}
 
-		let menu = Menu.buildFromTemplate(this.contextMenu(a[this.keys]));
+		let menu = Menu.buildFromTemplate(this.contextMenu(a[this.key]));
 		menu.popup(remote.getCurrentWindow());
 	},
 
