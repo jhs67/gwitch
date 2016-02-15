@@ -27,9 +27,15 @@ let MultiFilesView = Backbone.View.extend({
 	},
 
 	events: {
+		"dblclick .file-item": "dblClick",
 		"mousedown .file-item": "dragStart",
 		'keydown .file-list': 'onKeyPress',
 		'contextmenu .file-item': 'onContext',
+	},
+
+	dblClick: function(ev) {
+		if (typeof this.hotkeyS === 'function')
+			this.hotkeyS();
 	},
 
 	onContext: function(ev) {
