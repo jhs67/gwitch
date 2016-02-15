@@ -21,12 +21,13 @@ let MultiFilesView = Backbone.View.extend({
 		this.el.classList.add("multi-file-view");
 		this.focus = -1;
 		this.origin = -1;
+		this.extent = -1;
 		this.filter = this.filter.bind(this);
 		return this.render();
 	},
 
 	events: {
-		"click .file-item": "onClick",
+		"mousedown .file-item": "dragStart",
 		'keydown .file-list': 'onKeyPress',
 		'contextmenu .file-item': 'onContext',
 	},
@@ -119,33 +120,119 @@ let MultiFilesView = Backbone.View.extend({
 		}
 	},
 
-	onClick: function(ev) {
-		ev.stopPropagation();
-		ev.preventDefault();
-
-		this.focus = $(ev.currentTarget).index();
+	dragStart: function(ev) {
+		if (ev.button !== 0)
+			return;
 
 		let r = this.collection.get(ev.currentTarget.id);
-		let path = r.get('path');
+		let target = $(ev.currentTarget).index();
+		let tpath = r.get('path');
+		this.origin = target;
+		this.extent = target;
 
 		let a = this.settings.get("focusFiles");
 		let selected = (a && a[this.key]) || [];
 
 		if (ev.ctrlKey) {
 			selected = selected.concat([]);
-			let i = selected.indexOf(path);
+			let i = selected.indexOf(tpath);
+			if (i === -1)
+				selected.push(tpath);
+			else
+				selected.splice(i, 1);
+			this.focus = target;
+			this.dragType = 'ctrl';
+		}
+		else if (ev.shiftKey) {
+			if (this.focus === -1) {
+				this.focus = target;
+				selected = [ tpath ];
+			}
+			else {
+				selected = [];
+				let s = Math.min(target, this.focus), e = Math.max(target, this.focus);
+				for (let k = s; k <= e; k += 1) {
+					selected.push(this.collection.at(k).get('path'));
+				}
+			}
+			this.dragType = 'shift';
+		}
+		else {
+			this.dragType = '';
+			this.focus = target;
+			selected = [ tpath ];
+		}
+
+		a = {};
+		a[this.key] = selected;
+		this.settings.set("focusFiles", a);
+
+		$(window).on('mousemove.pick', this.dragMove.bind(this));
+		$(window).one('mouseup', this.dragEnd.bind(this));
+	},
+
+	dragSub: function(selected, path) {
+		let i = selected.indexOf(path);
+		if (this.dragType === 'ctrl') {
 			if (i === -1)
 				selected.push(path);
 			else
 				selected.splice(i, 1);
 		}
 		else {
-			selected = [ path ];
+			if (i !== -1)
+				selected.splice(i, 1);
+		}
+	},
+
+	dragAdd: function(selected, path) {
+		let i = selected.indexOf(path);
+		if (this.dragType === 'ctrl') {
+			if (i === -1)
+				selected.push(path);
+			else
+				selected.splice(i, 1);
+		}
+		else {
+			if (i === -1)
+				selected.push(path);
+		}
+	},
+
+	dragMove: function(ev) {
+		var es = this.$('.file-item');
+		var l = 0, h = es.length;
+		while (h - l > 1) {
+			var m = Math.floor((l + h) / 2);
+			var em = es[m];
+			if (ev.clientY <= $(em).offset().top)
+				h = m;
+			else
+				l = m;
 		}
 
-		a = {};
-		a[this.key] = selected;
-		this.settings.set("focusFiles", a);
+		if (l === this.extent)
+			return;
+
+		let a = this.settings.get("focusFiles");
+		let selected = (a && a[this.key]).concat([]) || [];
+		let esign = this.extent > this.origin ? +1 : -1;
+		let lsign = l > this.origin ? +1 : -1;
+
+		for (let k = this.extent; esign * (k - l) > 0 && k !== this.origin; k -= esign) {
+			this.dragSub(selected, this.collection.at(k).get('path'));
+		}
+
+		for (let k = l; lsign * (k - this.extent) > 0 && k !== this.origin; k -= lsign) {
+			this.dragAdd(selected, this.collection.at(k).get('path'));
+		}
+
+		this.extent = l;
+		this.settings.set("focusFiles", { [this.key]: selected });
+	},
+
+	dragEnd: function(ev) {
+		$(window).off('mousemove.pick');
 	},
 
 	setSelected: function() {
