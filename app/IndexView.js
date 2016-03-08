@@ -163,9 +163,10 @@ let MultiFilesView = Backbone.View.extend({
 			}
 			else {
 				selected = [];
+				let items = this.$(".file-item");
 				let s = Math.min(target, this.focus), e = Math.max(target, this.focus);
 				for (let k = s; k <= e; k += 1) {
-					selected.push(this.collection.at(k).get('path'));
+					selected.push(this.collection.get(items[k].id).get('path'));
 				}
 			}
 			this.dragType = 'shift';
@@ -232,12 +233,13 @@ let MultiFilesView = Backbone.View.extend({
 		let esign = this.extent > this.origin ? +1 : -1;
 		let lsign = l > this.origin ? +1 : -1;
 
+		let items = this.$(".file-item");
 		for (let k = this.extent; esign * (k - l) > 0 && k !== this.origin; k -= esign) {
-			this.dragSub(selected, this.collection.at(k).get('path'));
+			this.dragSub(selected, this.collection.get(items[k].id).get('path'));
 		}
 
 		for (let k = l; lsign * (k - this.extent) > 0 && k !== this.origin; k -= lsign) {
-			this.dragAdd(selected, this.collection.at(k).get('path'));
+			this.dragAdd(selected, this.collection.get(items[k].id).get('path'));
 		}
 
 		this.extent = l;
