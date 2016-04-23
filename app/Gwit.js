@@ -84,8 +84,10 @@ Gwit.prototype.getRefs = function() {
 };
 
 Gwit.prototype.head = function() {
-	return this.git("symbolic-ref", "HEAD").then(function(out) {
-		return out.trim();
+	return this.gitRc("symbolic-ref", "HEAD").then(function(res) {
+		if (res.code !== 0)
+			return null;
+		return res.out.trim();
 	});
 };
 
