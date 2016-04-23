@@ -64,11 +64,20 @@ Gwit.prototype.gitRc = function() {
 };
 
 Gwit.prototype.getRefs = function() {
-	return this.git("show-ref").then(function(refout) {
+	return this.git("show-ref", "--head").then(function(refout) {
 		return refout.substr(0, refout.length - 1).split('\n').map(function(line) {
 			let split = line.indexOf(' ');
 			let hash = line.substr(0, split);
 			let refName = line.substr(split + 1);
+			if (refName === "HEAD") {
+				return {
+					hash,
+					refName,
+					type: "HEAD",
+					name: "HEAD",
+				};
+			}
+
 			let names = refName.split('/');
 			let type = (names.shift(), names.shift());
 			let name = names.join('/');

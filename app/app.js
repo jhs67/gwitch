@@ -214,11 +214,21 @@ function loadCommits() {
 	.then(function() {
 		return getCommits(app.repo, app.refs.map(function(b) { return b.get('refName'); })).then(function(commits) {
 			app.commits.reset(commits);
+
 			let focusCommit = app.repoSettings.get('focusCommit');
 			if (focusCommit && !app.commits.get(focusCommit))
 				focusCommit = null;
-			if (!focusCommit && app.commits.length > 0)
+
+			if (!focusCommit && app.commits.length > 0) {
 				focusCommit = app.commits.at(0).id;
+				let head = app.workingCopy.get('head');
+				if (head) {
+					let headid = pathToId(head);
+					if (app.commits.get(headid))
+						focusCommit = headid;
+				}
+			}
+
 			app.repoSettings.set('focusCommit', focusCommit);
 		});
 	});
