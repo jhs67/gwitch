@@ -327,16 +327,16 @@ Gwit.prototype.diffFileUntracked = function(file) {
 	});
 };
 
-Gwit.prototype.stageFile = function(file) {
-	return this.git("add", "--", file);
+Gwit.prototype.stageFiles = function(files) {
+	return this.git("add", "--", files);
 };
 
-Gwit.prototype.unstageFile = function(file) {
-	return this.git("reset", "HEAD", "--", file);
+Gwit.prototype.unstageFiles = function(files) {
+	return this.git("reset", "HEAD", "--", files);
 };
 
-Gwit.prototype.discardChanges = function(file) {
-	return this.git("checkout", "--", file);
+Gwit.prototype.discardChanges = function(files) {
+	return this.git("checkout", "--", files);
 };
 
 Gwit.prototype.stagePatch = function(patch, reverse) {

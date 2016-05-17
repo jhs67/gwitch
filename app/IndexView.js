@@ -298,11 +298,7 @@ let WorkingFilesView = MultiFilesView.extend({
 		let app = this.app;
 		let a = this.settings.get("focusFiles");
 		let selected = (a && a[this.key]) || [];
-		Promise.all(selected.map((f) => {
-			return app.repo.stageFile(f);
-		})).then(() => {
-			app.workingUpdater.commit();
-		});
+		return app.repo.stageFiles(selected).then(() => app.workingUpdater.commit());
 	},
 
 	hotkeyS: function() {
@@ -324,15 +320,17 @@ let WorkingFilesView = MultiFilesView.extend({
 		if (!r) return;
 
 		let status = this.collection;
-		Promise.all(selected.map(function(f) {
+		let todiscard = [], todel = selected.filter(function(f) {
 			let r = status.get(pathToId(f));
 			if (r.get('workingStatus') === '?')
-				return shell.deleteFile(path.resolve(repodir, f));
-			else
-				return app.repo.discardChanges(f);
-		})).then(() => {
-			app.workingUpdater.commit();
+				return true;
+			todiscard.push(f);
+			return false;
 		});
+
+		let tasks = todel.map(f => shell.deleteFile(path.resolve(repodir, f)));
+		todel.push(app.repo.discardChanges(todiscard));
+		return Promise.all(tasks).then(() => app.workingUpdater.commit());
 	},
 
 	contextMenu: function(files) {
@@ -369,11 +367,7 @@ let IndexFilesView = MultiFilesView.extend({
 		let app = this.app;
 		let a = this.settings.get("focusFiles");
 		let selected = (a && a[this.key]) || [];
-		Promise.all(selected.map(f => {
-			return app.repo.unstageFile(f);
-		})).then(() => {
-			app.workingUpdater.commit();
-		});
+		return app.repo.unstageFiles(selected).then(() => app.workingUpdater.commit());
 	},
 
 	hotkeyS: function() {
