@@ -1,11 +1,13 @@
 'use strict';
 
-let app = require('app');
 let path = require("path");
-let Menu = require('menu');
-let ipcMain = require('electron').ipcMain;
-let BrowserWindow = require('browser-window');
-let dialog = require('dialog');
+let electron = require('electron');
+
+let app = electron.app;
+let Menu = electron.Menu;
+let dialog = electron.Dialog;
+let ipcMain = electron.ipcMain;
+let BrowserWindow = electron.BrowserWindow;
 
 app.on('window-all-closed', function () {
 	if (process.platform !== 'darwin') {

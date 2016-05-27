@@ -1,7 +1,6 @@
 "use strict";
 
-let remote = require('remote');
-let app = remote.require('app');
+let app = require('electron').remote.app;
 let jetpack = require('fs-jetpack');
 
 module.exports = JetSync;

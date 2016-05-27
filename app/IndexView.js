@@ -5,11 +5,12 @@ let Backbone = require("backbone");
 let filesListHbs = require('./files-list');
 let commitMessageHbs = require('./commit-message');
 var pathToId = require('./pathToId');
-let remote = require('remote');
-let Menu = remote.require('menu');
-let dialog = remote.require('dialog');
+let electron = require('electron');
 let shell = require('./shell');
 let path = require('path');
+
+let Menu = electron.remote.Menu;
+let dialog = electron.remote.dialog;
 
 let MultiFilesView = Backbone.View.extend({
 
@@ -59,13 +60,13 @@ let MultiFilesView = Backbone.View.extend({
 			// A hack to let the page re-render before the context menu blocks it
 			setTimeout(() => {
 				let menu = Menu.buildFromTemplate(this.contextMenu(a[this.key]));
-				menu.popup(remote.getCurrentWindow());
+				menu.popup(electron.remote.getCurrentWindow());
 			}, 50);
 			return;
 		}
 
 		let menu = Menu.buildFromTemplate(this.contextMenu(a[this.key]));
-		menu.popup(remote.getCurrentWindow());
+		menu.popup(electron.remote.getCurrentWindow());
 	},
 
 	onOpen: function() {
@@ -312,7 +313,7 @@ let WorkingFilesView = MultiFilesView.extend({
 		let selected = (a && a[this.key]) || [];
 		let detail = selected.join(", ");
 		if (detail.length > 80) detail = detail.substr(0, 77) + "...";
-		let r = dialog.showMessageBox(remote.getCurrentWindow(), {
+		let r = dialog.showMessageBox(electron.remote.getCurrentWindow(), {
 			type: "warning", buttons: [ "Cancel", "Continue" ],
 			title: "Discard Changes", message: "Discard Changes? This can not be undone.",
 			detail: detail,
