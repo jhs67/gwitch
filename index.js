@@ -72,7 +72,7 @@ let menuTemplate = [
 },
 ];
 
-let openWindows = new Map();
+let windowManager = null;
 let recentRepos = null;
 
 function sendOpenRepo(window, repo) {
@@ -87,26 +87,18 @@ function sendOpenRecent(window) {
 }
 
 function newWindowHandler(repo) {
-	let window = new BrowserWindow({
-		icon: __dirname + "/assets/icon.png",
-		width: 1200,
-		height: 800,
-	});
+	let props = windowManager.props();
+	props.icon = __dirname + "/assets/icon.png";
+	let window = new BrowserWindow(props);
+	windowManager.track(window);
 
 	window.loadURL(`file://${__dirname}/index.html`);
-	openWindows.set(window.id, window);
-	let id = window.id;
-
 	window.webContents.on('did-finish-load', function() {
 		if (repo)
 			sendOpenRepo(window, repo);
 		else {
 			sendOpenRecent(window);
 		}
-	});
-
-	window.on('closed', function () {
-		openWindows.delete(id);
 	});
 }
 
@@ -133,6 +125,7 @@ function closeWindowHandler() {
 
 app.on('ready', function () {
 	recentRepos = new (require('./app/recentRepos')).RecentRepos();
+	windowManager = new (require('./app/windowManager')).WindowManager();
 
 	let menu = Menu.buildFromTemplate(menuTemplate);
 	Menu.setApplicationMenu(menu);
