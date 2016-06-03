@@ -5,7 +5,7 @@ let electron = require('electron');
 
 let app = electron.app;
 let Menu = electron.Menu;
-let dialog = electron.Dialog;
+let dialog = electron.dialog;
 let ipcMain = electron.ipcMain;
 let BrowserWindow = electron.BrowserWindow;
 
