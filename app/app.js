@@ -6,6 +6,7 @@ require("handlebars");
 var $ = require('jquery');
 var Backbone = require("backbone");
 var ipcRenderer = require('electron').ipcRenderer;
+let cwait = require('cwait');
 
 var path = require("path");
 
@@ -66,47 +67,50 @@ app.windowLayout = new WindowLayoutModel();
 app.status = new Backbone.Collection();
 
 function loadStatus() {
+
 	return app.repo.getStatus().then(function (files) {
-		return Promise.all(files.map(function(status) {
+		var queue = new (cwait.TaskQueue)(Promise, 16);
+
+		return Promise.all(files.map(queue.wrap(function(status) {
 			let tasks = [];
 			status.id = pathToId(status.path);
 			if (status.workingStatus === '?') {
-				tasks.push(app.repo.diffFileUntracked(status.path)
+				tasks.push(queue.wrap(app.repo.diffFileUntracked.bind(app.repo))(status.path)
 					.then(function(patch) {
 						status.workingPatch = patch;
 						return;
 					}));
 			}
 			else if (status.unmerged) {
-				tasks.push(app.repo.diffFileWorkingToHead(status.path)
+				tasks.push(queue.wrap(app.repo.diffFileWorkingToHead.bind(app.repo))(status.path)
 					.then(function(patch) {
 						status.workingPatch = patch;
 						return;
 					}));
 			}
 			else if (status.workingStatus !== ' ') {
-				tasks.push(app.repo.diffFileWorkingToIndex(status.path)
+				tasks.push(queue.wrap(app.repo.diffFileWorkingToIndex.bind(app.repo))(status.path)
 					.then(function(patch) {
 						status.workingPatch = patch;
 						return;
 					}));
 			}
 			if (status.indexStatus !== ' ' && !status.unmerged) {
-				tasks.push(app.repo.diffFileIndexToHead(status.path, status.fromPath)
+				tasks.push(queue.wrap(app.repo.diffFileIndexToHead.bind(app.repo))(status.path, status.fromPath)
 					.then(function(patch) {
 						status.indexPatch = patch;
 						return;
 					}));
 			}
 
-			return Promise.all(tasks)
+			return queue.unblock(Promise.all(tasks))
 			.then(function() {
 				return status;
 			})
 			.catch(function(err) {
 				console.log("hmmm " + err.stack);
 			});
-		}))
+		})))
 		.then(function(stati) {
 			// Reset the status collection
 			app.status.reset(stati);
