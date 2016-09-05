@@ -1,7 +1,6 @@
 "use strict";
 
 let child_process = require('child_process');
-let path = require('path');
 
 module.exports = Gwit;
 function Gwit() {
@@ -212,6 +211,12 @@ Gwit.prototype.diffCommits = function(from, to) {
 	});
 };
 
+Gwit.prototype.diffCommitFile = function(from, to, file) {
+	return this.git("diff", from, to, "--", file).then(function(out) {
+		return parseDiff(out);
+	});
+};
+
 Gwit.prototype.diffIndexToWorkdir = function() {
 	return this.git("diff").then(function(out) {
 		return parseDiff(out);
@@ -221,6 +226,27 @@ Gwit.prototype.diffIndexToWorkdir = function() {
 Gwit.prototype.diffHeadToIndex = function() {
 	return this.git("diff", "--cached").then(function(out) {
 		return parseDiff(out);
+	});
+};
+
+Gwit.prototype.commitStatus = function(ref) {
+	return this.git("show", "--name-status", "--format=", "-M50", "-C50", ref).then(out => {
+		let lines = out.split('\n');
+		lines.splice(-1, 1);
+		return lines.map(line => {
+			let r = line.split('\t');
+			let status = r[0], similarity;
+			if (status.length > 1) {
+				similarity = parseInt(status.substr(1));
+				status = status[0];
+			}
+			let oldFile = r[1], newFile;
+			if (r.length > 2) {
+				oldFile = r[1];
+				newFile = r[2];
+			}
+			return { newFile, oldFile, status, similarity };
+		});
 	});
 };
 

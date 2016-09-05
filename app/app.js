@@ -248,6 +248,25 @@ app.commitsWatch = new Watcher(function(ev, file) {
 		app.workingUpdater.poke();
 });
 
+function loadFocusDiff(from, commit, index) {
+	if (commit != app.repoSettings.get('focusCommit'))
+		return;
+	if (index >= app.focusPatch.length)
+		return;
+
+	let r = app.focusPatch.at(index);
+	let oldFile = r.get("oldFile");
+	let newFile = r.get("newFile");
+	return app.repo.diffCommitFile(from, commit, newFile || oldFile).then(patches => {
+		if (commit !== app.repoSettings.get('focusCommit'))
+			return;
+
+		let patch = patches.patches[0];
+		r.set(patch);
+		return loadFocusDiff(from, commit, index + 1);
+	});
+}
+
 function loadFocusCommit() {
 	app.focusPatch.reset([]);
 	let focusCommit = app.repoSettings.get('focusCommit');
@@ -256,8 +275,12 @@ function loadFocusCommit() {
 	let commit = c.get('commit');
 	let p = commit.parents;
 	if (p.length === 1) {
-		app.repo.diffCommits(p[0], focusCommit).then(function(diff) {
-			app.focusPatch.reset(diff.patches.map(function(p) { return { patch: p }; }));
+		return app.repo.commitStatus(focusCommit).then(status => {
+			if (focusCommit !== app.repoSettings.get('focusCommit'))
+				return;
+
+			app.focusPatch.reset(status);
+			return loadFocusDiff(p[0], focusCommit, 0);
 		});
 	}
 }

@@ -1,6 +1,7 @@
 "use strict";
 
 var $ = require('jquery');
+var Backbone = require("backbone");
 var DiffView = require("./DiffView");
 
 var PickView = DiffView.extend({
@@ -196,10 +197,11 @@ var PickView = DiffView.extend({
 		this.app = opt.app;
 		this.settings = opt.settings;
 		this.listenTo(this.settings, "change:focusFiles", this.render);
+		opt.showlarge = true;
 		DiffView.prototype.initialize.apply(this, arguments);
 	},
 
-	record: function() {
+	records: function() {
 		var focusFiles = this.settings.get("focusFiles");
 		var staged = (focusFiles && focusFiles.staged) || [];
 		var unstaged = (focusFiles && focusFiles.unstaged) || [];
@@ -215,7 +217,7 @@ var PickView = DiffView.extend({
 				patches.push(r.get('workingPatch'));
 		});
 
-		return { patches: this.patches.map(function (p) { return DiffView.patchRecord(p); }) };
+		return patches.map(p => new Backbone.Model(p));
 	},
 
 	render: function() {

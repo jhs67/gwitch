@@ -1,26 +1,3 @@
 <div class='patches'>
 	<div class='button stage'></div>
-	{{#each patches}}
-	<div class='patch' id='{{id}}'>
-		<div class='patch-header'>diff "{{file}}" "{{newFile}}"</div>
-		<table>
-		{{#each hunks}}
-			<tr class="hunk">
-				<td>...</td>
-				<td>...</td>
-				<td></td>
-				<td>{{header}}</td>
-			</tr>
-			{{#each lines}}
-			<tr class="diff-line {{classes}}">
-				<td>{{oldLineno}}</td>
-				<td>{{newLineno}}</td>
-				<td>{{origin}}</td>
-				<td>{{content}}</td>
-			</tr>
-			{{/each}}
-		{{/each}}
-		</table>
-	</div>
-	{{/each}}
 </div>

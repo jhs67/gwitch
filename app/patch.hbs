@@ -1,0 +1,25 @@
+<div class="patch-header">diff "{{file}}" "{{newFile}}"</div>
+{{#if hunks}}
+<table>
+{{#each hunks}}
+	<tr class="hunk">
+		<td>...</td>
+		<td>...</td>
+		<td></td>
+		<td>{{header}}</td>
+	</tr>
+	{{#each lines}}
+	<tr class="diff-line {{classes}}">
+		<td>{{oldLineno}}</td>
+		<td>{{newLineno}}</td>
+		<td>{{origin}}</td>
+		<td>{{content}}</td>
+	</tr>
+	{{/each}}
+{{/each}}
+</table>
+{{else if large}}
+<div class="large-diff">{{lines}} lines: click to open</div>
+{{else}}
+<div class="loading">loading...</div>
+{{/if}}

@@ -653,9 +653,25 @@ html, body {
 }
 
 .commit-summary .file:hover {
-	color: #6a6a6a;
 	color: #1a54ab;
 	text-decoration: underline;
+}
+
+.patch .large-diff {
+	color: #6a6a6a;
+	margin-left: 2em;
+	margin-top: 5px;
+}
+
+.patch .large-diff:hover {
+	color: #1a54ab;
+	text-decoration: underline;
+}
+
+.patch .loading {
+	color: #6a6a6a;
+	margin-left: 2em;
+	margin-top: 5px;
 }
 
 .commit-view .diff-view {

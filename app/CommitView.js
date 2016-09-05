@@ -70,9 +70,8 @@ var CommitSummaryView = Backbone.View.extend({
 		return {
 			message: commit.subject,
 			files: app.focusPatch.map(function(r) {
-				let patch = r.get("patch");
-				let oldFile = patch.oldFile;
-				let newFile = patch.newFile;
+				let oldFile = r.get("oldFile");
+				let newFile = r.get("newFile");
 				return {
 					id: pathToId(newFile || oldFile),
 					file: newFile || oldFile,
