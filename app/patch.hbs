@@ -1,4 +1,7 @@
-<div class="patch-header">diff "{{file}}" "{{newFile}}"</div>
+<div class="patch-header">{{file}}</div>
+{{#each msgs}}
+<div class="diff-msg">{{msg}}</div>
+{{/each}}
 {{#if hunks}}
 <table>
 {{#each hunks}}
@@ -20,6 +23,6 @@
 </table>
 {{else if large}}
 <div class="large-diff">{{lines}} lines: click to open</div>
-{{else}}
+{{else if loading}}
 <div class="loading">loading...</div>
 {{/if}}

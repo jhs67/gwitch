@@ -657,6 +657,15 @@ html, body {
 	text-decoration: underline;
 }
 
+.patch-header {
+	font-size: 1.2em;
+	font-weight: bold;
+}
+
+.patch .diff-msg {
+	margin-left: 2em;
+}
+
 .patch .large-diff {
 	color: #6a6a6a;
 	margin-left: 2em;

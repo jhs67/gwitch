@@ -26,31 +26,52 @@ let PatchView = Backbone.View.extend({
 	render: function() {
 		let oldFile = this.model.get("oldFile");
 		let newFile = this.model.get("newFile");
+		let oldmode = this.model.get("oldmode");
+		let newmode = this.model.get("newmode");
+		let status = this.model.get('status');
+		let binary = this.model.get('binary');
 		let hunks = this.model.get('hunks');
 		let file = newFile || oldFile;
-		let r = {
-			file: file,
-			newFile: newFile,
-			status: this.model.get("status"),
-			id: pathToId(file),
-		};
 
+		// Figure out the lines in the diff and if this is a large diff.
 		let large = false, lines = 0;
 		if (!this.showlarge) {
-			large = hunks && hunks.length > 100;
 			for (let i = 0; hunks && i < hunks.length; i += 1) {
 				lines += hunks[i].lines.length;
-				large = lines > 150 || (r.status === 'A' && lines > 25);
 			}
+			large = (hunks && hunks.length > 100) || lines > (status === 'D' || status === 'A' ? 25 : 150);
 		}
 
-		r.large = large;
-		r.lines = lines;
+		// setup the record for rendering
+		let r = { file, large, lines, status, msgs: [], loading: !binary && !hunks };
 		if (hunks && !large)
 			r.hunks = DiffView.mapHunks(hunks);
 
+		// add any additional info about the commit
+		if (status === 'A') {
+			if (newmode)
+				r.msgs.push({ msg: "new file mode " + newmode });
+			else
+				r.msgs.push({ msg: "new file" });
+		}
+		if (status === 'D') {
+			if (oldmode)
+				r.msgs.push({ msg: "delete file mode " + oldmode });
+			else
+				r.msgs.push({ msg: "delete file" });
+		}
+		if (status === 'C')
+			r.msgs.push({ msg: "copy file from " + oldFile + " to " + newFile });
+		if (status === 'R')
+			r.msgs.push({ msg: "rename file from " + oldFile + " to " + newFile });
+		if (status !== 'A' && status !== 'D' && newmode != oldmode)
+			r.msgs.push({ msg: "mode change from " + oldmode + " to " + newmode });
+		if (binary)
+			r.msgs.push({ msg: "binary files differ" });
+
+		// render the template and set my id
 		this.$el.html(patchHbs(r));
-		this.$el.attr('id', r.id);
+		this.$el.attr('id', pathToId(file));
 
 		return this;
 	},

@@ -131,72 +131,239 @@ Gwit.prototype.log = function(heads) {
 };
 
 function isDiffLine(c) {
-	return c === ' ' || c === '-' || c === '+';
+	return c === ' ' || c === '-' || c === '+' || c === '\\';
 }
 
-function parseDiff(diff)  {
+function diffEHeader(l, m) {
+	if (l.startsWith(m))
+		return l.substr(m.length);
+}
+
+function unEscapePath(v) {
+	if (v[0] !== '"')
+		return v;
+	let r = "", i = 1;
+	while (i < v.length + 1) {
+		let e = v.indexOf('/', i);
+		if (e === i) {
+			i += 1;
+			if (v[i] === 't')
+				r += '\t';
+			else if (v[i] === 'n')
+				r += '\n';
+			else
+				r += v[i];
+			i += 1;
+		}
+		else if (e === -1) {
+			r += v.substr(i, v.length - 1 - i);
+			break;
+		}
+		else {
+			r += v.substr(i, e - v);
+			i = e;
+		}
+	}
+}
+
+function parseDiff(diff) {
 	let ret = { patches: [] };
 	let lines = diff.split('\n'), i = 0;
+	lines.pop();
 	while (i < lines.length) {
-		let l = lines[i++];
-		if (!l.startsWith('---'))
-			continue;
-		let r = lines[i++];
-		if (!r.startsWith('+++'))
-			continue;
+		let d = lines[i++];
+		if (!d.startsWith("diff --git"))
+			throw new Error("invalid diff line: " + d);
 
-		let src = l.substr(3).trim();
-		let dst = r.substr(3).trim();
+		let binary = false, empty = false, status = 'M';
+		let oldmode, newmode, from, to;
+		while (i < lines.length) {
+			let w = lines[i], v;
+			if ((v = diffEHeader(w, "--- "))) {
+				if (!from) {
+					from = unEscapePath(v);
+					if (from === "/dev/null") {
+						from = null;
+					}
+					else if (from.startsWith('a/')) {
+						from = from.substr(2);
+					}
+					else {
+						throw new Error("unexpected from path in diff: " + w);
+					}
+				}
 
-		if (src.startsWith('a/'))
-			src = src.substr(2);
-		if (dst.startsWith('b/'))
-			dst = dst.substr(2);
+				i += 1;
+				w = lines[i];
+				v = diffEHeader(w, "+++ ");
+				if (!v) {
+					throw new Error("expected +++ diff header line: " + w);
+				}
+				if (!to) {
+					to = unEscapePath(v);
+					if (to === "/dev/null") {
+						to = null;
+					}
+					else if (to.startsWith('b/')) {
+						to = to.substr(2);
+					}
+					else {
+						throw new Error("unexpected to path in diff: " + w);
+					}
+				}
 
-		if (src === "/dev/null")
-			src = null;
-		if (dst === "/dev/null")
-			dst = null;
+				i += 1;
+				break;
+			}
+			else if ((v = diffEHeader(w, "Binary files "))) {
+				let m = v.match(/(.*) and (.*) differ/);
+				if (!m) {
+					throw new Error("unexpected binary diff message: " + w);
+				}
+
+				if (!from) {
+					from = unEscapePath(m[1]);
+					if (from === "/dev/null") {
+						from = null;
+					}
+					else if (from.startsWith('a/')) {
+						from = from.substr(2);
+					}
+					else {
+						throw new Error("unexpected from path in diff: " + w);
+					}
+				}
+
+				if (!to) {
+					to = unEscapePath(m[2]);
+					if (to === "/dev/null") {
+						to = null;
+					}
+					else if (to.startsWith('b/')) {
+						to = to.substr(2);
+					}
+					else {
+						throw new Error("unexpected to path in diff: " + w);
+					}
+				}
+
+				binary = true;
+				i += 1;
+				break;
+			}
+			else if ((v = diffEHeader(w, "diff --git "))) {
+				empty = true;
+				break;
+			}
+			else if ((v = diffEHeader(w, "old mode "))) {
+				oldmode = v;
+			}
+			else if ((v = diffEHeader(w, "deleted file mode "))) {
+				status = 'D';
+				oldmode = v;
+			}
+			else if ((v = diffEHeader(w, "new mode "))) {
+				newmode = v;
+			}
+			else if ((v = diffEHeader(w, "new file mode "))) {
+				status = 'A';
+				newmode = v;
+			}
+			else if ((v = diffEHeader(w, "copy from "))) {
+				status = 'C';
+				from = unEscapePath(v);
+			}
+			else if ((v = diffEHeader(w, "rename from "))) {
+				status = 'R';
+				from = unEscapePath(v);
+			}
+			else if ((v = diffEHeader(w, "copy to "))) {
+				status = 'C';
+				to = unEscapePath(v);
+			}
+			else if ((v = diffEHeader(w, "rename to "))) {
+				status = 'R';
+				to = unEscapePath(v);
+			}
+			else if ((v = diffEHeader(w, "index "))) {
+				let m = v.match("[0-9a-fA-F]*...[0-9a-fA-F]*\( ([0-7]*)\)?");
+				if (!m) {
+					throw new Error("unexected index header: " + w);
+				}
+				if (m[1]) {
+					oldmode = newmode = m[1];
+				}
+			}
+			else if (!diffEHeader(w, "similarity index ") && !diffEHeader(w, "similarity index ")) {
+				throw new Error("unrecognized git extended header line: " + w);
+			}
+			i += 1;
+		}
+
+		if (!from && !to) {
+			let m = d.match(/diff --git a\/(.*) b\/\1/);
+			if (m) {
+				to = m[1];
+			}
+			else {
+				m = d.match(/diff --git a\/(.*) b\/(.*)/);
+				from = m[1];
+				to = m[2];
+			}
+		}
 
 		let patch = {
-			oldFile: src,
-			newFile: dst,
-			hunks: [],
+			status: status,
+			oldmode: oldmode,
+			newmode: newmode,
+			oldFile: from,
+			newFile: to,
 		};
 
-		while (i < lines.length) {
-			l = lines[i++];
-			let m = l.match(/(@@\s*-(\d+)(?:,(\d+))?\s+\+(\d+)(?:,(\d+))?\s*@@.*)/);
-			if (!m) throw new Error("invalid hunk header: " + l);
-			let hunk = {
-				header: m[1],
-				oldStart: parseInt(m[2]),
-				oldCount: m[3] ? parseInt(m[3]) : 0,
-				newStart: parseInt(m[4]),
-				newCount: m[5] ? parseInt(m[5]) : 0,
-				lines: [],
-			};
+		if (binary) {
+			patch.binary = true;
+			patch.hunks = [];
+		}
+		else if (empty) {
+			patch.hunks = [];
+		}
+		else {
+			patch.hunks = [];
 
-			let oldLineno = hunk.oldStart;
-			let newLineno = hunk.newStart;
 			while (i < lines.length) {
-				if (!isDiffLine(lines[i][0]))
-					break;
-				l = lines[i++];
-				let line = {
-					origin: l[0],
-					content: l.substr(1),
-					oldLineno: l[0] !== '+' ? oldLineno++ : -1,
-					newLineno: l[0] !== '-' ? newLineno++ : -1,
+				let l = lines[i++];
+				let m = l.match(/(@@\s*-(\d+)(?:,(\d+))?\s+\+(\d+)(?:,(\d+))?\s*@@.*)/);
+				if (!m) throw new Error("invalid hunk header: " + l);
+				let hunk = {
+					header: m[1],
+					oldStart: parseInt(m[2]),
+					oldCount: m[3] ? parseInt(m[3]) : 0,
+					newStart: parseInt(m[4]),
+					newCount: m[5] ? parseInt(m[5]) : 0,
+					lines: [],
 				};
 
-				hunk.lines.push(line);
+				let oldLineno = hunk.oldStart;
+				let newLineno = hunk.newStart;
+				while (i < lines.length) {
+					if (!isDiffLine(lines[i][0]))
+						break;
+					l = lines[i++];
+					let line = {
+						origin: l[0],
+						content: l.substr(1),
+						oldLineno: l[0] !== '\\' && l[0] !== '+' ? oldLineno++ : -1,
+						newLineno: l[0] !== '\\' && l[0] !== '-' ? newLineno++ : -1,
+					};
+
+					hunk.lines.push(line);
+				}
+
+				patch.hunks.push(hunk);
+
+				if (i === lines.length || lines[i][0] !== '@')
+					break;
 			}
-
-			patch.hunks.push(hunk);
-
-			if (lines[i][0] !== '@')
-				break;
 		}
 
 		ret.patches.push(patch);
@@ -206,25 +373,25 @@ function parseDiff(diff)  {
 }
 
 Gwit.prototype.diffCommits = function(from, to) {
-	return this.git("diff", from, to).then(function(out) {
+	return this.git("diff", "-M50", "-C50", from, to).then(function(out) {
 		return parseDiff(out);
 	});
 };
 
 Gwit.prototype.diffCommitFile = function(from, to, file) {
-	return this.git("diff", from, to, "--", file).then(function(out) {
+	return this.git("diff", "-M50", "-C50", from, to, "--", file).then(function(out) {
 		return parseDiff(out);
 	});
 };
 
 Gwit.prototype.diffIndexToWorkdir = function() {
-	return this.git("diff").then(function(out) {
+	return this.git("diff", "-M50", "-C50").then(function(out) {
 		return parseDiff(out);
 	});
 };
 
 Gwit.prototype.diffHeadToIndex = function() {
-	return this.git("diff", "--cached").then(function(out) {
+	return this.git("diff", "-M50", "-C50", "--cached").then(function(out) {
 		return parseDiff(out);
 	});
 };
@@ -325,21 +492,22 @@ Gwit.prototype.getStatus = function() {
 };
 
 Gwit.prototype.diffFileWorkingToIndex = function(file) {
-	return this.git("diff", "--", file).then(function(out) {
+	return this.git("diff", "-M50", "-C50", "--", file).then(function(out) {
 		let d = parseDiff(out);
 		return d && d.patches && d.patches[0];
 	});
 };
 
 Gwit.prototype.diffFileWorkingToHead = function(file) {
-	return this.git("diff", "HEAD", "--", file).then(function(out) {
+	return this.git("diff", "-M50", "-C50", "HEAD", "--", file).then(function(out) {
 		let d = parseDiff(out);
 		return d && d.patches && d.patches[0];
 	});
 };
 
 Gwit.prototype.diffFileIndexToHead = function(file, from) {
-	let args = from ? ["diff", "HEAD", "-M01", "--cached", "--", from, file ] : ["diff", "HEAD", "--cached", "--", file];
+	let args = from ? ["diff", "-M50", "-C50", "HEAD", "-M01", "--cached", "--", from, file ] :
+		["diff", "-M50", "-C50", "HEAD", "--cached", "--", file];
 	return this.git(args).then(function(out) {
 		let d = parseDiff(out);
 		return d && d.patches && d.patches[0];
@@ -347,7 +515,7 @@ Gwit.prototype.diffFileIndexToHead = function(file, from) {
 };
 
 Gwit.prototype.diffFileUntracked = function(file) {
-	return this.gitRc("diff", "--no-index", "--", "/dev/null", file).then(function(r) {
+	return this.gitRc("diff", "-M50", "-C50", "--no-index", "--", "/dev/null", file).then(function(r) {
 		let d = parseDiff(r.out);
 		return d && d.patches && d.patches[0];
 	});
