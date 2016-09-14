@@ -34,6 +34,7 @@ var CommitCollection = Backbone.Collection.extend({
 });
 
 var PatchModel = Backbone.Model.extend({
+	path: function() { return this.get('newFile') || this.get('oldFile'); },
 });
 
 var PatchCollection = Backbone.Collection.extend({
@@ -64,86 +65,100 @@ app.repoSettings = new RepoSettingsModel();
 app.submodules = new Backbone.Collection();
 app.focusPatch = new PatchCollection();
 app.windowLayout = new WindowLayoutModel();
-app.status = new Backbone.Collection();
+app.workingStatus = new PatchCollection();
+app.indexStatus = new PatchCollection();
+app.statusGeneration = 0;
 
 function loadStatus() {
+	// Use a generation counter to keep old jobs from continuing
+	app.statusGeneration += 1;
+	let generation = app.statusGeneration;
 
 	return app.repo.getStatus().then(function (files) {
-		var queue = new (cwait.TaskQueue)(Promise, 16);
+		if (app.statusGeneration !== generation)
+			return;
 
-		return Promise.all(files.map(queue.wrap(function(status) {
-			let tasks = [];
-			status.id = pathToId(status.path);
-			if (status.workingStatus === '?') {
-				tasks.push(queue.wrap(app.repo.diffFileUntracked.bind(app.repo))(status.path)
-					.then(function(patch) {
-						status.workingPatch = patch;
-						return;
-					}));
+		// Sort through the list and sort into working and index changes.
+		let work = [], cache = [];
+		files.forEach(f => {
+			let id = pathToId(f.path);
+			if (f.workingStatus !== ' ') {
+				let status = f.workingStatus;
+				let newFile = status === 'D' ? null : f.path;
+				let oldFile = status === 'D' ? f.path : f.fromPath || f.path;
+				work.push({ id, status, newFile, oldFile, unmerged: f.unmerged });
 			}
-			else if (status.unmerged) {
-				tasks.push(queue.wrap(app.repo.diffFileWorkingToHead.bind(app.repo))(status.path)
-					.then(function(patch) {
-						status.workingPatch = patch;
-						return;
-					}));
-			}
-			else if (status.workingStatus !== ' ') {
-				tasks.push(queue.wrap(app.repo.diffFileWorkingToIndex.bind(app.repo))(status.path)
-					.then(function(patch) {
-						status.workingPatch = patch;
-						return;
-					}));
-			}
-			if (status.indexStatus !== ' ' && !status.unmerged) {
-				tasks.push(queue.wrap(app.repo.diffFileIndexToHead.bind(app.repo))(status.path, status.fromPath)
-					.then(function(patch) {
-						status.indexPatch = patch;
-						return;
-					}));
+			if (f.indexStatus !== ' ' && f.indexStatus !== '?') {
+				cache.push({ id, status: f.indexStatus, newFile: f.path, oldFile: f.fromPath, unmerged: f.unmerged });
 			}
 
-			return queue.unblock(Promise.all(tasks))
-			.then(function() {
-				return status;
-			})
-			.catch(function(err) {
-				console.log("hmmm " + err.stack);
+		});
+
+		work = work.map(w => new PatchModel(w));
+		cache = cache.map(w => new PatchModel(w));
+
+		let queue = new (cwait.TaskQueue)(Promise, 2);
+
+		return Promise.all(work.map(queue.wrap(r => {
+			if (app.statusGeneration !== generation)
+				return Promise.resolve();
+
+			let patch;
+			let status = r.get('status');
+			if (status === '?')
+				patch = app.repo.diffFileUntracked(r.path());
+			else if (r.get('unmerged'))
+				patch = app.repo.diffFileWorkingToHead(r.path());
+			else
+				patch = app.repo.diffFileWorkingToIndex(r.path());
+
+			return patch.then(patch => {
+				if (status === '?' && patch.status === 'A')
+					patch.status = status;
+				if (app.statusGeneration !== generation)
+					return;
+				r.set(patch);
 			});
-		})))
-		.then(function(stati) {
-			// Reset the status collection
-			app.status.reset(stati);
+		})).concat(cache.map(queue.wrap(r => {
+			if (app.statusGeneration !== generation)
+				return Promise.resolve();
+
+			if (r.get("unmerged")) {
+				r.set("hunks", []);
+				return;
+			}
+
+			let patch = app.repo.diffFileIndexToHead(r.path(), r.get("oldFile"));
+
+			return patch.then(patch => {
+				if (app.statusGeneration !== generation)
+					return;
+				r.set(patch);
+			});
+		})))).then(() => {
+			if (app.statusGeneration !== generation)
+				return;
+
+			app.workingStatus.reset(work);
+			app.indexStatus.reset(cache);
 
 			// Remove any focus files that don't exist.
 			let a;
 			let ff = app.repoSettings.get("focusFiles");
 			if (ff && ff.unstaged) {
-				let nf = ff.unstaged.filter(function(f) {
-					let r = app.status.get(pathToId(f));
-					if (!r) return false;
-					let s = r.get('workingStatus');
-					return s !== ' ';
-				});
+				let nf = ff.unstaged.filter(f => { return app.workingStatus.get(pathToId(f)); });
 				if (ff.length !== nf.length)
 					a = { unstaged: nf };
 			}
 			if (ff && ff.staged) {
-				let nf = ff.staged.filter(function(f) {
-					let r = app.status.get(pathToId(f));
-					if (!r) return false;
-					let s = r.get('indexStatus');
-					return s !== ' ' && s !== '?';
-				});
+				let nf = ff.staged.filter(f => { return app.indexStatus.get(pathToId(f)); });
 				if (ff.length !== nf.length) {
 					if (!a) a = {};
 					a.staged = nf;
 				}
 			}
 
-			if (a) {
-				app.repoSettings.set("focusFiles", a);
-			}
+			if (a) app.repoSettings.set("focusFiles", a);
 		});
 	});
 }
@@ -154,7 +169,8 @@ app.workingWatch = new Watcher(function() { app.workingUpdater.poke(); });
 app.close = function() {
 	app.repo = null;
 	app.commits.reset([]);
-	app.status.reset([]);
+	app.workingStatus.reset([]);
+	app.indexStatus.reset([]);
 	app.focusPatch.reset([]);
 	app.refs.reset([]);
 	app.submodules.reset([]);
@@ -172,6 +188,7 @@ app.close = function() {
 	app.windowLayout.unset('stageList');
 	app.workingWatch.close();
 	app.commitsWatch.close();
+	app.statusGeneration += 1;
 
 	if (app.workingWalk) {
 		app.workingWalk.cancel();
@@ -407,8 +424,8 @@ var ClientView = Backbone.View.extend({
 		this.hsplitter.$el.addClass("history-splitter");
 		this.$el.append(this.hsplitter.el);
 
-		this.diff = new PickView({ collection: app.status, settings: app.repoSettings, app: app });
-		this.index = new IndexView({ collection: app.status, windowLayout: app.windowLayout, settings: app.repoSettings, app: app });
+		this.diff = new PickView({ settings: app.repoSettings, app: app });
+		this.index = new IndexView({ windowLayout: app.windowLayout, settings: app.repoSettings, app: app });
 		this.dsplitter = new SplitterView({ top: this.diff.$el, bottom: this.index.$el, key: "commitBar" });
 		this.dsplitter.$el.addClass("stage-splitter");
 		this.$el.append(this.dsplitter.el);

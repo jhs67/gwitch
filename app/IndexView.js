@@ -17,13 +17,13 @@ let MultiFilesView = Backbone.View.extend({
 	initialize: function(opt) {
 		this.app = opt.app;
 		this.settings = opt.settings;
-		this.listenTo(this.collection, "all", this.render);
+		let events = "add remove update reset sort change:newFile change:oldfile change:status change:unmerged";
+		this.listenTo(this.collection, events, this.render);
 		this.listenTo(this.settings, "change:focusFiles", this.setSelected);
 		this.el.classList.add("multi-file-view");
 		this.focus = -1;
 		this.origin = -1;
 		this.extent = -1;
-		this.filter = this.filter.bind(this);
 		return this.render();
 	},
 
@@ -44,7 +44,7 @@ let MultiFilesView = Backbone.View.extend({
 		ev.preventDefault();
 
 		let r = this.collection.get(ev.currentTarget.id);
-		let path = r && r.get("path");
+		let path = r && r.path();
 		if (!path) return;
 
 		let a = this.settings.get("focusFiles");
@@ -121,7 +121,7 @@ let MultiFilesView = Backbone.View.extend({
 			let f = [], a = {};
 			for (let i = Math.min(n, this.origin); i <= Math.max(n, this.origin); i += 1) {
 				let r = this.collection.get(items[i].id);
-				f.push(r.get('path'));
+				f.push(r.path());
 			}
 			a[this.key] = f;
 			this.settings.set("focusFiles", a);
@@ -129,7 +129,7 @@ let MultiFilesView = Backbone.View.extend({
 		else {
 			this.origin = -1;
 			let r = this.collection.get(items[this.focus].id), a = {};
-			a[this.key] = [ r.get('path') ];
+			a[this.key] = [ r.path() ];
 			this.settings.set("focusFiles", a);
 		}
 	},
@@ -140,7 +140,7 @@ let MultiFilesView = Backbone.View.extend({
 
 		let r = this.collection.get(ev.currentTarget.id);
 		let target = $(ev.currentTarget).index();
-		let tpath = r.get('path');
+		let tpath = r.path();
 		this.origin = target;
 		this.extent = target;
 
@@ -167,7 +167,7 @@ let MultiFilesView = Backbone.View.extend({
 				let items = this.$(".file-item");
 				let s = Math.min(target, this.focus), e = Math.max(target, this.focus);
 				for (let k = s; k <= e; k += 1) {
-					selected.push(this.collection.get(items[k].id).get('path'));
+					selected.push(this.collection.get(items[k].id).path());
 				}
 			}
 			this.dragType = 'shift';
@@ -236,11 +236,11 @@ let MultiFilesView = Backbone.View.extend({
 
 		let items = this.$(".file-item");
 		for (let k = this.extent; esign * (k - l) > 0 && k !== this.origin; k -= esign) {
-			this.dragSub(selected, this.collection.get(items[k].id).get('path'));
+			this.dragSub(selected, this.collection.get(items[k].id).path());
 		}
 
 		for (let k = l; lsign * (k - this.extent) > 0 && k !== this.origin; k -= lsign) {
-			this.dragAdd(selected, this.collection.get(items[k].id).get('path'));
+			this.dragAdd(selected, this.collection.get(items[k].id).path());
 		}
 
 		this.extent = l;
@@ -257,20 +257,19 @@ let MultiFilesView = Backbone.View.extend({
 		let selected = (a && a[this.key]) || [];
 		this.$(".file-item").each(function() {
 			let r = c.get(this.id);
-			let on = selected.indexOf(r.get('path')) !== -1;
+			let on = selected.indexOf(r.path()) !== -1;
 			if (on) this.classList.add("selected");
 			else this.classList.remove("selected");
 		});
 	},
 
 	record: function() {
-		let statusKey = this.statusKey;
 		return {
-			files: this.collection.filter(this.filter).map(function(r) {
+			files: this.collection.map(function(r) {
 				return {
 					id: r.cid,
-					path: r.get('path'),
-					status: r.get(statusKey),
+					path: r.path(),
+					status: r.get('status'),
 					unmerged: r.get('unmerged'),
 				};
 			}),
@@ -292,8 +291,6 @@ let WorkingFilesView = MultiFilesView.extend({
 	className: "working-files",
 	key: "unstaged",
 	title: "Unstaged Files",
-	statusKey: "workingStatus",
-	filter: function(r) { return r.get('workingStatus') !== ' '; },
 
 	onStage: function() {
 		let app = this.app;
@@ -323,7 +320,7 @@ let WorkingFilesView = MultiFilesView.extend({
 		let status = this.collection;
 		let todiscard = [], todel = selected.filter(function(f) {
 			let r = status.get(pathToId(f));
-			if (r.get('workingStatus') === '?')
+			if (r.get('status') === '?')
 				return true;
 			todiscard.push(f);
 			return false;
@@ -361,8 +358,6 @@ let IndexFilesView = MultiFilesView.extend({
 	className: "index-files",
 	title: "Staged Files",
 	key: "staged",
-	statusKey: "indexStatus",
-	filter: function(r) { let s = r.get('indexStatus'); return s !== ' ' && s !== '?'; },
 
 	onUnstage: function() {
 		let app = this.app;
@@ -418,7 +413,7 @@ let CommitMessageView = Backbone.View.extend({
 
 	updateCommitButton: function() {
 		let ok = this.$('.message').val().length !== 0;
-		ok = ok && this.collection.any(m => { let s = m.get('indexStatus'); return s !== ' ' && s !== '?'; });
+		ok = ok && this.collection.any(m => { let s = m.get('status'); return s !== ' ' && s !== '?'; });
 		this.$('.commit-button').prop('disabled', !ok);
 	},
 
@@ -449,11 +444,11 @@ let IndexView = Backbone.View.extend({
 
 	initialize: function(opt) {
 		this.windowLayout = opt.windowLayout;
-		this.working = new WorkingFilesView({ collection: this.collection, settings: opt.settings, app: opt.app });
+		this.working = new WorkingFilesView({ collection: opt.app.workingStatus, settings: opt.settings, app: opt.app });
 		this.lbar = $('<div class="hsplitter-bar"><div class="gap"/><div class="splitter-dot"/><div class="gap"/></div>');
-		this.commit = new CommitMessageView({ collection: this.collection, app: opt.app });
+		this.commit = new CommitMessageView({ collection: opt.app.indexStatus, app: opt.app });
 		this.rbar = $('<div class="hsplitter-bar"><div class="gap"/><div class="splitter-dot"/><div class="gap"/></div>');
-		this.index = new IndexFilesView({ collection: this.collection, settings: opt.settings, app: opt.app });
+		this.index = new IndexFilesView({ collection: opt.app.indexStatus, settings: opt.settings, app: opt.app });
 
 		this.dragKey = [ 'workingList', 'stageList' ];
 		this.dragSign = [ +1, -1 ];

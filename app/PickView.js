@@ -191,12 +191,13 @@ var PickView = DiffView.extend({
 			});
 
 			if (file) {
-				let oldFile = patch.oldFile;
+				let oldFile = patch.get("oldFile");
+				let newFile = patch.get("newFile");
 				if (!oldFile) {
-					oldFile = patch.newFile;
-					toadd.push(patch.newFile);
+					oldFile = newFile;
+					toadd.push(newFile);
 				}
-				total += "--- a/" + oldFile + "\n+++ b/" + patch.newFile + "\n" + file;
+				total += "--- a/" + oldFile + "\n+++ b/" + newFile + "\n" + file;
 			}
 		});
 
@@ -215,32 +216,28 @@ var PickView = DiffView.extend({
 		this.app = opt.app;
 		this.settings = opt.settings;
 		this.listenTo(this.settings, "change:focusFiles", this.render);
-		opt.showlarge = true;
+		this.listenTo(this.app.workingStatus, "add remove update reset sort", this.render);
+		this.listenTo(this.app.indexStatus, "add remove update reset sort", this.render);
 		DiffView.prototype.initialize.apply(this, arguments);
 	},
 
 	records: function() {
 		var focusFiles = this.settings.get("focusFiles");
-		var staged = (focusFiles && focusFiles.staged) || [];
-		var unstaged = (focusFiles && focusFiles.unstaged) || [];
+		var staged = focusFiles && focusFiles.staged;
+		var unstaged = focusFiles && focusFiles.unstaged;
 
 		var patches = this.patches = [];
-		this.collection.forEach(function(r) {
-			let path = r.get('path');
-			if (unstaged.indexOf(path) !== -1 && r.get('workingPatch'))
-				patches.push(r.get('workingPatch'));
-			if (staged.indexOf(path) !== -1 && r.get('indexPatch'))
-				patches.push(r.get('indexPatch'));
-			if (staged.length === 0 && unstaged.length === 0 && r.get('workingPatch'))
-				patches.push(r.get('workingPatch'));
-		});
+		var all = (!unstaged || unstaged.length === 0) && (!staged || staged.length === 0);
+		if (unstaged || all)
+			this.app.workingStatus.forEach(r => { if (all || unstaged.indexOf(r.path()) !== -1) patches.push(r); });
+		if (staged)
+			this.app.indexStatus.forEach(r => { if (staged.indexOf(r.path()) !== -1) patches.push(r); });
 
-		return patches.map(p => new Backbone.Model(p));
+		return patches;
 	},
 
 	render: function() {
 		DiffView.prototype.render.apply(this, arguments);
-		this.lines = this.$('.diff-line').toArray();
 		this.$('.button').removeClass('show');
 		this.$('.patches').attr('tabindex', 1);
 		return this;
