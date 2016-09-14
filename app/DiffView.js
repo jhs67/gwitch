@@ -102,10 +102,10 @@ module.exports = DiffView;
 
 DiffView.mapHunks = function(hunks) {
 	if (!hunks) return hunks;
-	return hunks.map(function(hunk) {
+	return hunks.map(function(hunk, hi) {
 		return {
 			header: hunk.header,
-			lines: hunk.lines.map(function(line) {
+			lines: hunk.lines.map(function(line, li) {
 				var classes = [];
 				if (line.origin === "+")
 					classes.push('new');
@@ -117,6 +117,7 @@ DiffView.mapHunks = function(hunks) {
 					classes: classes.join(' '),
 					oldLineno: line.oldLineno < 0 ? "" : line.oldLineno,
 					newLineno: line.newLineno < 0 ? "" : line.newLineno,
+					id: 'h' + hi + 'l' + li,
 				};
 			}),
 		};

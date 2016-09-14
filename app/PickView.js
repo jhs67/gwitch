@@ -1,8 +1,8 @@
 "use strict";
 
 var $ = require('jquery');
-var Backbone = require("backbone");
 var DiffView = require("./DiffView");
+var pathToId = require('./pathToId');
 
 var PickView = DiffView.extend({
 
@@ -114,20 +114,38 @@ var PickView = DiffView.extend({
 	},
 
 	buttonClick: function(ev) {
-		var es = this.lines;
-		var total = "", index = 0;
+		var total = "";
+
+		let files = {};
+		let sl = this.$('.diff-line.selected').toArray();
+		sl.forEach(l => {
+			let patch = l.parentElement.parentElement.parentElement;
+			let path = pathToId.invert(patch.id);
+			let h = files[path] || (files[path] = []);
+			let i = l.id.substr(1).split('l').map(i => parseInt(i));
+			let r = h[i[0]] || (h[i[0]] = []);
+			r[i[1]] = true;
+		});
 
 		let toadd = [];
 		let forward = !this.settings.get("focusFiles") || !this.settings.get("focusFiles").staged;
 		this.patches.forEach(function (patch) {
+			let hunkselected = files[patch.path()];
+			if (!hunkselected)
+				return;
+
 			var noff = 0, ooff = 0, file = "";
-			patch.hunks.forEach(function(hunk) {
+			let hunks = patch.get("hunks") || [];
+			hunks.forEach(function(hunk, hi) {
+				let lineselected = hunkselected[hi];
+				if (!lineselected)
+					return;
+
 				var nstart = hunk.newStart + noff;
 				var ostart = hunk.oldStart + ooff;
 				var ncount = 0, ocount = 0, changes = false, content = "";
-				hunk.lines.forEach(function(line) {
-					var on = es[index].classList.contains('selected');
-					index += 1;
+				hunk.lines.forEach(function(line, li) {
+					var on = lineselected[li];
 
 					if (line.origin === " ") {
 						content += " " + line.content + '\n';
