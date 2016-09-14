@@ -81,7 +81,7 @@ var DiffView = Backbone.View.extend({
 	className: 'diff-view',
 
 	initialize: function(opt) {
-		this.showlarge = opt && opt.showlarge;
+		this.map = {};
 		this.listenTo(this.collection, "add remove update reset sort", this.render);
 		return this.render();
 	},
@@ -91,10 +91,18 @@ var DiffView = Backbone.View.extend({
 	},
 
 	render: function() {
-		let r = this.records();
 		this.$el.html(diffHbs({}));
-		let p = this.$('.patches');
-		r.forEach(patch => { p.append(new PatchView({ showlarge: this.showlarge, model: patch }).$el); });
+		let patches = this.$('.patches');
+
+		let r = this.records(), map = {};
+		r.forEach(p => {
+			let o = this.map[p.path()];
+			let v = new PatchView({ model: p, showlarge: o && o.showlarge });
+			map[p.path()] = v;
+			patches.append(v.$el);
+			return v;
+		});
+		this.map = map;
 		return this;
 	}
 });
