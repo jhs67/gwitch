@@ -35,6 +35,25 @@ var CommitCollection = Backbone.Collection.extend({
 
 var PatchModel = Backbone.Model.extend({
 	path: function() { return this.get('newFile') || this.get('oldFile'); },
+
+	setup: function(difflimit, addlimit, old) {
+		let hunks = this.get('hunks');
+		let lines = !hunks ? 0 : hunks.reduce((p, h) => h.lines.length + p, 0);
+		this.set('lines', lines);
+
+		let status = this.get('status');
+		let large =  lines > (status === 'D' || status === 'A' ? addlimit : difflimit);
+		this.set('large', large);
+
+		if (old && old.has('show'))
+			this.set('show', old.get('show'));
+	},
+
+	show: function() {
+		if (this.has('show'))
+			return this.get('show');
+		return !this.get('large');
+	}
 });
 
 var PatchCollection = Backbone.Collection.extend({
@@ -139,6 +158,11 @@ function loadStatus() {
 			if (app.statusGeneration !== generation)
 				return;
 
+			// Setup the implicit values and copy ui state from the old model
+			work.forEach(r => { r.setup(400, 50, app.workingStatus.get(r.id)); });
+			cache.forEach(r => { r.setup(400, 50, app.indexStatus.get(r.id)); });
+
+			// reset the model
 			app.workingStatus.reset(work);
 			app.indexStatus.reset(cache);
 
@@ -280,6 +304,7 @@ function loadFocusDiff(from, commit, index) {
 
 		let patch = patches.patches[0];
 		r.set(patch);
+		r.setup(200, 25);
 		return loadFocusDiff(from, commit, index + 1);
 	});
 }

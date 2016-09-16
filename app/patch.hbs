@@ -2,7 +2,9 @@
 {{#each msgs}}
 <div class="diff-msg">{{msg}}</div>
 {{/each}}
-{{#if hunks}}
+{{#if loading}}
+<div class="loading">loading...</div>
+{{else if show}}
 <table>
 {{#each hunks}}
 	<tr class="hunk">
@@ -21,8 +23,6 @@
 	{{/each}}
 {{/each}}
 </table>
-{{else if large}}
+{{else}}
 <div class="large-diff">{{lines}} lines: click to open</div>
-{{else if loading}}
-<div class="loading">loading...</div>
 {{/if}}

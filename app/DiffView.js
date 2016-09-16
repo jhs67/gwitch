@@ -14,12 +14,11 @@ let PatchView = Backbone.View.extend({
 
 	initialize: function(opts) {
 		this.listenTo(this.model, "all", this.render);
-		this.showlarge = opts && opts.showlarge;
 		return this.render();
 	},
 
 	clickLargeDiff: function(ev) {
-		this.showlarge = true;
+		this.model.set('show', true);
 		this.render();
 	},
 
@@ -31,20 +30,13 @@ let PatchView = Backbone.View.extend({
 		let status = this.model.get('status');
 		let binary = this.model.get('binary');
 		let hunks = this.model.get('hunks');
-		let file = newFile || oldFile;
-
-		// Figure out the lines in the diff and if this is a large diff.
-		let large = false, lines = 0;
-		if (!this.showlarge) {
-			for (let i = 0; hunks && i < hunks.length; i += 1) {
-				lines += hunks[i].lines.length;
-			}
-			large = (hunks && hunks.length > 100) || lines > (status === 'D' || status === 'A' ? 25 : 150);
-		}
+		let lines = this.model.get('lines');
+		let show = this.model.show();
+		let file = this.model.path();
 
 		// setup the record for rendering
-		let r = { file, large, lines, status, msgs: [], loading: !binary && !hunks };
-		if (hunks && !large)
+		let r = { file, show, lines, status, msgs: [], loading: !binary && !hunks };
+		if (show && hunks)
 			r.hunks = DiffView.mapHunks(hunks);
 
 		// add any additional info about the commit
@@ -96,8 +88,7 @@ var DiffView = Backbone.View.extend({
 
 		let r = this.records(), map = {};
 		r.forEach(p => {
-			let o = this.map[p.path()];
-			let v = new PatchView({ model: p, showlarge: o && o.showlarge });
+			let v = new PatchView({ model: p });
 			map[p.path()] = v;
 			patches.append(v.$el);
 			return v;
