@@ -289,42 +289,39 @@ app.commitsWatch = new Watcher(function(ev, file) {
 		app.workingUpdater.poke();
 });
 
-function loadFocusDiff(from, commit, index) {
-	if (commit != app.repoSettings.get('focusCommit'))
-		return;
-	if (index >= app.focusPatch.length)
-		return;
-
-	let r = app.focusPatch.at(index);
-	let oldFile = r.get("oldFile");
-	let newFile = r.get("newFile");
-	return app.repo.diffCommitFile(from, commit, newFile || oldFile).then(patches => {
-		if (commit !== app.repoSettings.get('focusCommit'))
-			return;
-
-		let patch = patches.patches[0];
-		r.set(patch);
-		r.setup(200, 25);
-		return loadFocusDiff(from, commit, index + 1);
-	});
-}
-
 function loadFocusCommit() {
 	app.focusPatch.reset([]);
 	let focusCommit = app.repoSettings.get('focusCommit');
-	let c = app.commits.get(focusCommit);
-	if (!c) return;
-	let commit = c.get('commit');
-	let p = commit.parents;
-	if (p.length === 1) {
-		return app.repo.commitStatus(focusCommit).then(status => {
-			if (focusCommit !== app.repoSettings.get('focusCommit'))
-				return;
+	let commit = app.commits.get(focusCommit);
+	if (!commit)
+		return Promise.resolve();
+	let p = commit.get('commit').parents;
+	if (p.length !== 1)
+		return Promise.resolve();
 
-			app.focusPatch.reset(status);
-			return loadFocusDiff(p[0], focusCommit, 0);
-		});
-	}
+	return app.repo.commitStatus(focusCommit).then(status => {
+		if (focusCommit !== app.repoSettings.get('focusCommit'))
+			return;
+		app.focusPatch.reset(status);
+	}).then(() => {
+		if (focusCommit !== app.repoSettings.get('focusCommit'))
+			return;
+
+		let queue = new (cwait.TaskQueue)(Promise, 2);
+		return Promise.all(app.focusPatch.map(queue.wrap(r => {
+			if (focusCommit != app.repoSettings.get('focusCommit'))
+				return Promise.resolve();
+
+			return app.repo.diffCommitFile(p[0], focusCommit, r.path()).then(patches => {
+				if (focusCommit !== app.repoSettings.get('focusCommit'))
+					return;
+
+				let patch = patches.patches[0];
+				r.set(patch);
+				r.setup(200, 25);
+			});
+		})));
+	});
 }
 
 function getGitDir() {
