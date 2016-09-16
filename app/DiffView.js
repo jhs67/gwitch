@@ -13,8 +13,13 @@ let PatchView = Backbone.View.extend({
 	},
 
 	initialize: function(opts) {
-		this.listenTo(this.model, "all", this.render);
+		this.listenTo(this.model, "change", this.refresh);
 		return this.render();
+	},
+
+	refresh: function() {
+		if (!this.immediate)
+			this.immediate = setImmediate(() => { this.immediate = null; this.render(); });
 	},
 
 	clickLargeDiff: function(ev) {
