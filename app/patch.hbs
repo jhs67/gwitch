@@ -1,4 +1,9 @@
-<div class="patch-header">{{file}}</div>
+<div class="patch-header {{#if show}}show{{/if}}">
+	<div class="patch-name">{{file}}</div>
+	{{#unless loading}}{{#unless binary}}
+	<div class="patch-expand" />
+	{{/unless}}{{/unless}}
+</div>
 {{#each msgs}}
 <div class="diff-msg">{{msg}}</div>
 {{/each}}

@@ -660,6 +660,24 @@ html, body {
 .patch-header {
 	font-size: 1.2em;
 	font-weight: bold;
+	display: flex;
+	flex-flow: row nowrap;
+}
+
+.patch-header .patch-name {
+	flex: 1 1 auto;
+}
+
+.patch-header .patch-expand {
+	flex: 0 0 auto;
+	background-image: url(assets/expand.svg);
+	background-position: right center;
+	background-repeat: no-repeat;
+	min-width: 1em;
+}
+
+.patch-header.show .patch-expand {
+	background-image: url(assets/contract.svg);
 }
 
 .patch .diff-msg {

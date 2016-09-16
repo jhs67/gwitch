@@ -10,6 +10,7 @@ let PatchView = Backbone.View.extend({
 
 	events: {
 		"click .large-diff": "clickLargeDiff",
+		"click .patch-header": "clickExpand",
 	},
 
 	initialize: function(opts) {
@@ -27,6 +28,11 @@ let PatchView = Backbone.View.extend({
 		this.render();
 	},
 
+	clickExpand: function(ev) {
+		if (this.model.get('hunks') && !this.model.get('binary'))
+			this.model.set('show', !this.model.show());
+	},
+
 	render: function() {
 		let oldFile = this.model.get("oldFile");
 		let newFile = this.model.get("newFile");
@@ -40,7 +46,7 @@ let PatchView = Backbone.View.extend({
 		let file = this.model.path();
 
 		// setup the record for rendering
-		let r = { file, show, lines, status, msgs: [], loading: !binary && !hunks };
+		let r = { file, show, lines, status, binary, msgs: [], loading: !binary && !hunks };
 		if (show && hunks)
 			r.hunks = DiffView.mapHunks(hunks);
 
