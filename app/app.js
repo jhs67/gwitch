@@ -125,7 +125,7 @@ function loadStatus() {
 
 			if (r.get("unmerged")) {
 				r.set("hunks", []);
-				return;
+				return Promise.resolve();
 			}
 
 			let patch = app.repo.diffFileIndexToHead(r.path(), r.get("oldFile"));
