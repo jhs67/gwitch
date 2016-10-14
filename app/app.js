@@ -132,6 +132,8 @@ function loadStatus() {
 				patch = app.repo.diffFileWorkingToIndex(r.path());
 
 			return patch.then(patch => {
+				if (!patch)
+					return;
 				if (status === '?' && patch.status === 'A')
 					patch.status = status;
 				if (app.statusGeneration !== generation)
