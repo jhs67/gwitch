@@ -396,24 +396,39 @@ Gwit.prototype.diffHeadToIndex = function() {
 	});
 };
 
+function parseNameStatus(out) {
+	let lines = out.split('\n');
+	lines.splice(-1, 1);
+	return lines.map(line => {
+		let r = line.split('\t');
+		let status = r[0], similarity;
+		if (status.length > 1) {
+			similarity = parseInt(status.substr(1));
+			status = status[0];
+		}
+		let oldFile = r[1], newFile;
+		if (r.length > 2) {
+			oldFile = r[1];
+			newFile = r[2];
+		}
+		return { newFile, oldFile, status, similarity };
+	});
+}
+
+Gwit.prototype.amendStatus = function() {
+	return this.git("diff", "-M50", "-C50", "--cached", "--name-status", "HEAD^").then(parseNameStatus);
+};
+
 Gwit.prototype.commitStatus = function(ref) {
-	return this.git("show", "--name-status", "--format=", "-M50", "-C50", ref).then(out => {
-		let lines = out.split('\n');
-		lines.splice(-1, 1);
-		return lines.map(line => {
-			let r = line.split('\t');
-			let status = r[0], similarity;
-			if (status.length > 1) {
-				similarity = parseInt(status.substr(1));
-				status = status[0];
-			}
-			let oldFile = r[1], newFile;
-			if (r.length > 2) {
-				oldFile = r[1];
-				newFile = r[2];
-			}
-			return { newFile, oldFile, status, similarity };
-		});
+	return this.git("show", "--name-status", "--format=", "-M50", "-C50", ref).then(parseNameStatus);
+};
+
+Gwit.prototype.amendMessage = function() {
+	return this.git("show", "-s", "--format=%B", "HEAD").then(out => {
+		out = out.substr(0, out.length - 1);
+		if (out.indexOf('\n') == out.length - 1)
+			out = out.substr(0, out.length - 1);
+		return out;
 	});
 };
 
@@ -505,6 +520,15 @@ Gwit.prototype.diffFileWorkingToHead = function(file) {
 	});
 };
 
+Gwit.prototype.diffFileIndexToAmend = function(file, from) {
+	let args = from ? ["diff", "-M01", "-C50", "HEAD^", "--cached", "--", from, file ] :
+		["diff", "-M50", "-C50", "HEAD^", "--cached", "--", file];
+	return this.git(args).then(function(out) {
+		let d = parseDiff(out);
+		return d && d.patches && d.patches[0];
+	});
+};
+
 Gwit.prototype.diffFileIndexToHead = function(file, from) {
 	let args = from ? ["diff", "-M50", "-C50", "HEAD", "-M01", "--cached", "--", from, file ] :
 		["diff", "-M50", "-C50", "HEAD", "--cached", "--", file];
@@ -545,4 +569,8 @@ Gwit.prototype.addIntent = function(file) {
 
 Gwit.prototype.commit = function(message) {
 	return this.git("commit", "-m", message);
+};
+
+Gwit.prototype.amendCommit = function(message) {
+	return this.git("commit", "--amend", "-m", message);
 };

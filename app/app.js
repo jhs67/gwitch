@@ -88,7 +88,14 @@ app.workingStatus = new PatchCollection();
 app.indexStatus = new PatchCollection();
 app.statusGeneration = 0;
 
+app.repoSettings.on("change:focusCommit", loadFocusCommit);
+app.repoSettings.on("change:amend", loadStatus);
+
 function loadStatus() {
+	// No repo right now
+	if (!app.repo)
+		return;
+
 	// Use a generation counter to keep old jobs from continuing
 	app.statusGeneration += 1;
 	let generation = app.statusGeneration;
@@ -97,9 +104,19 @@ function loadStatus() {
 		if (app.statusGeneration !== generation)
 			return;
 
+		if (!app.repoSettings.get('amend'))
+			return { files };
+
+		return app.repo.amendStatus().then(amend => {
+			return { files, amend };
+		});
+	}).then(status => {
+		if (app.statusGeneration !== generation)
+			return;
+
 		// Sort through the list and sort into working and index changes.
 		let work = [], cache = [];
-		files.forEach(f => {
+		status.files.forEach(f => {
 			let id = pathToId(f.path);
 			if (f.workingStatus !== ' ') {
 				let status = f.workingStatus;
@@ -110,8 +127,16 @@ function loadStatus() {
 			if (f.indexStatus !== ' ' && f.indexStatus !== '?') {
 				cache.push({ id, status: f.indexStatus, newFile: f.path, oldFile: f.fromPath, unmerged: f.unmerged });
 			}
-
 		});
+
+		// If we are in amend mode rebuild the index changes with the amend status
+		if (status.amend) {
+			cache = [];
+			status.amend.forEach(f => {
+				f.id = pathToId(f.newFile || f.oldFile);
+				cache.push(f);
+			});
+		}
 
 		work = work.map(w => new PatchModel(w));
 		cache = cache.map(w => new PatchModel(w));
@@ -149,7 +174,11 @@ function loadStatus() {
 				return Promise.resolve();
 			}
 
-			let patch = app.repo.diffFileIndexToHead(r.path(), r.get("oldFile"));
+			let patch;
+			if (app.repoSettings.get("amend"))
+				patch = app.repo.diffFileIndexToAmend(r.path(), r.get("oldFile"));
+			else
+				patch = app.repo.diffFileIndexToHead(r.path(), r.get("oldFile"));
 
 			return patch.then(patch => {
 				if (app.statusGeneration !== generation)
@@ -204,10 +233,11 @@ app.close = function() {
 	app.repoSettings.unset('activeBranch');
 	app.repoSettings.unset('focusFiles');
 	app.repoSettings.unset('hiddenRemotes');
+	app.repoSettings.unset('head');
+	app.repoSettings.unset('amend');
 	app.workingCopy.unset('path');
 	app.workingCopy.unset('name');
 	app.workingCopy.unset('gitdir');
-	app.repoSettings.unset('head');
 	app.windowLayout.unset('commitBar');
 	app.windowLayout.unset('historyBar');
 	app.windowLayout.unset('workingList');
@@ -292,6 +322,10 @@ app.commitsWatch = new Watcher(function(ev, file) {
 });
 
 function loadFocusCommit() {
+	// No repo right now
+	if (!app.repo)
+		return;
+
 	app.focusPatch.reset([]);
 	let focusCommit = app.repoSettings.get('focusCommit');
 	let commit = app.commits.get(focusCommit);
@@ -432,7 +466,6 @@ app.open = function(file) {
 	});
 
 	app.windowLayout.fetch();
-	app.repoSettings.on("change:focusCommit", loadFocusCommit);
 };
 
 var ClientView = Backbone.View.extend({

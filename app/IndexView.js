@@ -396,11 +396,14 @@ let CommitMessageView = Backbone.View.extend({
 		"input .message": "onMessageChange",
 		"change .message": "onMessageChange",
 		"click .commit-button": "onCommitClick",
+		"click .amend": "toggleAmend",
 	},
 
 	initialize: function(opt) {
 		this.app = opt.app;
 		this.listenTo(this.collection, "all", this.updateCommitButton);
+		this.listenTo(this.app.repoSettings, "change:amend", this.updateAmend);
+		this.oldmsg = "";
 		return this.render();
 	},
 
@@ -408,7 +411,22 @@ let CommitMessageView = Backbone.View.extend({
 		return { files: [] };
 	},
 
-	isValidMessage: function() {
+	toggleAmend: function() {
+		let amend = !this.app.repoSettings.get('amend');
+		this.app.repoSettings.set('amend', amend);
+		if (amend) {
+			this.app.repo.amendMessage().then(msg => {
+				this.oldmsg = this.$('.message').val();
+				this.$(".message").val(msg);
+			});
+		}
+		else {
+			this.$(".message").val(this.oldmsg);
+		}
+	},
+
+	updateAmend: function() {
+		this.$('.amend').prop('checked', this.app.repoSettings.get('amend'));
 	},
 
 	updateCommitButton: function() {
@@ -422,8 +440,15 @@ let CommitMessageView = Backbone.View.extend({
 	},
 
 	onCommitClick: function() {
-		this.app.repo.commit(this.$('.message').val()).then(() => {
+		let commit;
+		if (this.app.repoSettings.get('amend'))
+			commit = this.app.repo.amendCommit(this.$('.message').val());
+		else
+			commit = this.app.repo.commit(this.$('.message').val());
+		commit.then(() => {
+			this.oldmsg = "";
 			this.$(".message").val("");
+			this.app.repoSettings.set('amend', false);
 			this.app.commitsUpdater.commit();
 			this.app.workingUpdater.commit();
 		});
@@ -431,8 +456,8 @@ let CommitMessageView = Backbone.View.extend({
 
 	render: function() {
 		this.$el.html(commitMessageHbs(this.record()));
-		this.$('.amend').prop('disabled', !this.isValidMessage());
 		this.updateCommitButton();
+		this.updateAmend();
 	},
 });
 
