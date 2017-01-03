@@ -41,13 +41,10 @@ class WindowManager {
 		this.state.isMaximized = win.isMaximized();
 		this.state.isFullScreen = win.isFullScreen();
 		this.state.displayBounds = electron.screen.getDisplayMatching(winBounds).bounds;
-
-		if (!this.state.isMaximized && !this.state.isFullScreen && !win.isMinimized()) {
-			this.state.x = winBounds.x;
-			this.state.y = winBounds.y;
-			this.state.width = winBounds.width;
-			this.state.height = winBounds.height;
-		}
+		this.state.x = winBounds.x;
+		this.state.y = winBounds.y;
+		this.state.width = winBounds.width;
+		this.state.height = winBounds.height;
 	}
 
 	saveState() {
