@@ -31,9 +31,21 @@
 	</div>
 	{{/each}}
 </div>
+{{#if tags}}
 <div class="tags section">
 	<div class="tags-title title">Tags</div>
 </div>
+{{/if}}
+{{#if submodules}}
+<div class="submodules section">
+	<div class="submodule-title title">Submodules</div>
+	{{#each submodules}}
+	<div class="submodule-line" id="{{idName}}">
+		<div class="submodule">{{name}}</div>
+	</div>
+	{{/each}}
+</div>
+{{/if}}
 </div>
 <div class="nav-buttons">
 	<button class="show-recent">

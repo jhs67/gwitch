@@ -446,10 +446,14 @@ function loadRefWatches() {
 	});
 }
 
-app.open = function(file) {
-	app.workingCopy.set('path', file);
-	app.workingCopy.set('name', path.basename(file, ".git"));
-	Gwit.open(file).then(function(repo) {
+app.open = function(file, submodule) {
+	submodule = submodule || [];
+	let subpath = submodule.length === 0 ? '' : path.join(...submodule);
+	app.workingCopy.set('root', file);
+	app.workingCopy.set('submodule', submodule);
+	app.workingCopy.set('path', path.join(file, subpath));
+	app.workingCopy.set('name', path.join(path.basename(file, ".git"), subpath));
+	Gwit.open(path.join(file, subpath)).then(function(repo) {
 		app.repo = repo;
 		app.workingUpdater.start();
 		app.commitsUpdater.start();
@@ -472,7 +476,8 @@ var ClientView = Backbone.View.extend({
 	className: 'client-view',
 
 	initialize: function() {
-		this.refs = new RefsView({ collection: app.refs, workingCopy: app.workingCopy, repoSettings: app.repoSettings });
+		this.refs = new RefsView({ collection: app.refs, workingCopy: app.workingCopy,
+			repoSettings: app.repoSettings, submodules: app.submodules });
 		this.$el.append(this.refs.el);
 
 		this.commit = new CommitView();
@@ -514,9 +519,9 @@ var ClientView = Backbone.View.extend({
 var clientView = null;
 var recentView = null;
 
-ipcRenderer.on('open-repo', function(emitter, repo) {
+ipcRenderer.on('open-repo', function(emitter, repo, submodule) {
 	app.close();
-	app.open(repo);
+	app.open(repo, submodule);
 	if (recentView) {
 		recentView.remove();
 		recentView = null;

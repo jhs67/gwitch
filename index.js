@@ -75,10 +75,17 @@ let menuTemplate = [
 let windowManager = null;
 let recentRepos = null;
 
-function sendOpenRepo(window, repo) {
-	window.setTitle("gwitch - " + path.basename(repo, ".git"));
-	window.webContents.send('open-repo', repo);
-	recentRepos.add(repo);
+function sendOpenRepo(window, repo, submodule) {
+	if (submodule) {
+		window.setTitle("gwitch - " + path.join(path.basename(repo, ".git"), ...submodule));
+		window.webContents.send('open-repo', repo, submodule);
+		recentRepos.add(repo);
+	}
+	else {
+		window.setTitle("gwitch - " + path.basename(repo, ".git"));
+		window.webContents.send('open-repo', repo);
+		recentRepos.add(repo);
+	}
 }
 
 function sendOpenRecent(window) {
@@ -149,9 +156,9 @@ ipcMain.on('open-other', function(ev) {
 	});
 });
 
-ipcMain.on('open-repo', function(ev, repo) {
+ipcMain.on('open-repo', function(ev, repo, submodule) {
 	let f = path.resolve(repo);
-	sendOpenRepo(ev.sender.getOwnerBrowserWindow(), f);
+	sendOpenRepo(ev.sender.getOwnerBrowserWindow(), f, submodule);
 });
 
 ipcMain.on('open-recent', function(ev) {

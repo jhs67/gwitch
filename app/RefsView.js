@@ -11,7 +11,9 @@ var RefsView = Backbone.View.extend({
 	initialize: function(opts) {
 		this.workingCopy = opts.workingCopy;
 		this.repoSettings = opts.repoSettings;
+		this.submodules = opts.submodules;
 		this.listenTo(this.collection, "all", this.invalidate);
+		this.listenTo(this.submodules, "all", this.invalidate);
 		this.listenTo(this.workingCopy, "change:head", this.setHead);
 		this.listenTo(this.repoSettings, "change:activeBranch", this.setActive);
 		this.listenTo(this.repoSettings, "change:hiddenRemotes", this.setHiddenRemotes);
@@ -24,6 +26,7 @@ var RefsView = Backbone.View.extend({
 		"click .remote-line": "clickBranch",
 		"click .show-recent": "clickRecentList",
 		"click .remote-header": "clickRemoteHeader",
+		"click .submodule": "clickSubmodule",
 	},
 
 	clickStage: function(ev) {
@@ -39,7 +42,14 @@ var RefsView = Backbone.View.extend({
 	},
 
 	clickRecentList: function(ev) {
-		ipcRenderer.send('open-recent');
+		let submodule = this.workingCopy.get('submodule');
+		if (submodule.length === 0) {
+			ipcRenderer.send('open-recent');
+		}
+		else {
+			submodule.pop();
+			ipcRenderer.send('open-repo', this.workingCopy.get('root'), submodule);
+		}
 	},
 
 	clickRemoteHeader: function(ev) {
@@ -53,6 +63,14 @@ var RefsView = Backbone.View.extend({
 		else {
 			this.repoSettings.set('hiddenRemotes', h.concat(r));
 		}
+	},
+
+	clickSubmodule: function(ev) {
+		let e = ev.currentTarget.parentNode;
+		let r = pathToId.invert(e.id);
+		let submodule = this.workingCopy.get('submodule');
+		submodule.push(r);
+		ipcRenderer.send('open-repo', this.workingCopy.get('root'), submodule);
 	},
 
 	invalidate: function() {
@@ -112,10 +130,13 @@ var RefsView = Backbone.View.extend({
 		let locals = this.collection.toJSON().filter(function(r) { return r.type === "heads"; });
 		locals.forEach(function(r) { r.idName = pathToId(r.refName); });
 
+		let submodules = this.submodules.map(s => ({ name: s.get('path'), idName: pathToId(s.get('path')) }));
+
 		return {
 			title: this.workingCopy.get("name"),
 			branches: locals,
 			remotes: allRemotes,
+			submodules: submodules,
 		};
 	},
 

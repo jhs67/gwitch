@@ -177,6 +177,15 @@ html, body {
 	margin-left: 0.5rem;
 }
 
+.refs-view .submodule {
+	flex: 0 0 auto;
+	background-image: url(assets/submodule.svg);
+	background-position: left center;
+	background-repeat: no-repeat;
+	padding-left: 1.5em;
+	margin-left: 0.5rem;
+}
+
 .refs-view .remote-header svg {
 	height: 1em;
 	vertical-align: middle;
@@ -234,7 +243,6 @@ html, body {
 }
 
 .refs-view .title {
-	font-variant: small-caps;
 	font-weight: bold;
 	margin-bottom: 0.2rem;
 }
@@ -252,7 +260,12 @@ html, body {
 	flex-flow: row nowrap;
 }
 
-.refs-view .stage-line, .refs-view .branch-line, .refs-view .remote-line, .refs-view .remote-header {
+.refs-view .submodule-line {
+	display: flex;
+	flex-flow: row nowrap;
+}
+
+.refs-view .stage-line, .refs-view .branch-line, .refs-view .remote-line, .refs-view .remote-header .submodule-line {
 	padding: 2px;
 }
 
