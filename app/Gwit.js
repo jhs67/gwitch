@@ -63,8 +63,12 @@ Gwit.prototype.gitRc = function() {
 };
 
 Gwit.prototype.getRefs = function() {
-	return this.git("show-ref", "--head").then(function(refout) {
-		return refout.substr(0, refout.length - 1).split('\n').map(function(line) {
+	return this.gitRc("show-ref", "--head").then(function(result) {
+		if (result.code === 1)
+			return [];
+		if (result.code !== 0)
+			return Promise.reject(new Error("unexpected git return value"));
+		return result.out.substr(0, result.out.length - 1).split('\n').map(function(line) {
 			let split = line.indexOf(' ');
 			let hash = line.substr(0, split);
 			let refName = line.substr(split + 1);
@@ -120,6 +124,8 @@ let LogKeys = Object.keys(LogFields);
 let LogFormat = "--pretty=format:" + LogKeys.map(function(k) { return LogFields[k]; }).join('%x1f') + '%x1e';
 
 Gwit.prototype.log = function(heads) {
+	if (heads.length === 0)
+		return Promise.resolve([]);
 	return this.git("log", LogFormat, heads).then(function(out) {
 		return out.substr(0, out.length - 1).split("\x1e").map(function(record) {
 			let v = record.trim().split('\x1f'), r = {};
@@ -530,8 +536,8 @@ Gwit.prototype.diffFileIndexToAmend = function(file, from) {
 };
 
 Gwit.prototype.diffFileIndexToHead = function(file, from) {
-	let args = from ? ["diff", "-M50", "-C50", "HEAD", "-M01", "--cached", "--", from, file ] :
-		["diff", "-M50", "-C50", "HEAD", "--cached", "--", file];
+	let args = from ? ["diff", "-M50", "-C50", "-M01", "--cached", "--", from, file ] :
+		["diff", "-M50", "-C50", "--cached", "--", file];
 	return this.git(args).then(function(out) {
 		let d = parseDiff(out);
 		return d && d.patches && d.patches[0];
