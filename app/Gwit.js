@@ -92,6 +92,21 @@ Gwit.prototype.getRefs = function() {
 				name: name,
 			};
 		});
+	}).then(result => {
+		return this.git("stash", "list", "--format=%H").then(output => {
+			let stashlist = output.split('\n');
+			stashlist.shift();
+			stashlist.pop();
+			stashlist.forEach((hash, i) => {
+				result.push({
+					hash: hash,
+					refName: `stash@{${i + 1}}`,
+					name: `stash@{${i + 1}}`,
+					type: 'stash',
+				});
+			});
+			return result;
+		});
 	});
 };
 
