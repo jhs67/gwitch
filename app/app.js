@@ -332,8 +332,6 @@ function loadFocusCommit() {
 	if (!commit)
 		return Promise.resolve();
 	let p = commit.get('commit').parents;
-	if (p.length !== 1)
-		return Promise.resolve();
 
 	return app.repo.commitStatus(focusCommit).then(status => {
 		if (focusCommit !== app.repoSettings.get('focusCommit'))
