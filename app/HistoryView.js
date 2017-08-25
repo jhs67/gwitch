@@ -167,10 +167,20 @@ var HistoryView = Backbone.View.extend({
 	className: 'history-view',
 
 	initialize: function(opts) {
+		this.raf = null;
+		this.rowHeight = 20;
 		this.refs = opts.refs;
+		this.oldscrolltop = 0;
+		this.needrefresh = true;
+		this.isrefresh = false;
+		this.oldrowstart = 0;
+		this.oldrowend = 0;
+		this.oldFocus = null;
 		this.repoSettings = opts.repoSettings;
-		this.listenTo(this.collection, "all", this.render);
+		this.listenTo(this.refs, "all", () => { this.oldrowstart = this.oldrowend = 0; this.createRows(); });
+		this.listenTo(this.collection, "all", () => { this.oldrowstart = this.oldrowend = 0; this.createRows(); });
 		this.listenTo(this.repoSettings, "change:focusCommit", this.setFocus);
+		this.listenTo(this.repoSettings, "change:activeBranch", this.branchChange);
 		this.render();
 	},
 
@@ -182,6 +192,29 @@ var HistoryView = Backbone.View.extend({
 		this.repoSettings.set('focusCommit', ev.currentTarget.id);
 	},
 
+	branchChange: function(a, b) {
+		if (b && this.needrefresh) {
+			this.needrefresh = false;
+			this.isrefresh = true;
+			this.dirty();
+		}
+		else if (!b && !this.needrefresh) {
+			this.oldscrolltop = this.wrapper.scrollTop;
+			this.needrefresh = true;
+		}
+	},
+
+	dirty() {
+		this.raf = this.raf || window.requestAnimationFrame(() => {
+			this.raf = null;
+			if (this.isrefresh) {
+				this.wrapper.scrollTop = this.oldscrolltop;
+				this.isrefresh = false;
+			}
+			this. createRows();
+		});
+	},
+
 	setFocus: function() {
 		if (this.oldFocus)
 			this.$("#" + this.oldFocus).removeClass('focus');
@@ -189,46 +222,94 @@ var HistoryView = Backbone.View.extend({
 		if (this.oldFocus) {
 			let e = this.$("#" + this.oldFocus);
 			e.addClass('focus');
-			if (e[0]) {
-				let s = this.$(".wrapper")[0];
-				let top = e[0].offsetTop, height = e[0].offsetHeight;
-				let stop = s.scrollTop, sheight = s.offsetHeight;
-				let itop = top - stop, ibot = itop + height - sheight;
-				if (itop < 0)
-					e[0].scrollIntoView();
-				else if (ibot > 0)
-					e[0].scrollIntoView(false);
-			}
+			let idx = this.collection.indexOf(this.collection.get(this.oldFocus));
+			let top = idx * this.rowHeight;
+			let stop = this.oldscrolltop;
+			let sheight = this.wrapper.offsetHeight;
+			let dtop = top - Math.max(sheight - this.rowHeight, 0);
+			if (top < stop)
+				this.oldscrolltop = top;
+			else if (dtop > stop)
+				this.oldscrolltop = dtop;
+			this.wrapper.scrollTop = this.oldscrolltop;
 		}
+	},
+
+	createRows: function() {
+		// Figure out the visable range of rows
+		let vh = this.wrapper.offsetHeight;
+		let st = this.wrapper.scrollTop;
+
+		let toprow = Math.floor(st / this.rowHeight);
+		let botrow = Math.ceil((st + vh) / this.rowHeight);
+		botrow = Math.min(botrow, this.collection.length);
+
+		// check if nothing has changed
+		if (toprow == this.oldrowstart && botrow == this.oldrowend)
+			return;
+		this.oldrowstart = toprow;
+		this.oldrowend = botrow;
+
+		// Create a top row with the size of all the missing rows at the start
+		let ff = document.createDocumentFragment();
+		if (toprow > 0) {
+			let virt = HistoryRow.cloneNode(true);
+			virt.style.height = `${toprow * this.rowHeight}px`;
+			ff.appendChild(virt);
+		}
+
+		// Create an element for each row
+		let refs = this.refs.toJSON();
+		for (let i = toprow; i < botrow; i += 1) {
+			let c = this.collection.at(i);
+			let commit = c.get('commit');
+			let rt = refs.filter(function(r) {
+				return !(r.type === "remotes" && r.name.split('/').pop() === "HEAD") && r.hash === c.id;
+			});
+
+			let tr = makeRow(c.id, c.get('graph'), commit.subject, commit.authorName,
+				new Date(commit.authorStamp * 1000), rt);
+			tr.style.height = `${this.rowHeight}px`;
+			ff.appendChild(tr);
+		}
+
+		// Add a tail row for any missing rows at the end
+		let tailrows = this.collection.length - botrow;
+		if (tailrows > 0) {
+			let virt = HistoryRow.cloneNode(true);
+			virt.style.height = `${tailrows * this.rowHeight}px`;
+			ff.appendChild(virt);
+		}
+
+		// update the table with the new rows
+		while (this.table.firstChild)
+			this.table.removeChild(this.table.firstChild);
+		this.table.appendChild(ff);
+
+		// reset any lost focus class
+		this.$("#" + this.repoSettings.get('focusCommit')).addClass('focus');
 	},
 
 	render: function() {
 		this.$el.empty();
 		this.el.appendChild(HistoryHeader.cloneNode(true));
 
-		// Create a row for each commit
-		let refs = this.refs.toJSON();
-		let table = document.createElement('table');
-		this.collection.map(function(c) {
-			let commit = c.get('commit');
-			let r = refs.filter(function(r) {
-				return !(r.type === "remotes" && r.name.split('/').pop() === "HEAD") && r.hash === c.id;
-			});
+		this.table = document.createElement('table');
+		let table = this.table;
 
-			let tr = makeRow(c.id, c.get('graph'), commit.subject, commit.authorName,
-				new Date(commit.authorStamp * 1000), r);
-			table.appendChild(tr);
-			return tr;
-		});
-
-		// Add the master table
+		// Add the table with a scroll wrapper
 		let div = document.createElement('div');
 		div.classList.add('wrapper');
 		div.appendChild(table);
 		this.el.appendChild(div);
+		this.wrapper = div;
 
-		this.oldFocus = null;
-		this.setFocus();
+		// listen for scroll events to update the virtual scrolling
+		div.addEventListener('scroll', () => {
+			if (!this.needrefresh)
+				this.oldscrolltop = this.wrapper.scrollTop;
+			this.dirty();
+		});
 
 		return this;
 	},

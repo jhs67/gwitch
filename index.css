@@ -513,7 +513,7 @@ html, body {
 
 .history-view svg {
 	vertical-align: middle;
-	height: 1.65em;
+	height: 20px;
 }
 
 .history-view .commit-line {
