@@ -274,7 +274,7 @@ function getCommits(repo, refs) {
 				});
 			});
 
-			return graph.createGraph(byId, heads.map(function(h) { return byId.get(h); }));
+			return graph.createGraph(byId, heads.map(h => byId.get(h)).filter(h => h));
 		});
 	});
 }
