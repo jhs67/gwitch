@@ -7,11 +7,16 @@ function createGraph(byId, heads) {
 	var byOrder = [];
 	var concat = [].concat, search = 0;
 	function getTip(c) {
-		if (c.index !== -1 || c.search === search)
-			return [];
-		c.search = search;
-		var t = getTips(c.children);
-		return t.length !== 0 ? t : c;
+		for (;;) {
+			if (c.index !== -1 || c.search === search)
+				return [];
+			c.search = search;
+			if (c.children.length === 0)
+				return c;
+			if (c.children.length > 1)
+				return getTips(c.children);
+			c = c.children[0];
+		}
 	}
 	function getTips(o) { return concat.apply([], o.map(getTip)); }
 
