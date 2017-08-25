@@ -492,6 +492,7 @@ html, body {
 	padding-right: 16px;
 	border-bottom: solid #d8d8d8 1px;
 	padding-top: 2px;
+	overflow: hidden;
 }
 
 .history-view .wrapper td {

@@ -292,7 +292,8 @@ var HistoryView = Backbone.View.extend({
 
 	render: function() {
 		this.$el.empty();
-		this.el.appendChild(HistoryHeader.cloneNode(true));
+		let hh = HistoryHeader.cloneNode(true);
+		this.el.appendChild(hh);
 
 		this.table = document.createElement('table');
 		let table = this.table;
@@ -306,6 +307,7 @@ var HistoryView = Backbone.View.extend({
 
 		// listen for scroll events to update the virtual scrolling
 		div.addEventListener('scroll', () => {
+			hh.scrollLeft = this.wrapper.scrollLeft;
 			if (!this.needrefresh)
 				this.oldscrolltop = this.wrapper.scrollTop;
 			this.dirty();
