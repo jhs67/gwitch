@@ -508,6 +508,10 @@ html, body {
 	overflow: auto;
 }
 
+.history-view .wrapper table, .history-view .header table {
+	min-width: 50em;
+}
+
 .history-view .wrapper tr:nth-child(2n) {
 	background-color: #f4f4f4;
 }
