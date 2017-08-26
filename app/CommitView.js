@@ -30,12 +30,14 @@ var CommitInfoView = Backbone.View.extend({
 		let c = app.commits.get(focusCommit);
 		if (!c) return [];
 		let commit = c.get('commit');
+		let kids = c.get('children');
 		return {
 			sha: c.id,
 			summary: commit.subject,
 			author: commit.authorName + " <" + commit.authorEmail + ">",
 			authorDate: moment(new Date(commit.authorStamp * 1000)).format('LLL'),
 			parents: commit.parents.map(function(p) { return { sha: p }; }),
+			children: kids.map(p => ({ sha: p.id })),
 		};
 	},
 

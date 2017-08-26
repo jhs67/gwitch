@@ -23,4 +23,10 @@
 		<td class="info" id="{{sha}}">{{sha}}</td>
 	</tr>
 	{{/each}}
+	{{#each children}}
+	<tr class="parent">
+		<td class="label">Child:</td>
+		<td class="info" id="{{sha}}">{{sha}}</td>
+	</tr>
+	{{/each}}
 </table>
