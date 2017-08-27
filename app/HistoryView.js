@@ -264,7 +264,7 @@ var HistoryView = Backbone.View.extend({
 			let c = this.collection.at(i);
 			let commit = c.get('commit');
 			let rt = refs.filter(function(r) {
-				return !(r.type === "remotes" && r.name.split('/').pop() === "HEAD") && r.hash === c.id;
+				return !(r.type === "remotes" && r.name.split('/').pop() === "HEAD") && r.revision === c.id;
 			});
 
 			let tr = makeRow(c.id, c.get('graph'), commit.subject, commit.authorName,

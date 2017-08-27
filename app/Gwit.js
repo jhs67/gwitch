@@ -119,7 +119,7 @@ Gwit.prototype.head = function() {
 };
 
 Gwit.prototype.lookupRef = function(ref) {
-	return this.git("rev-parse", ref).then(function(out) {
+	return this.git("rev-list", "-n1", ref).then(function(out) {
 		return out.trim();
 	});
 };

@@ -257,39 +257,44 @@ app.close = function() {
 };
 
 function getCommits(repo, refs) {
-	return Promise.all(refs.map(function(r) {
-		return repo.lookupRef(r);
-	}))
-	.then(function(heads) {
-		return repo.log(refs).then(function(log) {
-			var byId = new Map();
-			log.forEach(function(commit) {
-				var d = { commit: commit, id: commit.hash, children: [], search: 0, index: -1, graph: [] };
-				byId.set(commit.hash, d);
-			});
-			log.forEach(function(commit) {
-				commit.parents.forEach(function(p) {
-					var d = byId.get(p);
-					d.children.push(byId.get(commit.hash));
-				});
-			});
-
-			return graph.createGraph(byId, heads.map(h => byId.get(h)).filter(h => h));
+	return repo.log(refs.map(r => r.get('revision'))).then(function(log) {
+		var byId = new Map();
+		log.forEach(function(commit) {
+			var d = { commit: commit, id: commit.hash, children: [], search: 0, index: -1, graph: [] };
+			require('assert')(!byId.has(commit.hash));
+			byId.set(commit.hash, d);
 		});
+		log.forEach(function(commit) {
+			commit.parents.forEach(function(p) {
+				var d = byId.get(p);
+				d.children.push(byId.get(commit.hash));
+			});
+		});
+
+		return graph.createGraph(byId, refs.map(r => byId.get(r.get('revision'))));
 	});
 }
 
 function loadCommits() {
 	return Promise.all([
-		app.repo.getRefs().then(function(refs) {
-			app.refs.reset(refs.map(function(r) { r.id = pathToId(r.refName); return r; }));
+		app.repo.getRefs()
+		.then(refs => Promise.all(refs.map(r => {
+			return app.repo.lookupRef(r.name)
+			.then(rev => {
+				r.id = pathToId(r.refName);
+				r.revision = rev;
+				return r;
+			});
+		})))
+		.then(function(refs) {
+			app.refs.reset(refs);
 		}),
 		app.repo.head().then(function(ref) {
 			app.workingCopy.set('head', ref);
 		}),
 	])
 	.then(function() {
-		return getCommits(app.repo, app.refs.map(function(b) { return b.get('refName'); })).then(function(commits) {
+		return getCommits(app.repo, app.refs).then(function(commits) {
 			app.commits.reset(commits);
 
 			let focusCommit = app.repoSettings.get('focusCommit');
