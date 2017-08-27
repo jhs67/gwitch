@@ -26,8 +26,8 @@ function createGraph(byId, heads) {
 	function getTips(o) { return concat.apply([], o.map(getTip)); }
 
 	function idToRecord(id) { return byId.get(id); }
-	function ordering(l, r) { return l.commit.authorStamp < r.commit.authorStamp; }
-	function reverseOrdering(l, r) { return !ordering(l, r); }
+	function ordering(l, r) { return r.commit.authorStamp - l.commit.authorStamp; }
+	function reverseOrdering(l, r) { return -ordering(l, r); }
 	function addHead(c) { heads.unshift(c); }
 
 	heads.sort(ordering);

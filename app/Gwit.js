@@ -145,6 +145,7 @@ Gwit.prototype.log = function(heads) {
 		return out.substr(0, out.length - 1).split("\x1e").map(function(record) {
 			let v = record.trim().split('\x1f'), r = {};
 			LogKeys.forEach(function(k, i) { r[k] = v[i]; });
+			r.authorStamp = parseFloat(r.authorStamp);
 			r.parents = (r.parents && r.parents.split(' ')) || [];
 			return r;
 		});
