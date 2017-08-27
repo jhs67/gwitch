@@ -17,6 +17,7 @@ var RefsView = Backbone.View.extend({
 		this.listenTo(this.workingCopy, "change:head", this.setHead);
 		this.listenTo(this.repoSettings, "change:activeBranch", this.setActive);
 		this.listenTo(this.repoSettings, "change:hiddenRemotes", this.setHiddenRemotes);
+		this.listenTo(this.repoSettings, "change:showTags", this.setHiddenTags);
 		return this.render();
 	},
 
@@ -26,6 +27,8 @@ var RefsView = Backbone.View.extend({
 		"click .remote-line": "clickBranch",
 		"click .show-recent": "clickRecentList",
 		"click .remote-header": "clickRemoteHeader",
+		"click .tags-header": "clickTagsHeader",
+		"click .tag-line": "clickBranch",
 		"click .submodule": "clickSubmodule",
 	},
 
@@ -65,6 +68,11 @@ var RefsView = Backbone.View.extend({
 		}
 	},
 
+	clickTagsHeader: function(ev) {
+		let v = this.repoSettings.get('showTags');
+		this.repoSettings.set('showTags', !v);
+	},
+
 	clickSubmodule: function(ev) {
 		let e = ev.currentTarget.parentNode;
 		let r = pathToId.invert(e.id);
@@ -87,6 +95,14 @@ var RefsView = Backbone.View.extend({
 		}.bind(this));
 	},
 
+	setHiddenTags: function() {
+		let v = this.repoSettings.get('showTags');
+		if (v)
+			this.$(".tags").removeClass("hidden");
+		else
+			this.$(".tags").addClass("hidden");
+	},
+
 	setHead: function() {
 		var branch = this.workingCopy.get("head");
 		this.$(".branch-line").removeClass("active-ref");
@@ -99,11 +115,13 @@ var RefsView = Backbone.View.extend({
 		if (!branch) {
 			this.$(".remote-line").removeClass("selected");
 			this.$(".branch-line").removeClass("selected");
+			this.$(".tag-line").removeClass("selected");
 			this.$(".stage-line").addClass("selected");
 		}
 		else {
 			this.$(".remote-line").removeClass("selected");
 			this.$(".branch-line").removeClass("selected");
+			this.$(".tag-line").removeClass("selected");
 			this.$(".stage-line").removeClass("selected");
 			this.$("#" + pathToId(branch)).addClass("selected");
 		}
@@ -130,12 +148,16 @@ var RefsView = Backbone.View.extend({
 		let locals = this.collection.toJSON().filter(function(r) { return r.type === "heads"; });
 		locals.forEach(function(r) { r.idName = pathToId(r.refName); });
 
+		let tags = this.collection.toJSON().filter(r => r.type === "tags");
+		tags.forEach(function(r) { r.idName = pathToId(r.refName); });
+
 		let submodules = this.submodules.map(s => ({ name: s.get('path'), idName: pathToId(s.get('path')) }));
 
 		return {
 			title: this.workingCopy.get("name"),
 			branches: locals,
 			remotes: allRemotes,
+			tags: tags,
 			submodules: submodules,
 		};
 	},
@@ -144,6 +166,7 @@ var RefsView = Backbone.View.extend({
 		var record = this.record();
 		this.$el.html(refsHbs(record));
 		this.setHiddenRemotes();
+		this.setHiddenTags();
 		this.setActive();
 		this.setHead();
 	},

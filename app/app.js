@@ -233,6 +233,7 @@ app.close = function() {
 	app.repoSettings.unset('activeBranch');
 	app.repoSettings.unset('focusFiles');
 	app.repoSettings.unset('hiddenRemotes');
+	app.repoSettings.unset('showTags');
 	app.repoSettings.unset('head');
 	app.repoSettings.unset('amend');
 	app.workingCopy.unset('path');

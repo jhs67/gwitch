@@ -33,7 +33,16 @@
 </div>
 {{#if tags}}
 <div class="tags section">
-	<div class="tags-title title">Tags</div>
+	<div class="tags-header">
+		<svg class="close-arrow" viewBox="0 0 24 24"><path d="M 5 4 l 14 8 -14 8 z" /></svg>
+		<svg class="open-arrow" viewBox="0 0 24 24"><path d="M 4 5 l 16 0 -8 14 z" /></svg>
+		<div class="tags-title title">Tags</div>
+	</div>
+	{{#each tags}}
+	<div class="tag-line" id="{{idName}}">
+		<div class="tag-name">{{name}}</div>
+	</div>
+	{{/each}}
 </div>
 {{/if}}
 {{#if submodules}}

@@ -186,6 +186,41 @@ html, body {
 	margin-left: 0.5rem;
 }
 
+.refs-view .tags-header svg {
+	height: 1em;
+	vertical-align: middle;
+}
+
+.refs-view .tags-header {
+	display: flex;
+	flex-flow: row nowrap;
+}
+
+.refs-view .tags.hidden .close-arrow {
+	display: inherit;
+}
+
+.refs-view .tags.hidden .open-arrow {
+	display: none;
+}
+
+.refs-view .tags .close-arrow {
+	display: none;
+}
+
+.refs-view .tags.hidden .tag-line {
+	display: none;
+}
+
+.refs-view .tag-line {
+	flex: 0 0 auto;
+	background-image: url(assets/tag.svg);
+	background-position: left center;
+	background-repeat: no-repeat;
+	padding-left: 1.5em;
+	margin-left: 1.0rem;
+}
+
 .refs-view .remote-header svg {
 	height: 1em;
 	vertical-align: middle;
