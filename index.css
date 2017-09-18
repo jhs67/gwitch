@@ -694,10 +694,17 @@ html, body {
 	margin-bottom: 0;
 }
 
-.commit-summary .message {
+.commit-summary .subject {
 	white-space: pre;
 	font-family: "Lucida Console", Monaco, monospace;
 	margin: 1.5em 0 1.4em 0;
+}
+
+.commit-summary .body {
+	white-space: pre;
+	font-size: 90%;
+	font-family: "Lucida Console", Monaco, monospace;
+	margin: 1.1em 0 1.4em 1.0em;
 }
 
 .commit-summary .file {

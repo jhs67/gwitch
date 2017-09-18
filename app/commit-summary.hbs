@@ -1,4 +1,7 @@
-<div class="message">{{message}}</div>
+<div class="subject">{{subject}}</div>
+{{#if body}}
+<div class="body">{{body}}</div>
+{{/if}}
 <div class="file-section">
 	{{#each files}}
 	<div class="files">
