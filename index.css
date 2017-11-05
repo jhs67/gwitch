@@ -478,6 +478,10 @@ html, body {
 	outline-color: #888;
 }
 
+.multi-file-view .file-item {
+	white-space: nowrap;
+}
+
 .multi-file-view .file-item.selected {
 	background-color: #0b82f5;
 	color: white;
