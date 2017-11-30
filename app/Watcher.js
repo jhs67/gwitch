@@ -2,6 +2,8 @@
 
 var fs = require('fs');
 
+var withStat = process.platform === 'darwin';
+
 module.exports = Watcher;
 function Watcher(handler) {
 	this.files = new Map();
@@ -16,13 +18,33 @@ Watcher.prototype.add = function(p) {
 
 	function setWatch() {
 		try {
-			watcher.files.set(p, fs.watch(p, { persistent: false }, function(type, path) {
-				watcher.handler(type, p, path);
+			var w = fs.watch(p, { persistent: false }, function(type, path) {
+				if (withStat && w.initial_stat && type === 'change') {
+					fs.stat(p, function(err, s) {
+						if (!err && w.initial_stat.mtime.getTime() === s.mtime.getTime())
+							return;
+						w.initial_stat = s;
+						watcher.handler(type, p, path);
+					});
+				}
+				else {
+					watcher.handler(type, p, path);
+				}
+
 				if (type === 'rename') {
 					watcher.files.get(p).close();
 					setWatch();
 				}
-			}));
+			});
+
+			if (withStat) {
+				fs.stat(p, function(err, s) {
+					if (err) return;
+					w.initial_stat = s;
+				});
+			}
+
+			watcher.files.set(p, w);
 			return true;
 		}
 		catch(e) {
