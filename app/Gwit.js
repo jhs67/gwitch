@@ -401,6 +401,7 @@ Gwit.prototype.diffCommits = function(from, to) {
 };
 
 Gwit.prototype.diffCommitFile = function(from, to, file) {
+	if (!from) from = '4b825dc642cb6eb9a060e54bf8d69288fbee4904';
 	return this.git("diff", "-M50", "-C50", from, to, "--", file).then(function(out) {
 		return parseDiff(out);
 	});
