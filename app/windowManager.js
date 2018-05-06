@@ -1,4 +1,3 @@
-"use strict";
 
 let electron = require('electron');
 let jetpack = require('fs-jetpack');

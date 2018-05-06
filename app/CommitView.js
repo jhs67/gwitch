@@ -1,4 +1,3 @@
-"use strict";
 
 var moment = require("moment");
 var Backbone = require("backbone");

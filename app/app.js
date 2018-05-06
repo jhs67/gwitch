@@ -1,4 +1,3 @@
-"use strict";
 
 // Set's up require hook to handle hbs files
 require("handlebars");

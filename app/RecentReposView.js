@@ -1,4 +1,3 @@
-"use strict";
 
 var Backbone = require("backbone");
 var ipcRenderer = require('electron').ipcRenderer;

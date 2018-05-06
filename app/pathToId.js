@@ -1,4 +1,3 @@
-"use strict";
 var punycode = require('punycode');
 
 module.exports = pathToId;

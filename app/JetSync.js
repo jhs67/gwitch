@@ -1,4 +1,3 @@
-"use strict";
 
 let app = require('electron').remote.app;
 let jetpack = require('fs-jetpack');

@@ -1,4 +1,3 @@
-"use strict";
 
 module.exports = LazyUpdater;
 function LazyUpdater(updater, quiscent, limit) {
