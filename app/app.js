@@ -276,16 +276,17 @@ function getCommits(repo, refs) {
 }
 
 function loadCommits() {
+	var queue = new cwait.TaskQueue(Promise, 32);
 	return Promise.all([
 		app.repo.getRefs()
-		.then(refs => Promise.all(refs.map(r => {
+		.then(refs => Promise.all(refs.map(queue.wrap(r => {
 			return app.repo.lookupRef(r.name)
 			.then(rev => {
 				r.id = pathToId(r.refName);
 				r.revision = rev;
 				return r;
 			});
-		})))
+		}))))
 		.then(function(refs) {
 			app.refs.reset(refs);
 		}),
