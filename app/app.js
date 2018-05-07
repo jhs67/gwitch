@@ -99,6 +99,7 @@ function loadStatus() {
 	app.statusGeneration += 1;
 	let generation = app.statusGeneration;
 
+	app.beginWork()
 	return app.repo.getStatus().then(function (files) {
 		if (app.statusGeneration !== generation)
 			return;
@@ -185,6 +186,7 @@ function loadStatus() {
 				r.set(patch);
 			});
 		})))).then(() => {
+			app.endWork();
 			if (app.statusGeneration !== generation)
 				return;
 
@@ -235,6 +237,7 @@ app.close = function() {
 	app.repoSettings.unset('showTags');
 	app.repoSettings.unset('head');
 	app.repoSettings.unset('amend');
+	app.repoSettings.unset('busy');
 	app.workingCopy.unset('path');
 	app.workingCopy.unset('name');
 	app.workingCopy.unset('gitdir');
@@ -339,6 +342,7 @@ function loadFocusCommit() {
 		return Promise.resolve();
 	let p = commit.get('commit').parents;
 
+	app.beginWork();
 	return app.repo.commitStatus(focusCommit).then(status => {
 		if (focusCommit !== app.repoSettings.get('focusCommit'))
 			return;
@@ -360,7 +364,8 @@ function loadFocusCommit() {
 				r.set(patch);
 				r.setup(200, 25);
 			});
-		})));
+		})))
+		.then(() => app.endWork());
 	});
 }
 
@@ -450,13 +455,34 @@ function loadRefWatches() {
 	});
 }
 
+app.beginWork = function() {
+	let b = app.repoSettings.get('busy');
+	if (typeof b !== 'number' || b < 0) {
+		console.log("invalid busy value - wierd");
+		assert(false);
+	}
+	app.repoSettings.set('busy', b + 1);
+}
+
+app.endWork = function() {
+	let b = app.repoSettings.get('busy');
+	if (typeof b !== 'number' || b <= 0) {
+		console.log("invalid busy value - wierd");
+		assert(false);
+	}
+	app.repoSettings.set('busy', b - 1);
+}
+
 app.open = function(file, submodule) {
 	submodule = submodule || [];
 	let subpath = submodule.length === 0 ? '' : path.join(...submodule);
+	app.repoSettings.set('busy', 0);
+	app.beginWork();
 	app.workingCopy.set('root', file);
 	app.workingCopy.set('submodule', submodule);
 	app.workingCopy.set('path', path.join(file, subpath));
 	app.workingCopy.set('name', path.join(path.basename(file, ".git"), subpath));
+	app.workingCopy.set('busy', )
 	Gwit.open(path.join(file, subpath)).then(function(repo) {
 		app.repo = repo;
 		app.workingUpdater.start();
@@ -467,10 +493,12 @@ app.open = function(file, submodule) {
 				loadWatches(),
 				loadRefWatches(),
 			]);
-		});
+		})
+		.then(() => app.endWork());
 	})
 	.catch(function(err) {
 		console.log("error: " + (err && err.stack));
+		app.endWork();
 	});
 
 	app.windowLayout.fetch();

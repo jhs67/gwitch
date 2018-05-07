@@ -17,6 +17,9 @@ var RefsView = Backbone.View.extend({
 		this.listenTo(this.repoSettings, "change:activeBranch", this.setActive);
 		this.listenTo(this.repoSettings, "change:hiddenRemotes", this.setHiddenRemotes);
 		this.listenTo(this.repoSettings, "change:showTags", this.setHiddenTags);
+		this.listenTo(this.repoSettings, "change:busy", this.setBusy);
+		this.busyStart = Date.now();
+		this.busy = false;
 		return this.render();
 	},
 
@@ -126,6 +129,20 @@ var RefsView = Backbone.View.extend({
 		}
 	},
 
+	setBusy: function() {
+		var b = this.repoSettings.get("busy");
+		if (b && !this.busy) {
+			this.busyStart = Date.now();
+			this.$('.busy-indicator').css('animation-delay', `0ms`);
+		}
+
+		this.busy = b !== 0;
+		if (this.busy)
+			this.$('.busy-indicator').addClass('spinner');
+		else
+			this.$('.busy-indicator').removeClass('spinner');
+	},
+
 	record: function() {
 		let remotes = new Map(), allRemotes = [];
 		this.collection.forEach(function(r) {
@@ -164,10 +181,12 @@ var RefsView = Backbone.View.extend({
 	render: function(mode, f) {
 		var record = this.record();
 		this.$el.html(refsHbs(record));
+		this.$('.busy-indicator').css('animation-delay', `${this.busyStart - Date.now()}ms`);
 		this.setHiddenRemotes();
 		this.setHiddenTags();
 		this.setActive();
 		this.setHead();
+		this.setBusy();
 	},
 });
 module.exports = RefsView;

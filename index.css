@@ -147,12 +147,47 @@ html, body {
 	fill: #00000;
 }
 
+.spinner {
+	background-color: #333;
+
+	border-radius: 100%;
+	animation: sk-scaleout 1.5s infinite;
+}
+
+@keyframes sk-scaleout {
+	0% {
+		-webkit-transform: scale(0);
+		transform: scale(0);
+	} 90% {
+		-webkit-transform: scale(1.0);
+		transform: scale(1.0);
+		opacity: 0;
+	} 100% {
+		-webkit-transform: scale(1.0);
+		transform: scale(1.0);
+		opacity: 0;
+	}
+}
+
 .nav-buttons {
 	flex: 0 0 auto;
 }
 
 .nav-buttons button {
 	padding: 1px;
+}
+
+.nav-buttons .busy-indicator {
+	width: 20px;
+	height: 20px;
+	float: right;
+}
+
+.nav-buttons .busy-indicator:not(.spinner) {
+	border-radius: 100%;
+	background-color: #333;
+	border: 2px;
+	opacity: 0.2;
 }
 
 .nav-buttons svg {
