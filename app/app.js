@@ -279,6 +279,7 @@ function getCommits(repo, refs) {
 }
 
 function loadCommits() {
+	app.beginWork();
 	var queue = new cwait.TaskQueue(Promise, 32);
 	return Promise.all([
 		app.repo.getRefs()
@@ -316,6 +317,7 @@ function loadCommits() {
 			}
 
 			app.repoSettings.set('focusCommit', focusCommit);
+			app.endWork();
 		});
 	});
 }
@@ -377,6 +379,7 @@ function getGitDir() {
 }
 
 function loadWatches() {
+	app.beginWork();
 	return app.repo.getSubmodules().then(function(submodules) {
 		submodules.forEach(function(s) { s.fullpath = path.resolve(app.repo.repodir, s.path); });
 		app.submodules.add(submodules);
@@ -423,6 +426,7 @@ function loadWatches() {
 		return app.workingWalk;
 
 	}).then(function() {
+		app.endWork();
 		app.workingWalk = null;
 		app.workingUpdater.poke();
 	});
