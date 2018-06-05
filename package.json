@@ -32,10 +32,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jhs67/gwitch.git"
-  },
-  "bugs": {
-    "url": "https://github.com/jhs67/gwitch/issues"
-  },
-  "homepage": "https://github.com/jhs67/gwitch#readme"
+    "url": "git+ssh://git@jonspencer.ca/gwitch.git"
+  }
 }

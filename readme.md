@@ -19,4 +19,4 @@ $ npm start
 
 ## License
 
-ISC © [Jon Spencer](https://github.com/jhs67)
+ISC © Jon Spencer
