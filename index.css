@@ -3,7 +3,6 @@ html, body {
 	margin: 0;
 	font-size: 12px;
 	font-family: Helvetica, arial, nimbussansl, liberationsans, freesans, clean, sans-serif;
-	-webkit-user-select: none;
 	box-sizing: border-box;
 	cursor: default;
 	height: 100%;
@@ -125,6 +124,10 @@ html, body {
 
 .diff-view {
 	padding: 5px;
+}
+
+.diff-view td:nth-child(1),td:nth-child(2),td:nth-child(3) {
+	-webkit-user-select: none;
 }
 
 .refs-view {
