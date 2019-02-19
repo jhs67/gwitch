@@ -2,7 +2,7 @@ html, body {
 	padding: 0;
 	margin: 0;
 	font-size: 12px;
-	font-family: Helvetica, arial, nimbussansl, liberationsans, freesans, clean, sans-serif;
+	font-family: freesans, Helvetica, arial, nimbussansl, liberationsans, clean, sans-serif;
 	box-sizing: border-box;
 	cursor: default;
 	height: 100%;
