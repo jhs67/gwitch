@@ -96,6 +96,7 @@ function sendOpenRecent(window) {
 function newWindowHandler(repo) {
 	let props = windowManager.props();
 	props.icon = __dirname + "/assets/icon.png";
+	props.webPreferences = { nodeIntegration: true };
 	let window = new BrowserWindow(props);
 	windowManager.track(window);
 

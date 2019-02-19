@@ -13,18 +13,17 @@
   ],
   "author": "Jon Spencer",
   "license": "ISC",
-  "devDependencies": {
-    "electron": "^3.0.5"
-  },
+  "devDependencies": {},
   "dependencies": {
-    "async": "^2.6.1",
+    "async": "^2.6.2",
     "backbone": "^1.2.0",
-    "cwait": "^1.1.1",
+    "cwait": "^1.1.2",
     "deep-equal": "^1.0.1",
-    "fs-jetpack": "^2.2.0",
-    "handlebars": "^4.0.12",
+    "electron": "^4.0.5",
+    "fs-jetpack": "^2.2.1",
+    "handlebars": "^4.1.0",
     "jquery": "^3.3.1",
-    "moment": "^2.22.2",
+    "moment": "^2.24.0",
     "underscore": "^1.9.1"
   },
   "engines": {
