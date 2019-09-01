@@ -78,9 +78,12 @@ var RefsView = Backbone.View.extend({
 	clickSubmodule: function(ev) {
 		let e = ev.currentTarget.parentNode;
 		let r = pathToId.invert(e.id);
-		let submodule = this.workingCopy.get('submodule');
+		let submodule = this.workingCopy.get('submodule').slice();
 		submodule.push(r);
-		ipcRenderer.send('open-repo', this.workingCopy.get('root'), submodule);
+		if (ev.ctrlKey)
+			ipcRenderer.send('open-new-sub', this.workingCopy.get('root'), submodule);
+		else
+			ipcRenderer.send('open-repo', this.workingCopy.get('root'), submodule);
 	},
 
 	invalidate: function() {

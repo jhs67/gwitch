@@ -93,7 +93,7 @@ function sendOpenRecent(window) {
 	window.webContents.send('recent', recentRepos.repoList);
 }
 
-function newWindowHandler(repo) {
+function newWindowHandler(repo, submodule) {
 	let props = windowManager.props();
 	props.icon = __dirname + "/assets/icon.png";
 	props.webPreferences = { nodeIntegration: true };
@@ -103,7 +103,7 @@ function newWindowHandler(repo) {
 	window.loadURL(`file://${__dirname}/index.html`);
 	window.webContents.on('did-finish-load', function() {
 		if (repo)
-			sendOpenRepo(window, repo);
+			sendOpenRepo(window, repo, submodule);
 		else {
 			sendOpenRecent(window);
 		}
@@ -160,6 +160,11 @@ ipcMain.on('open-other', function(ev) {
 ipcMain.on('open-repo', function(ev, repo, submodule) {
 	let f = path.resolve(repo);
 	sendOpenRepo(ev.sender.getOwnerBrowserWindow(), f, submodule);
+});
+
+ipcMain.on('open-new-sub', function(ev, repo, submodule) {
+	let f = path.resolve(repo);
+	newWindowHandler(f, submodule);
 });
 
 ipcMain.on('open-recent', function(ev) {
