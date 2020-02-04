@@ -19,7 +19,7 @@ html, body {
 }
 
 .patch {
-	font-family: "Lucida Console", Monaco, monospace;
+	font-family: Hack, "Lucida Console", Monaco, monospace;
 	margin: 0;
 	display: table;
 	width: 100%;
@@ -644,7 +644,7 @@ html, body {
 }
 
 .history-view table td.short-hash {
-	font-family: "Lucida Console", Monaco, monospace;
+	font-family: Hack, "Lucida Console", Monaco, monospace;
 }
 
 .history-view .graph-path {
@@ -720,7 +720,7 @@ html, body {
 }
 
 .commit-info .identity .info {
-	font-family: "Lucida Console", Monaco, monospace;
+	font-family: Hack, "Lucida Console", Monaco, monospace;
 }
 
 .commit-info .parent .info {
@@ -738,14 +738,14 @@ html, body {
 
 .commit-summary .subject {
 	white-space: pre;
-	font-family: "Lucida Console", Monaco, monospace;
+	font-family: Hack, "Lucida Console", Monaco, monospace;
 	margin: 1.5em 0 1.4em 0;
 }
 
 .commit-summary .body {
 	white-space: pre;
 	font-size: 90%;
-	font-family: "Lucida Console", Monaco, monospace;
+	font-family: Hack, "Lucida Console", Monaco, monospace;
 	margin: 1.1em 0 1.4em 1.0em;
 }
 
