@@ -110,15 +110,15 @@ function newWindowHandler(repo, submodule) {
 	});
 }
 
-function openRepoHandler() {
-	dialog.showOpenDialog({ title: "Open Repository", properties: [ "openDirectory" ] }, function(files) {
-		if (files) {
-			files.forEach(function(f) {
-				f = path.resolve(f);
-				newWindowHandler(f);
-			});
-		}
-	});
+async function openRepoHandler() {
+	const result = await dialog.showOpenDialog({ title: "Open Repository", properties: [ "openDirectory" ] });
+	const files = result.filePaths;
+	if (files) {
+		files.forEach(function(f) {
+			f = path.resolve(f);
+			newWindowHandler(f);
+		});
+	}
 }
 
 function reloadHandler() {
@@ -140,21 +140,21 @@ app.on('ready', function () {
 	newWindowHandler();
 });
 
-ipcMain.on('open-other', function(ev) {
-	dialog.showOpenDialog({ title: "Open Repository", properties: [ "openDirectory" ] }, function(files) {
-		if (files) {
-			let f = files.shift();
-			if (f) {
-				f = path.resolve(f);
-				sendOpenRepo(ev.sender.getOwnerBrowserWindow(), f);
-			}
-			files.forEach(function(f) {
-				f = path.resolve(f);
-				newWindowHandler(f);
-				recentRepos.add(f);
-			});
+ipcMain.on('open-other', async function(ev) {
+	const result = await dialog.showOpenDialog({ title: "Open Repository", properties: [ "openDirectory" ] });
+	const files = result.filePaths;
+	if (files) {
+		let f = files.shift();
+		if (f) {
+			f = path.resolve(f);
+			sendOpenRepo(ev.sender.getOwnerBrowserWindow(), f);
 		}
-	});
+		files.forEach(function(f) {
+			f = path.resolve(f);
+			newWindowHandler(f);
+			recentRepos.add(f);
+		});
+	}
 });
 
 ipcMain.on('open-repo', function(ev, repo, submodule) {
