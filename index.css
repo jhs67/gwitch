@@ -133,7 +133,7 @@ html, body {
 .refs-view {
 	flex: 0 0 auto;
 	padding: 5px;
-	max-width: 30vw;
+	max-width: 20vw;
 	min-width: 15rem;
 	background-color: #eef1f1;
 	border-right: 1px solid #d5d5d5;
@@ -144,6 +144,7 @@ html, body {
 .refs-view .refs-sect {
 	flex: 1 1 auto;
 	overflow: auto;
+	margin-bottom: 10px;
 }
 
 .show-recent path {
