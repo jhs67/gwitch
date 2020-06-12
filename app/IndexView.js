@@ -309,7 +309,7 @@ let WorkingFilesView = MultiFilesView.extend({
 		let selected = (a && a[this.key]) || [];
 		let detail = selected.join(", ");
 		if (detail.length > 80) detail = detail.substr(0, 77) + "...";
-		let r = dialog.showMessageBox(electron.remote.getCurrentWindow(), {
+		let r = dialog.showMessageBoxSync(electron.remote.getCurrentWindow(), {
 			type: "warning", buttons: [ "Cancel", "Continue" ],
 			title: "Discard Changes", message: "Discard Changes? This can not be undone.",
 			detail: detail,
