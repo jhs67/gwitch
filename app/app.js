@@ -358,7 +358,7 @@ function loadFocusCommit() {
 			if (focusCommit != app.repoSettings.get('focusCommit'))
 				return Promise.resolve();
 
-			return app.repo.diffCommitFile(p[0], focusCommit, r.path()).then(patches => {
+			return app.repo.diffCommitFile(p[0], focusCommit, r.toJSON()).then(patches => {
 				if (focusCommit !== app.repoSettings.get('focusCommit'))
 					return;
 

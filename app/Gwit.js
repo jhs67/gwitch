@@ -187,7 +187,8 @@ function unEscapePath(v) {
 	}
 }
 
-function parseDiff(diff) {
+function parseDiff(diff, defaults) {
+	defaults = defaults || {};
 	let ret = { patches: [] };
 	let lines = diff.split('\n'), i = 0;
 	lines.pop();
@@ -196,7 +197,7 @@ function parseDiff(diff) {
 		if (!d.startsWith("diff --git"))
 			throw new Error("invalid diff line: " + d);
 
-		let binary = false, empty = false, status = 'M';
+		let binary = false, empty = false, status = defaults.status || 'M';
 		let oldmode, newmode, from, to;
 		while (i < lines.length) {
 			let w = lines[i], v;
@@ -399,10 +400,13 @@ Gwit.prototype.diffCommits = function(from, to) {
 	});
 };
 
-Gwit.prototype.diffCommitFile = function(from, to, file) {
+Gwit.prototype.diffCommitFile = function(from, to, record) {
 	if (!from) from = '4b825dc642cb6eb9a060e54bf8d69288fbee4904';
-	return this.git("diff", "-M50", "-C50", from, to, "--", file).then(function(out) {
-		return parseDiff(out);
+	let file = record.newFile || record.oldFile;
+	let old = record.oldFile;
+	return (old && old !== file ? this.git("diff", from + ":" + old, to + ":" + file)
+			: this.git("diff", from, to, "--", file)).then(function(out) {
+		return parseDiff(out, record);
 	});
 };
 
