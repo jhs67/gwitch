@@ -1,8 +1,9 @@
 import React from "react";
 import { hot } from "react-hot-loader";
+import { RecentRepos } from "../RecentRepos";
 
 export default function NotHotApp() {
-  return <div>hello world from gwitch!</div>;
+  return <RecentRepos />;
 }
 
 export const App = hot(module)(NotHotApp);
