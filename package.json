@@ -2,11 +2,7 @@
   "name": "gwitch",
   "version": "0.0.0",
   "description": "electron git client",
-  "main": "index.js",
-  "scripts": {
-    "start": "electron .",
-    "build": "electron-packager . $npm_package_name --prune --asar --ignore=node_modules/electron-prebuilt --ignore=node_modules/electron-packager --ignore=.git"
-  },
+  "scripts": {},
   "keywords": [
     "git",
     "electron"
@@ -14,21 +10,7 @@
   "author": "Jon Spencer",
   "license": "ISC",
   "devDependencies": {},
-  "dependencies": {
-    "async": "^3.2.0",
-    "backbone": "^1.2.0",
-    "cwait": "^1.1.2",
-    "deep-equal": "^2.0.3",
-    "electron": "^8.3.0",
-    "fs-jetpack": "^2.2.1",
-    "handlebars": "^4.1.0",
-    "jquery": "^3.3.1",
-    "moment": "^2.24.0",
-    "underscore": "^1.9.1"
-  },
-  "engines": {
-    "electron": "1.7.5"
-  },
+  "dependencies": {},
   "repository": {
     "type": "git",
     "url": "git+ssh://git@jonspencer.ca/gwitch.git"
