@@ -1,6 +1,9 @@
 import React from "react";
 import DeleteIcon from "../../assets/delete.svg";
 import { createUseStyles } from "react-jss";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store";
+import { basename } from "path";
 
 const useStyles = createUseStyles({
   recentRepos: {
@@ -74,25 +77,20 @@ const useStyles = createUseStyles({
   },
 });
 
-const data = [
-  "/home/jon/devel/gwitch",
-  "/home/jon/devel/pg-formation",
-  "/home/jon/devel/gamexx",
-];
-
 export function RecentRepos() {
   const classes = useStyles();
+  const repos = useSelector((state: RootState) => state.recent.repos);
 
   return (
     <div className={classes.recentRepos}>
       <div className={classes.repoList}>
-        {data.length == 0 ? (
+        {repos.length == 0 ? (
           <div className={classes.noRecent}>Welcome to Gwitch</div>
         ) : (
-          data.map((l) => (
+          repos.map((l) => (
             <div key={l} className={classes.repoItem}>
               <DeleteIcon className={classes.repoRm} />
-              <div className={classes.repoName}>{l.split("/").pop()}</div>
+              <div className={classes.repoName}>{basename(l, ".git")}</div>
               <div className={classes.repoPath}>{l}</div>
             </div>
           ))
