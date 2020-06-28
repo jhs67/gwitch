@@ -71,6 +71,7 @@
     "@electron-forge/maker-zip": "^6.0.0-beta.52",
     "@electron-forge/plugin-webpack": "^6.0.0-beta.52",
     "@marshallofsound/webpack-asset-relocator-loader": "^0.5.0",
+    "@types/deep-equal": "^1.0.1",
     "@types/is-valid-path": "^0.1.0",
     "@types/node": "^14.0.14",
     "@types/react": "^16.9.41",
@@ -93,6 +94,7 @@
     "typescript": "^3.9.5"
   },
   "dependencies": {
+    "deep-equal": "^2.0.3",
     "electron-squirrel-startup": "^1.0.0",
     "is-valid-path": "^0.1.1",
     "react": "^16.13.1",
