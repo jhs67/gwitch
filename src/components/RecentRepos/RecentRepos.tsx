@@ -4,6 +4,7 @@ import { createUseStyles } from "react-jss";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { basename } from "path";
+import { ipcRenderer } from "electron";
 
 const useStyles = createUseStyles({
   recentRepos: {
@@ -81,6 +82,14 @@ export function RecentRepos() {
   const classes = useStyles();
   const repos = useSelector((state: RootState) => state.recent.repos);
 
+  function openRepo() {
+    ipcRenderer.send("open-other");
+  }
+
+  function itemClick(path: string) {
+    ipcRenderer.send("open-path", path);
+  }
+
   return (
     <div className={classes.recentRepos}>
       <div className={classes.repoList}>
@@ -88,7 +97,7 @@ export function RecentRepos() {
           <div className={classes.noRecent}>Welcome to Gwitch</div>
         ) : (
           repos.map((l) => (
-            <div key={l} className={classes.repoItem}>
+            <div key={l} className={classes.repoItem} onClick={() => itemClick(l)}>
               <DeleteIcon className={classes.repoRm} />
               <div className={classes.repoName}>{basename(l, ".git")}</div>
               <div className={classes.repoPath}>{l}</div>
@@ -97,7 +106,9 @@ export function RecentRepos() {
         )}
       </div>
       <div className={classes.repoButton}>
-        <button type="button">Open Repository</button>
+        <button type="button" onClick={openRepo}>
+          Open Repository
+        </button>
       </div>
     </div>
   );
