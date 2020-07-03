@@ -7,9 +7,11 @@ import { createStore } from "redux";
 import { Provider } from "react-redux";
 import { setRecentRepos } from "./store/recent/actions";
 import { ipcRenderer } from "electron";
-import { setRepoPath } from "./store/repo/actions";
+import { RepoPath } from "./store/repo/types";
+import { RepoLoader } from "./repo/loader";
 
 const store = createStore(rootReducer);
+const loader = new RepoLoader(store.dispatch);
 
 ReactDOM.render(
   <Provider store={store}>
@@ -19,9 +21,10 @@ ReactDOM.render(
 );
 
 ipcRenderer.on("recent", (event, repos: string[]) => {
+  loader.close();
   store.dispatch(setRecentRepos(repos));
 });
 
 ipcRenderer.on("open", (event, path: RepoPath) => {
-  store.dispatch(setRepoPath(path));
+  loader.open(path);
 });

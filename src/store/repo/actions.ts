@@ -14,3 +14,7 @@ export function setRepoPath(path: RepoPath): RepoStateActions {
 export function resetRepoPath(): RepoStateActions {
   return { type: RESET_REPO_PATH };
 }
+
+export function setRepoRefs(refs: RepoRef[]): RepoStateActions {
+  return { type: SET_REPO_REFS, refs };
+}

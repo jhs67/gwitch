@@ -1,4 +1,10 @@
-import { RepoState, RepoStateActions, SET_REPO_PATH, RESET_REPO_PATH } from "./types";
+import {
+  RepoState,
+  RepoStateActions,
+  SET_REPO_PATH,
+  RESET_REPO_PATH,
+  SET_REPO_REFS,
+} from "./types";
 
 const initialState: RepoState = { refs: [] };
 
@@ -14,6 +20,8 @@ export function repoStateReducer(
       const { path, ...rest } = state;
       return rest;
     }
+    case SET_REPO_REFS:
+      return { ...state, refs: action.refs };
     default:
       return state;
   }
