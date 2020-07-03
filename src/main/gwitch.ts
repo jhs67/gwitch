@@ -1,6 +1,8 @@
 import { RecentStore } from "./recent-store";
 import { BrowserWindow, dialog } from "electron";
 import { WindowManager } from "./window-manager";
+import { RepoPath } from "../store/repo/types";
+import { basename } from "path";
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 
 export default class Gwitch {
@@ -12,7 +14,7 @@ export default class Gwitch {
     this.createWindow();
   }
 
-  createWindow(): void {
+  createWindow(path?: RepoPath): void {
     const windowOpts = this.windows.opts({ webPreferences: { nodeIntegration: true } });
 
     // Create the browser window.
@@ -22,13 +24,21 @@ export default class Gwitch {
     // and load the index.html of the app.
     window.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
     window.webContents.on("did-finish-load", () => {
-      this.sendOpenRecent(window);
+      if (path == null) this.sendOpenRecent(window);
+      else this.sendOpenPath(window, path);
     });
   }
 
   sendOpenRecent(window: BrowserWindow): void {
     window.setTitle("Gwitch");
     window.webContents.send("recent", this.recent.all());
+  }
+
+  sendOpenPath(window: BrowserWindow, path: RepoPath) {
+    window.setTitle(
+      `Gwitch - ${[basename(path.path, ".git"), ...path.submodules].join("/")}`,
+    );
+    window.webContents.send("open", path);
   }
 
   async openOther(window: BrowserWindow): Promise<void> {
@@ -38,12 +48,16 @@ export default class Gwitch {
     });
 
     const files = result.filePaths;
-    for (const f of files) await this.recent.add(f);
-    this.sendOpenRecent(window);
+    for (let i = 0; i < files.length; ++i) {
+      const path = files[i];
+      await this.recent.add(path);
+      if (i === 0) this.sendOpenPath(window, { path, submodules: [] });
+      else this.createWindow({ path, submodules: [] });
+    }
   }
 
   async openPath(window: BrowserWindow, path: string): Promise<void> {
     await this.recent.add(path);
-    this.sendOpenRecent(window);
+    this.sendOpenPath(window, { path, submodules: [] });
   }
 }
