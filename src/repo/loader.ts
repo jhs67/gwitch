@@ -2,6 +2,7 @@ import { Dispatch } from "redux";
 import { RepoPath } from "../store/repo/types";
 import { setRepoPath, resetRepoPath, setRepoRefs } from "../store/repo/actions";
 import { Gwit } from "./gwit";
+import { cancellableQueue } from "./cancellable";
 
 export class RepoLoader {
   private gwit = new Gwit();
@@ -16,11 +17,16 @@ export class RepoLoader {
   async open(path: RepoPath) {
     this.dispatch(setRepoPath(path));
     await this.gwit.open(path);
-    this.loadCommits();
+    await this.loadCommits().result;
   }
 
-  async loadCommits() {
-    const refs = await this.gwit.getRefs();
-    this.dispatch(setRepoRefs(refs));
+  loadCommits() {
+    return cancellableQueue(16, async (run) => {
+      const [std, stash] = await Promise.all([
+        await run(() => this.gwit.getRefs()),
+        await run(() => this.gwit.getStashRefs()),
+      ]);
+      this.dispatch(setRepoRefs(std.concat(stash)));
+    });
   }
 }
