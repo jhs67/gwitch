@@ -5,6 +5,8 @@ import {
   RESET_REPO_PATH,
   SET_REPO_REFS,
   RepoRef,
+  SET_COMMITS,
+  Commit,
 } from "./types";
 
 export function setRepoPath(path: RepoPath): RepoStateActions {
@@ -17,4 +19,8 @@ export function resetRepoPath(): RepoStateActions {
 
 export function setRepoRefs(refs: RepoRef[]): RepoStateActions {
   return { type: SET_REPO_REFS, refs };
+}
+
+export function setCommits(commits: Commit[]): RepoStateActions {
+  return { type: SET_COMMITS, commits };
 }

@@ -1,10 +1,11 @@
 import { Dispatch } from "redux";
 import { RepoPath } from "../store/repo/types";
-import { setRepoPath, resetRepoPath, setRepoRefs } from "../store/repo/actions";
+import { setRepoPath, resetRepoPath, setRepoRefs, setCommits } from "../store/repo/actions";
 import { Gwit } from "./gwit";
 import { cancellableRun } from "./cancellable";
 import { Watcher } from "./watch";
 import { LazyUpdater } from "./lazy";
+import { createGraph } from "./graph";
 
 export class RepoLoader {
   private gwit = new Gwit();
@@ -35,11 +36,25 @@ export class RepoLoader {
 
   loadCommits() {
     return cancellableRun(async (run) => {
+      // graph the refs and stashes
       const [std, stash] = await Promise.all([
         await run(this.gwit.getRefs()),
         await run(this.gwit.getStashRefs()),
       ]);
-      this.dispatch(setRepoRefs(std.concat(stash)));
+      const refs = std.concat(stash);
+      this.dispatch(setRepoRefs(refs));
+
+      // get the log from these heads
+      const log = await run(this.gwit.log(refs.map((r) => r.hash)));
+
+      // sort and connect the logs with a graph
+      const graphlog = createGraph(
+        log,
+        refs.map((r) => r.hash),
+      );
+
+      // update the state
+      this.dispatch(setCommits(graphlog));
     });
   }
 }

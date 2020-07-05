@@ -4,9 +4,10 @@ import {
   SET_REPO_PATH,
   RESET_REPO_PATH,
   SET_REPO_REFS,
+  SET_COMMITS,
 } from "./types";
 
-const initialState: RepoState = { refs: [] };
+const initialState: RepoState = { refs: [], commits: [] };
 
 export function repoStateReducer(
   state: RepoState = initialState,
@@ -16,12 +17,12 @@ export function repoStateReducer(
     case SET_REPO_PATH:
       return { ...state, path: action.path };
     case RESET_REPO_PATH: {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { path, ...rest } = state;
-      return rest;
+      return { ...initialState };
     }
     case SET_REPO_REFS:
       return { ...state, refs: action.refs };
+    case SET_COMMITS:
+      return { ...state, commits: action.commits };
     default:
       return state;
   }
