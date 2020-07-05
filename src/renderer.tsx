@@ -9,9 +9,11 @@ import { setRecentRepos } from "./store/recent/actions";
 import { ipcRenderer } from "electron";
 import { RepoPath } from "./store/repo/types";
 import { RepoLoader } from "./repo/loader";
+import { CancellableQueue } from "./repo/cancellable";
 
 const store = createStore(rootReducer);
 const loader = new RepoLoader(store.dispatch);
+const eventQueue = new CancellableQueue(1);
 
 ReactDOM.render(
   <Provider store={store}>
@@ -21,10 +23,14 @@ ReactDOM.render(
 );
 
 ipcRenderer.on("recent", (event, repos: string[]) => {
-  loader.close();
-  store.dispatch(setRecentRepos(repos));
+  eventQueue.add(async () => {
+    store.dispatch(setRecentRepos(repos));
+    await loader.close();
+  });
 });
 
 ipcRenderer.on("open", (event, path: RepoPath) => {
-  loader.open(path);
+  eventQueue.add(async () => {
+    await loader.open(path);
+  });
 });

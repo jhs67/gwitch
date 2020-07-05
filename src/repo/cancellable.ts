@@ -104,7 +104,7 @@ interface QueueTask {
   reject: (err: Error) => void;
 }
 
-class CancellableQueue {
+export class CancellableQueue {
   private cancelled = false;
   private tasks: QueueTask[] = [];
   private started = 0;

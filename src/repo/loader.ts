@@ -17,7 +17,6 @@ export class RepoLoader {
   async open(path: RepoPath) {
     this.dispatch(setRepoPath(path));
     await this.gwit.open(path);
-
     const gitdir = await this.gwit.gitDir().result;
 
     this.refsLazy.start(() => this.loadCommits());
@@ -27,12 +26,11 @@ export class RepoLoader {
   }
 
   async close() {
-    this.refsLazy.stop();
-    const w = this.refsWatch;
-    this.refsWatch = null;
-    await w.close();
-
     this.dispatch(resetRepoPath());
+
+    this.refsLazy.stop();
+    await this.refsWatch?.close();
+    this.refsWatch = null;
   }
 
   loadCommits() {
