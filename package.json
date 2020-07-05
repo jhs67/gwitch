@@ -95,6 +95,7 @@
     "typescript": "^3.9.5"
   },
   "dependencies": {
+    "chokidar": "^3.4.0",
     "deep-equal": "^2.0.3",
     "electron-squirrel-startup": "^1.0.0",
     "get-stream": "^5.1.0",

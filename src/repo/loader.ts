@@ -2,29 +2,44 @@ import { Dispatch } from "redux";
 import { RepoPath } from "../store/repo/types";
 import { setRepoPath, resetRepoPath, setRepoRefs } from "../store/repo/actions";
 import { Gwit } from "./gwit";
-import { cancellableQueue } from "./cancellable";
+import { cancellableRun } from "./cancellable";
+import { Watcher } from "./watch";
+import { LazyUpdater } from "./lazy";
 
 export class RepoLoader {
   private gwit = new Gwit();
 
-  constructor(private dispatch: Dispatch) {}
+  private refsLazy = new LazyUpdater();
+  private refsWatch: Watcher;
 
-  close() {
-    this.gwit.close();
-    this.dispatch(resetRepoPath());
-  }
+  constructor(private dispatch: Dispatch) {}
 
   async open(path: RepoPath) {
     this.dispatch(setRepoPath(path));
     await this.gwit.open(path);
-    await this.loadCommits().result;
+
+    const gitdir = await this.gwit.gitDir().result;
+
+    this.refsLazy.start(() => this.loadCommits());
+    this.refsWatch = new Watcher(gitdir, ["logs", "refs", "packed-refs", "HEAD"], () =>
+      this.refsLazy.poke(),
+    );
+  }
+
+  async close() {
+    this.refsLazy.stop();
+    const w = this.refsWatch;
+    this.refsWatch = null;
+    await w.close();
+
+    this.dispatch(resetRepoPath());
   }
 
   loadCommits() {
-    return cancellableQueue(16, async (run) => {
+    return cancellableRun(async (run) => {
       const [std, stash] = await Promise.all([
-        await run(() => this.gwit.getRefs()),
-        await run(() => this.gwit.getStashRefs()),
+        await run(this.gwit.getRefs()),
+        await run(this.gwit.getStashRefs()),
       ]);
       this.dispatch(setRepoRefs(std.concat(stash)));
     });
