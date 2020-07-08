@@ -1,4 +1,5 @@
 import React from "react";
+import { History } from "../History";
 import { RefsPanel } from "../RefsPanel";
 import { createUseStyles } from "react-jss";
 
@@ -12,7 +13,10 @@ const useStyles = createUseStyles({
     height: "100%",
     overflow: "hidden",
   },
-  repoBody: {},
+  repoBody: {
+    flex: "1 1 auto",
+    position: "relative",
+  },
 });
 
 export function RepoClient() {
@@ -20,7 +24,9 @@ export function RepoClient() {
   return (
     <div className={classes.repoClient}>
       <RefsPanel />
-      <div className={classes.repoBody}></div>
+      <div className={classes.repoBody}>
+        <History />
+      </div>
     </div>
   );
 }

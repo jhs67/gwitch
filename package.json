@@ -105,6 +105,7 @@
     "react-hot-loader": "^4.12.21",
     "react-jss": "^10.3.0",
     "react-redux": "^7.2.0",
+    "react-split-pane": "^0.1.91",
     "redux": "^4.0.5"
   },
   "repository": {
