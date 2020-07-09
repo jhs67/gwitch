@@ -1,12 +1,13 @@
-import React, { useState } from "react";
+import React from "react";
 import { createUseStyles } from "react-jss";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../store";
 import { basename } from "path";
 import StageIcon from "../../assets/stage.svg";
 import BranchIcon from "../../assets/branch.svg";
 import OriginIcon from "../../assets/cloud.svg";
 import TagIcon from "../../assets/tag.svg";
+import { setOriginClosed, setTagsClosed } from "../../store/layout/actions";
 
 const useStyles = createUseStyles({
   refsPanel: {
@@ -102,8 +103,9 @@ export function RefsPanel() {
   const classes = useStyles();
   const refs = useSelector((state: RootState) => state.repo.refs);
   const path = useSelector((state: RootState) => state.repo.path);
-  const [originClosed, setOriginClosed] = useState<{ [key: string]: boolean }>({});
-  const [tagsClosed, setTagsClosed] = useState<boolean>(true);
+  const originClosed = useSelector((state: RootState) => state.layout.originClosed);
+  const tagsClosed = useSelector((state: RootState) => state.layout.tagsClosed);
+  const dispatch = useDispatch();
 
   const origins = new Map<string, string[]>();
   refs
@@ -142,7 +144,7 @@ export function RefsPanel() {
             <div
               className={classes.remoteHeader}
               onClick={(ev) => {
-                setOriginClosed({ ...originClosed, [origin]: !originClosed[origin] });
+                dispatch(setOriginClosed(origin, !originClosed[origin]));
                 ev.preventDefault();
               }}
             >
@@ -174,7 +176,7 @@ export function RefsPanel() {
           <div
             className={classes.tagsHeader}
             onClick={(ev) => {
-              setTagsClosed(!tagsClosed);
+              dispatch(setTagsClosed(!tagsClosed));
               ev.preventDefault();
             }}
           >
