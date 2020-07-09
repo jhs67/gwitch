@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import Gwitch from "./main/gwitch";
+import { OPEN_OTHER, OPEN_PATH } from "./main/ipc";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -32,10 +33,10 @@ app.on("activate", () => {
   }
 });
 
-ipcMain.on("open-other", (event) => {
+ipcMain.on(OPEN_OTHER, (event) => {
   gwitch.openOther(BrowserWindow.fromWebContents(event.sender));
 });
 
-ipcMain.on("open-path", (event, path: string) => {
+ipcMain.on(OPEN_PATH, (event, path: string) => {
   gwitch.openPath(BrowserWindow.fromWebContents(event.sender), path);
 });

@@ -1,10 +1,11 @@
 import React from "react";
+import { ipcRenderer } from "electron";
+import { basename } from "path";
 import DeleteIcon from "../../assets/delete.svg";
 import { createUseStyles } from "react-jss";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
-import { basename } from "path";
-import { ipcRenderer } from "electron";
+import { OPEN_PATH, OPEN_OTHER } from "../../main/ipc";
 
 const useStyles = createUseStyles({
   recentRepos: {
@@ -83,11 +84,11 @@ export function RecentRepos() {
   const repos = useSelector((state: RootState) => state.recent.repos);
 
   function openRepo() {
-    ipcRenderer.send("open-other");
+    ipcRenderer.send(OPEN_OTHER);
   }
 
   function itemClick(path: string) {
-    ipcRenderer.send("open-path", path);
+    ipcRenderer.send(OPEN_PATH, path);
   }
 
   return (
