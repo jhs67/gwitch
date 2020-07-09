@@ -1,6 +1,8 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import Gwitch from "./main/gwitch";
-import { OPEN_OTHER, OPEN_PATH } from "./main/ipc";
+import { LayoutStore } from "./main/layout-store";
+import { LayoutState } from "./store/layout/types";
+import { OPEN_OTHER, OPEN_PATH, GET_LAYOUT_STATE, SET_LAYOUT_STATE } from "./main/ipc";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -39,4 +41,14 @@ ipcMain.on(OPEN_OTHER, (event) => {
 
 ipcMain.on(OPEN_PATH, (event, path: string) => {
   gwitch.openPath(BrowserWindow.fromWebContents(event.sender), path);
+});
+
+const layoutStore = new LayoutStore();
+
+ipcMain.handle(GET_LAYOUT_STATE, async (event, path: string) => {
+  return await layoutStore.load(path);
+});
+
+ipcMain.handle(SET_LAYOUT_STATE, async (event, path: string, state: LayoutState) => {
+  return await layoutStore.save(path, state);
 });

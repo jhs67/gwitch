@@ -5,10 +5,10 @@ export class LazyUpdater {
   run: Cancellable<void>;
   clean = false;
 
-  start(t: () => Cancellable<void>) {
+  start(t: () => Cancellable<void>, clean = false) {
     this.task = t;
-    this.clean = false;
-    this.poke();
+    this.clean = clean;
+    if (!this.clean) this.kick();
   }
 
   stop() {

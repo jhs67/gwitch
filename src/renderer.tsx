@@ -9,10 +9,12 @@ import { setRecentRepos } from "./store/recent/actions";
 import { ipcRenderer } from "electron";
 import { RepoPath } from "./store/repo/types";
 import { RepoLoader } from "./repo/loader";
+import { LayoutProxy } from "./repo/layout";
 import { CancellableQueue } from "./repo/cancellable";
 
 const store = createStore(rootReducer);
 const loader = new RepoLoader(store.dispatch);
+const layout = new LayoutProxy(store);
 const eventQueue = new CancellableQueue(1);
 
 ReactDOM.render(
@@ -25,12 +27,13 @@ ReactDOM.render(
 ipcRenderer.on("recent", (event, repos: string[]) => {
   eventQueue.add(async () => {
     store.dispatch(setRecentRepos(repos));
-    await loader.close();
+    await Promise.all([loader.close(), layout.teardown()]);
   });
 });
 
 ipcRenderer.on("open", (event, path: RepoPath) => {
   eventQueue.add(async () => {
+    await layout.setup(path);
     await loader.open(path);
   });
 });
