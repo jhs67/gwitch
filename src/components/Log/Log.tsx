@@ -41,6 +41,16 @@ const useStyles = createUseStyles({
     "& tr:nth-child(2n)": {
       backgroundColor: "#f4f4f4",
     },
+    "& .graph-node": {
+      fill: "#ffffff",
+      strokeWidth: "1px",
+      stroke: "#000000",
+    },
+    "& .graph-path": {
+      fill: "none",
+      strokeWidth: "2px",
+      stroke: "#ee2e2b",
+    },
   },
   shortHashHeader: {
     width: "6em",
@@ -61,7 +71,64 @@ const useStyles = createUseStyles({
     paddingLeft: "4px",
     fontFamily: 'Hack, "Lucida Console", Monaco, monospace',
   },
+  subjectLine: {
+    display: "flex",
+    alignItems: "center",
+    "& svg": {
+      height: 20,
+      flex: "0 0 auto",
+    },
+  },
+  commitLine: {
+    paddingLeft: "4px",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+  },
 });
+
+function makePaths() {
+  const pathSegs = [
+    "M 0,12 a 8,8 0 0 1 8,8 l 0,4",
+    "M 0,12 l 16,0",
+    "M 0,12 a 8,8 0 0 0 8,-8 l 0,-4",
+    "M 8,0 l 0,24",
+    "M 16,12 a 8 8 0 0 1 -8,-8 l 0,-4",
+    "M 16,12 a 8 8 0 0 0 -8,8 l 0,4",
+  ];
+
+  const nodeSegs = ["M 8,0 l 0,6", "M 0,12 l 2,0", "M 16,12 l -2,0", "M 8,24 l 0,-6"];
+
+  const r = [];
+  for (let i = 0; i < 64; i += 1) {
+    let p = "";
+    for (let j = 0; j < 6; ++j) {
+      if (i & (1 << j)) p += pathSegs[j];
+    }
+    r.push(p);
+  }
+
+  for (let i = 0; i < 16; ++i) {
+    let p = "";
+    for (let j = 0; j < 4; ++j) {
+      if (i & (1 << j)) p += nodeSegs[j];
+    }
+    r.push(p);
+  }
+
+  return r;
+}
+
+const graphPaths: string[] = makePaths();
+
+function GraphNode({ type }: { type: number }) {
+  return (
+    <svg viewBox="0 0 16 24">
+      {graphPaths[type] ? <path className="graph-path" d={graphPaths[type]} /> : null}
+      {type < 64 ? null : <circle cx="8" cy="12" r="6" className="graph-node"></circle>}
+    </svg>
+  );
+}
 
 export function Log() {
   const classes = useStyles();
@@ -82,7 +149,14 @@ export function Log() {
           {commits.map((commit) => (
             <tr key={commit.hash}>
               <td className={classes.shortHash}>{commit.hash.substr(0, 7)}</td>
-              <td>{commit.subject}</td>
+              <td>
+                <div className={classes.subjectLine}>
+                  {commit.graph.map((type, i) => (
+                    <GraphNode key={i} type={type} />
+                  ))}
+                  <div className={classes.commitLine}>{commit.subject}</div>
+                </div>
+              </td>
               <td>{commit.authorName}</td>
               <td>{moment(commit.authorStamp * 1000).format("LLL")}</td>
             </tr>
