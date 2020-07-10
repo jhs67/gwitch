@@ -85,6 +85,26 @@ const useStyles = createUseStyles({
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
   },
+  commitRef: {
+    paddingLeft: "4px",
+    paddingRight: "4px",
+    borderStyle: "solid",
+    borderWidth: "0px",
+    borderRadius: "5px",
+    backgroundColor: "#fefb57",
+    color: "black",
+    boxShadow: "0.5px 0.5px 1px 1px #555",
+    marginRight: "4px",
+    "&.heads": {
+      backgroundColor: "#fdb672",
+    },
+    "&.remotes": {
+      backgroundColor: "#b3daf0",
+    },
+    "&.tags": {
+      backgroundColor: "#fcee94",
+    },
+  },
 });
 
 function makePaths() {
@@ -133,6 +153,7 @@ function GraphNode({ type }: { type: number }) {
 export function Log() {
   const classes = useStyles();
   const commits = useSelector((state: RootState) => state.repo.commits);
+  const refs = useSelector((state: RootState) => state.repo.refs);
 
   return (
     <div className={classes.logContainer}>
@@ -154,7 +175,20 @@ export function Log() {
                   {commit.graph.map((type, i) => (
                     <GraphNode key={i} type={type} />
                   ))}
-                  <div className={classes.commitLine}>{commit.subject}</div>
+                  <div className={classes.commitLine}>
+                    {refs
+                      .filter(
+                        (r) =>
+                          r.hash === commit.hash &&
+                          !(r.type === "remotes" && r.name.match(/\/HEAD$/)),
+                      )
+                      .map((r) => (
+                        <span key={r.refName} className={`${classes.commitRef} ${r.type}`}>
+                          {r.name}
+                        </span>
+                      ))}
+                    {commit.subject}
+                  </div>
                 </div>
               </td>
               <td>{commit.authorName}</td>
