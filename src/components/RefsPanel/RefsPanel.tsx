@@ -19,6 +19,7 @@ const useStyles = createUseStyles({
     borderRight: "1px solid #d5d5d5",
     display: "flex",
     flexFlow: "column nowrap",
+    overflow: "hidden",
   },
   stageSection: {
     marginBottom: "0.5rem",
@@ -32,11 +33,16 @@ const useStyles = createUseStyles({
     display: "flex",
     flexFlow: "row nowrap",
   },
-  stage: {},
+  stage: {
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+  },
   refIcon: {
     height: "1em",
     marginRight: "5px",
     marginLeft: "5px",
+    flex: "0 0 auto",
   },
   branches: {
     marginBottom: "0.5rem",
@@ -46,7 +52,11 @@ const useStyles = createUseStyles({
     display: "flex",
     flexFlow: "row nowrap",
   },
-  localBranch: {},
+  localBranch: {
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+  },
   remotes: {
     marginBottom: "0.5rem",
   },
@@ -60,11 +70,13 @@ const useStyles = createUseStyles({
   originIcon: {
     height: "1em",
     marginRight: "5px",
+    flex: "0 0 auto",
   },
   arrow: {
     height: "1em",
     verticalAlign: "middle",
     marginLeft: "2px",
+    flex: "0 0 auto",
   },
   remoteName: {},
   remoteLine: {
@@ -72,11 +84,16 @@ const useStyles = createUseStyles({
     display: "flex",
     flexFlow: "row nowrap",
   },
-  remoteBranch: {},
+  remoteBranch: {
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+  },
   remoteRefIcon: {
     height: "1em",
     marginRight: "5px",
     marginLeft: "12px",
+    flex: "0 0 auto",
   },
   tags: {
     marginBottom: "0.5rem",
@@ -96,6 +113,7 @@ const useStyles = createUseStyles({
   tagIcon: {
     height: "1em",
     marginRight: "5px",
+    flex: "0 0 auto",
   },
 });
 
