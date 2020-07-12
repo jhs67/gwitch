@@ -8,6 +8,7 @@ import StageIcon from "../../assets/stage.svg";
 import BranchIcon from "../../assets/branch.svg";
 import OriginIcon from "../../assets/cloud.svg";
 import TagIcon from "../../assets/tag.svg";
+import ActiveBadge from "../../assets/active.svg";
 import { setOriginClosed, setTagsClosed } from "../../store/layout/actions";
 import { RepoRef } from "../../store/repo/types";
 import { setFocusCommit } from "../../store/repo/actions";
@@ -59,6 +60,11 @@ const useStyles = createUseStyles({
     overflow: "hidden",
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
+    flex: "1 1 auto",
+  },
+  activeBadge: {
+    height: "1em",
+    flex: "0 0 auto",
   },
   remotes: {
     marginBottom: "0.5rem",
@@ -127,6 +133,7 @@ export function RefsPanel() {
   const classes = useStyles();
   const refs = useSelector((state: RootState) => state.repo.refs);
   const path = useSelector((state: RootState) => state.repo.path);
+  const head = useSelector((state: RootState) => state.repo.head);
   const focusCommit = useSelector((state: RootState) => state.repo.focusCommit);
   const originClosed = useSelector((state: RootState) => state.layout.originClosed);
   const tagsClosed = useSelector((state: RootState) => state.layout.tagsClosed);
@@ -165,6 +172,7 @@ export function RefsPanel() {
             >
               <BranchIcon className={classes.refIcon} />
               <div className={classes.localBranch}>{r.name}</div>
+              {r.refName === head ? <ActiveBadge className={classes.activeBadge} /> : null}
             </div>
           ))}
       </div>

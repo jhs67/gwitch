@@ -114,4 +114,11 @@ export class Gwit {
         }),
     );
   }
+
+  head(): Cancellable<string | undefined> {
+    return cancellableX(this.gitRc("symbolic-ref", "HEAD"), (res) => {
+      if (res.code !== 0) return;
+      return res.out.trim();
+    });
+  }
 }

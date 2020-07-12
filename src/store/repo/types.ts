@@ -27,6 +27,7 @@ export interface RepoState {
   refs: RepoRef[];
   commits: Commit[];
   focusCommit?: string;
+  head?: string;
 }
 
 export const SET_REPO_PATH = "SET_REPO_PATH";
@@ -34,6 +35,7 @@ export const RESET_REPO_PATH = "RESET_REPO_PATH";
 export const SET_REPO_REFS = "SET_REPO_REFS";
 export const SET_COMMITS = "SET_COMMITS";
 export const SET_FOCUS_COMMIT = "SET_FOCUS_COMMIT";
+export const SET_REPO_HEAD = "SET_REPO_HEAD";
 
 interface SetRepoPathAction {
   type: typeof SET_REPO_PATH;
@@ -59,9 +61,15 @@ interface SetFocusCommit {
   commit: string;
 }
 
+interface SetRepoHead {
+  type: typeof SET_REPO_HEAD;
+  head?: string;
+}
+
 export type RepoStateActions =
   | SetRepoPathAction
   | ResetRepoPathAction
   | SetRepoRefsAction
   | SetCommitsAction
-  | SetFocusCommit;
+  | SetFocusCommit
+  | SetRepoHead;

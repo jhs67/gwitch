@@ -8,6 +8,7 @@ import {
   SET_COMMITS,
   Commit,
   SET_FOCUS_COMMIT,
+  SET_REPO_HEAD,
 } from "./types";
 
 export function setRepoPath(path: RepoPath): RepoStateActions {
@@ -28,4 +29,8 @@ export function setCommits(commits: Commit[]): RepoStateActions {
 
 export function setFocusCommit(commit: string): RepoStateActions {
   return { type: SET_FOCUS_COMMIT, commit };
+}
+
+export function setRepoHead(head: string): RepoStateActions {
+  return { type: SET_REPO_HEAD, head };
 }
