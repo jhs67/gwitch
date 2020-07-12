@@ -34,7 +34,7 @@ export class RepoLoader {
     this.refsWatch = null;
   }
 
-  loadCommits() {
+  private loadCommits() {
     return cancellableRun(async (run) => {
       // graph the refs and stashes
       const [std, stash] = await Promise.all([

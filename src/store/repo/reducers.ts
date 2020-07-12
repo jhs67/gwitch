@@ -5,6 +5,7 @@ import {
   RESET_REPO_PATH,
   SET_REPO_REFS,
   SET_COMMITS,
+  SET_FOCUS_COMMIT,
 } from "./types";
 
 const initialState: RepoState = { refs: [], commits: [] };
@@ -23,6 +24,8 @@ export function repoStateReducer(
       return { ...state, refs: action.refs };
     case SET_COMMITS:
       return { ...state, commits: action.commits };
+    case SET_FOCUS_COMMIT:
+      return { ...state, focusCommit: action.commit };
     default:
       return state;
   }

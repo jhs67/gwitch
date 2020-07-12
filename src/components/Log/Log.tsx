@@ -1,8 +1,10 @@
-import React from "react";
-import { useSelector } from "react-redux";
-import { RootState } from "../../store";
+import React, { RefObject, useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { createUseStyles } from "react-jss";
+import classNames from "classnames";
 import moment from "moment";
+import { setFocusCommit } from "../../store/repo/actions";
+import { RootState } from "../../store";
 
 const useStyles = createUseStyles({
   logContainer: {
@@ -105,6 +107,10 @@ const useStyles = createUseStyles({
       backgroundColor: "#fcee94",
     },
   },
+  focusRef: {
+    backgroundColor: "#096ed3 !important",
+    color: "#ffffff",
+  },
 });
 
 function makePaths() {
@@ -152,8 +158,22 @@ function GraphNode({ type }: { type: number }) {
 
 export function Log() {
   const classes = useStyles();
+  const focusCommit = useSelector((state: RootState) => state.repo.focusCommit);
   const commits = useSelector((state: RootState) => state.repo.commits);
   const refs = useSelector((state: RootState) => state.repo.refs);
+  const [scrollTarget, setScrollTarget] = useState<string>("");
+  const dispatch = useDispatch();
+
+  const elrefs = new Map<string, RefObject<HTMLTableRowElement>>();
+  refs.forEach((r) => {
+    elrefs.set(r.hash, React.createRef());
+  });
+
+  useEffect(() => {
+    if (focusCommit === scrollTarget) return;
+    setScrollTarget(focusCommit);
+    elrefs.get(focusCommit)?.current?.scrollIntoView({ block: "center" });
+  });
 
   return (
     <div className={classes.logContainer}>
@@ -168,7 +188,17 @@ export function Log() {
         </thead>
         <tbody>
           {commits.map((commit) => (
-            <tr key={commit.hash}>
+            <tr
+              key={commit.hash}
+              ref={elrefs.get(commit.hash)}
+              onClick={() => {
+                setScrollTarget(commit.hash);
+                dispatch(setFocusCommit(commit.hash));
+              }}
+              className={classNames({
+                [classes.focusRef]: commit.hash === focusCommit,
+              })}
+            >
               <td className={classes.shortHash}>{commit.hash.substr(0, 7)}</td>
               <td>
                 <div className={classes.subjectLine}>

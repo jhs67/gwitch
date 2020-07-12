@@ -48,6 +48,15 @@ function AwaitCallback<R>(
   })();
 }
 
+export function asCancellable<R>(result: Promise<R>) {
+  const x = new ExPromise<R>();
+  result.then((v) => x.accept(v)).catch((e) => x.reject(e));
+  return {
+    cancel: () => x.reject(new CancelledError()),
+    result,
+  };
+}
+
 interface RunTask {
   cancel?: () => void;
   reject: (err: Error) => void;

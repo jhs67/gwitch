@@ -71,6 +71,7 @@
     "@electron-forge/maker-zip": "^6.0.0-beta.52",
     "@electron-forge/plugin-webpack": "^6.0.0-beta.52",
     "@marshallofsound/webpack-asset-relocator-loader": "^0.5.0",
+    "@types/classnames": "^2.2.10",
     "@types/deep-equal": "^1.0.1",
     "@types/get-stream": "^3.0.2",
     "@types/is-valid-path": "^0.1.0",
@@ -96,6 +97,7 @@
   },
   "dependencies": {
     "chokidar": "^3.4.0",
+    "classnames": "^2.2.6",
     "deep-equal": "^2.0.3",
     "electron-squirrel-startup": "^1.0.0",
     "get-stream": "^5.1.0",

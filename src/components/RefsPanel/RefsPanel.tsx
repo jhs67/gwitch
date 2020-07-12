@@ -1,13 +1,16 @@
 import React from "react";
 import { createUseStyles } from "react-jss";
 import { useSelector, useDispatch } from "react-redux";
-import { RootState } from "../../store";
+import classNames from "classnames";
 import { basename } from "path";
+import { RootState } from "../../store";
 import StageIcon from "../../assets/stage.svg";
 import BranchIcon from "../../assets/branch.svg";
 import OriginIcon from "../../assets/cloud.svg";
 import TagIcon from "../../assets/tag.svg";
 import { setOriginClosed, setTagsClosed } from "../../store/layout/actions";
+import { RepoRef } from "../../store/repo/types";
+import { setFocusCommit } from "../../store/repo/actions";
 
 const useStyles = createUseStyles({
   refsPanel: {
@@ -115,24 +118,28 @@ const useStyles = createUseStyles({
     marginRight: "5px",
     flex: "0 0 auto",
   },
+  focusRef: {
+    backgroundColor: "#ccd7da",
+  },
 });
 
 export function RefsPanel() {
   const classes = useStyles();
   const refs = useSelector((state: RootState) => state.repo.refs);
   const path = useSelector((state: RootState) => state.repo.path);
+  const focusCommit = useSelector((state: RootState) => state.repo.focusCommit);
   const originClosed = useSelector((state: RootState) => state.layout.originClosed);
   const tagsClosed = useSelector((state: RootState) => state.layout.tagsClosed);
   const dispatch = useDispatch();
 
-  const origins = new Map<string, string[]>();
+  const origins = new Map<string, RepoRef[]>();
   refs
     .filter((r) => r.type === "remotes")
     .forEach((r) => {
       const s = r.name.split("/");
       const o = s.shift();
       const n = s.join("/");
-      if (n !== "HEAD") origins.set(o, (origins.get(o) || []).concat(n));
+      if (n !== "HEAD") origins.set(o, (origins.get(o) || []).concat(r));
     });
 
   return (
@@ -149,7 +156,13 @@ export function RefsPanel() {
         {refs
           .filter((r) => r.type === "heads")
           .map((r) => (
-            <div className={classes.branchLine} key={r.refName}>
+            <div
+              className={classNames(classes.branchLine, {
+                [classes.focusRef]: r.hash === focusCommit,
+              })}
+              key={r.refName}
+              onClick={() => dispatch(setFocusCommit(r.hash))}
+            >
               <BranchIcon className={classes.refIcon} />
               <div className={classes.localBranch}>{r.name}</div>
             </div>
@@ -157,7 +170,7 @@ export function RefsPanel() {
       </div>
       <div className={classes.remotes}>
         <div className={classes.title}>Remotes</div>
-        {[...origins.entries()].map(([origin, names]) => (
+        {[...origins.entries()].map(([origin, refs]) => (
           <div className={classes.remoteSection} key={origin}>
             <div
               className={classes.remoteHeader}
@@ -180,10 +193,18 @@ export function RefsPanel() {
             </div>
             {originClosed[origin]
               ? null
-              : names.map((name) => (
-                  <div className={classes.remoteLine} key={name}>
+              : refs.map((ref) => (
+                  <div
+                    className={classNames(classes.remoteLine, {
+                      [classes.focusRef]: ref.hash === focusCommit,
+                    })}
+                    key={ref.refName}
+                    onClick={() => dispatch(setFocusCommit(ref.hash))}
+                  >
                     <BranchIcon className={classes.remoteRefIcon} />
-                    <div className={classes.remoteBranch}>{name}</div>
+                    <div className={classes.remoteBranch}>
+                      {ref.name.replace(/^[^/]+\//, "")}
+                    </div>
                   </div>
                 ))}
           </div>
