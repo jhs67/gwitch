@@ -1,4 +1,4 @@
-import React, { RefObject, useEffect, useState } from "react";
+import React, { RefObject, useEffect, useRef, useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { createUseStyles } from "react-jss";
 import classNames from "classnames";
@@ -161,18 +161,38 @@ export function Log() {
   const focusCommit = useSelector((state: RootState) => state.repo.focusCommit);
   const commits = useSelector((state: RootState) => state.repo.commits);
   const refs = useSelector((state: RootState) => state.repo.refs);
-  const [scrollTarget, setScrollTarget] = useState<string>("");
   const dispatch = useDispatch();
 
-  const elrefs = new Map<string, RefObject<HTMLTableRowElement>>();
-  refs.forEach((r) => {
-    elrefs.set(r.hash, React.createRef());
-  });
+  // create refs to the commit rows
+  const elrefsMap = useRef(new Map<string, RefObject<HTMLTableRowElement>>());
+  const elrefs = useMemo(() => {
+    commits.forEach((r) => {
+      if (!elrefsMap.current.has(r.hash)) elrefsMap.current.set(r.hash, React.createRef());
+    });
+    return elrefsMap.current;
+  }, [commits]);
 
+  // scroll to the focus commit when the focus changes
+  const scrollTarget = useRef<string>(focusCommit);
   useEffect(() => {
-    if (focusCommit === scrollTarget) return;
-    setScrollTarget(focusCommit);
-    elrefs.get(focusCommit)?.current?.scrollIntoView({ block: "center" });
+    if (focusCommit === scrollTarget.current) return;
+    scrollTarget.current = focusCommit;
+    const el = elrefs.get(focusCommit).current;
+    if (!el) return;
+
+    const scroll = el.parentElement.parentElement.parentElement; // tbody.table.div
+    const rect = el.getBoundingClientRect();
+    const srect = scroll.getBoundingClientRect();
+    const top = Math.min(rect.top - rect.height - srect.top, 0);
+    const bot = Math.max(rect.bottom - srect.bottom, 0);
+    const off = top || bot;
+    if (off != 0) {
+      scroll.scrollTo({
+        top: scroll.scrollTop + off,
+        left: scroll.scrollLeft,
+        behavior: "smooth",
+      });
+    }
   });
 
   return (
@@ -191,10 +211,7 @@ export function Log() {
             <tr
               key={commit.hash}
               ref={elrefs.get(commit.hash)}
-              onClick={() => {
-                setScrollTarget(commit.hash);
-                dispatch(setFocusCommit(commit.hash));
-              }}
+              onClick={() => dispatch(setFocusCommit(commit.hash))}
               className={classNames({
                 [classes.focusRef]: commit.hash === focusCommit,
               })}
