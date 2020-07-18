@@ -17,6 +17,7 @@ export interface Commit {
   authorEmail: string;
   authorStamp: number;
   parents: string[];
+  children: string[];
   subject: string;
   body: string;
   graph: number[];

@@ -110,6 +110,7 @@ export class Gwit {
             subject: v[6],
             body: v[5],
             graph: [],
+            children: [],
           };
         }),
     );

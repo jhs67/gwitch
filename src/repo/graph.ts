@@ -27,7 +27,11 @@ export function createGraph(log: Commit[], heads: string[]): Commit[] {
   );
   log.forEach((commit) => {
     const c = byHash.get(commit.hash);
-    commit.parents.forEach((hash) => byHash.get(hash).children.push(c));
+    commit.parents.forEach((hash) => {
+      const d = byHash.get(hash);
+      d.children.push(c);
+      d.commit.children.push(commit.hash);
+    });
   });
 
   function getTip(c: GraphCommit): GraphCommit | GraphCommit[] {
