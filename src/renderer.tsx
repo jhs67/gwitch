@@ -13,7 +13,7 @@ import { LayoutProxy } from "./repo/layout";
 import { CancellableQueue } from "./repo/cancellable";
 
 const store = createStore(rootReducer);
-const loader = new RepoLoader(store.dispatch);
+const loader = new RepoLoader(store);
 const layout = new LayoutProxy(store);
 const eventQueue = new CancellableQueue(1);
 
