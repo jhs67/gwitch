@@ -5,8 +5,9 @@ import classNames from "classnames";
 import moment from "moment";
 import { setFocusCommit } from "../../store/repo/actions";
 import { RootState } from "../../store";
+import { GwitchTheme } from "../../theme/theme";
 
-const useStyles = createUseStyles({
+const useStyles = createUseStyles((theme: GwitchTheme) => ({
   logContainer: {
     position: "absolute",
     height: "100%",
@@ -71,7 +72,7 @@ const useStyles = createUseStyles({
   },
   shortHash: {
     paddingLeft: "4px",
-    fontFamily: 'Hack, "Lucida Console", Monaco, monospace',
+    fontFamily: theme.typography.monospaceFace,
   },
   subjectLine: {
     display: "flex",
@@ -111,7 +112,7 @@ const useStyles = createUseStyles({
     backgroundColor: "#096ed3 !important",
     color: "#ffffff",
   },
-});
+}));
 
 function makePaths() {
   const pathSegs = [

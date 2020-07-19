@@ -1,6 +1,7 @@
 import "./index.css";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+import { ThemeProvider } from "react-jss";
 import { App } from "./components/App";
 import { rootReducer } from "./store";
 import { createStore } from "redux";
@@ -11,6 +12,7 @@ import { RepoPath } from "./store/repo/types";
 import { RepoLoader } from "./repo/loader";
 import { LayoutProxy } from "./repo/layout";
 import { CancellableQueue } from "./repo/cancellable";
+import { theme } from "./theme/theme";
 
 const store = createStore(rootReducer);
 const loader = new RepoLoader(store);
@@ -19,7 +21,9 @@ const eventQueue = new CancellableQueue(1);
 
 ReactDOM.render(
   <Provider store={store}>
-    <App />
+    <ThemeProvider theme={theme}>
+      <App />
+    </ThemeProvider>
   </Provider>,
   document.getElementById("root"),
 );

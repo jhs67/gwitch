@@ -6,8 +6,10 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../store";
 import { Commit, FileStatus } from "../../store/repo/types";
 import { setFocusCommit } from "../../store/repo/actions";
+import { Diff } from "../Diff";
+import { GwitchTheme } from "../../theme/theme";
 
-const useStyles = createUseStyles({
+const useStyles = createUseStyles((theme: GwitchTheme) => ({
   commit: {
     position: "absolute",
     height: "100%",
@@ -44,7 +46,7 @@ const useStyles = createUseStyles({
     margin: "0 2em 0 1em",
   },
   refsData: {
-    fontFamily: 'Hack, "Lucida Console", Monaco, monospace',
+    fontFamily: theme.typography.monospaceFace,
   },
   parentRef: {
     color: "#1a54ab",
@@ -57,13 +59,13 @@ const useStyles = createUseStyles({
     marginBottom: "0",
     "& .subject": {
       whiteSpace: "pre",
-      fontFamily: 'Hack, "Lucida Console", Monaco, monospace',
+      fontFamily: theme.typography.monospaceFace,
       margin: "1.5em 0 1.4em 0",
     },
     "& .body": {
       whiteSpace: "pre",
       fontSize: "90%",
-      fontFamily: 'Hack, "Lucida Console", Monaco, monospace',
+      fontFamily: theme.typography.monospaceFace,
       margin: "1.1em 0 1.4em 1.0em",
     },
     "& .file": {
@@ -75,7 +77,7 @@ const useStyles = createUseStyles({
       textDecoration: "underline",
     },
   },
-});
+}));
 
 type ClassesType = ReturnType<typeof useStyles>;
 
