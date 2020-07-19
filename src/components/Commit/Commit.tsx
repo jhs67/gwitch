@@ -4,10 +4,16 @@ import classNames from "classnames";
 import { createUseStyles } from "react-jss";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../store";
-import { Commit } from "../../store/repo/types";
+import { Commit, FileStatus } from "../../store/repo/types";
 import { setFocusCommit } from "../../store/repo/actions";
 
 const useStyles = createUseStyles({
+  commit: {
+    position: "absolute",
+    height: "100%",
+    width: "100%",
+    overflow: "auto",
+  },
   info: {
     display: "flex",
     flexFlow: "row wrap",
@@ -43,6 +49,29 @@ const useStyles = createUseStyles({
   parentRef: {
     color: "#1a54ab",
     "&:hover": {
+      textDecoration: "underline",
+    },
+  },
+  summary: {
+    margin: "1em",
+    marginBottom: "0",
+    "& .subject": {
+      whiteSpace: "pre",
+      fontFamily: 'Hack, "Lucida Console", Monaco, monospace',
+      margin: "1.5em 0 1.4em 0",
+    },
+    "& .body": {
+      whiteSpace: "pre",
+      fontSize: "90%",
+      fontFamily: 'Hack, "Lucida Console", Monaco, monospace',
+      margin: "1.1em 0 1.4em 1.0em",
+    },
+    "& .file": {
+      color: "#6a6a6a",
+      marginLeft: "2em",
+    },
+    "& .file:hover": {
+      color: "#1a54ab",
       textDecoration: "underline",
     },
   },
@@ -113,15 +142,41 @@ function CommitInfo({ commit, classes }: { commit: Commit; classes: ClassesType 
   );
 }
 
+function CommitSummary({
+  commit,
+  patch,
+  classes,
+}: {
+  commit: Commit;
+  patch: FileStatus[];
+  classes: ClassesType;
+}) {
+  return (
+    <div className={classes.summary}>
+      <div className="subject">{commit.subject}</div>
+      {commit.body && <div className="body">{commit.body}</div>}
+      <div className="files">
+        {patch.map((p) => (
+          <div key={p.newFile || p.oldFile}>
+            <span className="file">{p.newFile || p.oldFile}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function Commit() {
   const focusCommit = useSelector((state: RootState) => state.repo.focusCommit);
   const commits = useSelector((state: RootState) => state.repo.commits);
+  const patch = useSelector((state: RootState) => state.repo.focusPatch) || [];
   const commit = commits.find((commit) => commit.hash == focusCommit);
   const classes = useStyles();
 
   return commit ? (
-    <>
+    <div className={classes.commit}>
       <CommitInfo commit={commit} classes={classes} />
-    </>
+      <CommitSummary commit={commit} classes={classes} patch={patch} />
+    </div>
   ) : null;
 }
