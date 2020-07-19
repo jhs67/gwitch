@@ -7,6 +7,8 @@ import {
   SET_COMMITS,
   SET_FOCUS_COMMIT,
   SET_REPO_HEAD,
+  SET_FOCUS_PATCH,
+  SET_FOCUS_PATCH_DIFF,
 } from "./types";
 
 const initialState: RepoState = { refs: [], commits: [] };
@@ -29,6 +31,17 @@ export function repoStateReducer(
       return { ...state, focusCommit: action.commit };
     case SET_REPO_HEAD:
       return { ...state, head: action.head };
+    case SET_FOCUS_PATCH:
+      return { ...state, focusPatch: action.patch };
+    case SET_FOCUS_PATCH_DIFF:
+      return {
+        ...state,
+        focusPatch: state.focusPatch.map((s) => {
+          if ((s.newFile || s.oldFile) !== (action.patch.newFile || action.patch.oldFile))
+            return s;
+          return { ...s, ...action.patch };
+        }),
+      };
     default:
       return state;
   }

@@ -9,6 +9,9 @@ import {
   Commit,
   SET_FOCUS_COMMIT,
   SET_REPO_HEAD,
+  FileStatus,
+  SET_FOCUS_PATCH,
+  SET_FOCUS_PATCH_DIFF,
 } from "./types";
 
 export function setRepoPath(path: RepoPath): RepoStateActions {
@@ -33,4 +36,12 @@ export function setFocusCommit(commit: string): RepoStateActions {
 
 export function setRepoHead(head: string): RepoStateActions {
   return { type: SET_REPO_HEAD, head };
+}
+
+export function setFocusPatch(patch: FileStatus[]): RepoStateActions {
+  return { type: SET_FOCUS_PATCH, patch };
+}
+
+export function setFocusPatchDiff(patch: FileStatus): RepoStateActions {
+  return { type: SET_FOCUS_PATCH_DIFF, patch };
 }
