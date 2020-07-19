@@ -179,6 +179,7 @@ export function Commit() {
     <div className={classes.commit}>
       <CommitInfo commit={commit} classes={classes} />
       <CommitSummary commit={commit} classes={classes} patch={patch} />
+      <Diff patch={patch} source={focusCommit} />
     </div>
   ) : null;
 }

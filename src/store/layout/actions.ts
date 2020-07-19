@@ -5,6 +5,7 @@ import {
   SET_LAYOUT,
   SET_ORIGIN_CLOSED,
   SET_TAGS_CLOSED,
+  SET_PATCH_SHOW,
 } from "./types";
 
 export function setHistorySplit(split: number): LayoutStateActions {
@@ -21,4 +22,12 @@ export function setOriginClosed(origin: string, closed: boolean): LayoutStateAct
 
 export function setTagsClosed(closed: boolean): LayoutStateActions {
   return { type: SET_TAGS_CLOSED, closed };
+}
+
+export function setPatchShow(
+  source: string,
+  file: string,
+  state: boolean,
+): LayoutStateActions {
+  return { type: SET_PATCH_SHOW, source, file, state };
 }

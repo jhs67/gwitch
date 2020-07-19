@@ -6,6 +6,7 @@ import {
   SET_LAYOUT,
   SET_ORIGIN_CLOSED,
   SET_TAGS_CLOSED,
+  SET_PATCH_SHOW,
 } from "./types";
 
 export function layoutStateReducer(
@@ -24,6 +25,17 @@ export function layoutStateReducer(
       };
     case SET_TAGS_CLOSED:
       return { ...state, tagsClosed: action.closed };
+    case SET_PATCH_SHOW:
+      return {
+        ...state,
+        patchShow: {
+          ...state.patchShow,
+          [action.source]: {
+            ...state.patchShow[action.source],
+            [action.file]: action.state,
+          },
+        },
+      };
     default:
       return state;
   }
