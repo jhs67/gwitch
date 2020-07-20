@@ -9,7 +9,7 @@ import BranchIcon from "../../assets/branch.svg";
 import OriginIcon from "../../assets/cloud.svg";
 import TagIcon from "../../assets/tag.svg";
 import ActiveBadge from "../../assets/active.svg";
-import { setOriginClosed, setTagsClosed } from "../../store/layout/actions";
+import { setOriginClosed, setTagsClosed, setClientMode } from "../../store/layout/actions";
 import { RepoRef } from "../../store/repo/types";
 import { setFocusCommit } from "../../store/repo/actions";
 
@@ -137,6 +137,7 @@ export function RefsPanel() {
   const focusCommit = useSelector((state: RootState) => state.repo.focusCommit);
   const originClosed = useSelector((state: RootState) => state.layout.originClosed);
   const tagsClosed = useSelector((state: RootState) => state.layout.tagsClosed);
+  const mode = useSelector((state: RootState) => state.layout.clientMode);
   const dispatch = useDispatch();
 
   const origins = new Map<string, RepoRef[]>();
@@ -149,11 +150,23 @@ export function RefsPanel() {
       if (n !== "HEAD") origins.set(o, (origins.get(o) || []).concat(r));
     });
 
+  const clickBranch = (hash: string) => {
+    dispatch(setFocusCommit(hash));
+    if (mode !== "history") dispatch(setClientMode("history"));
+  };
+
   return (
     <div className={classes.refsPanel}>
       <div className={classes.stageSection}>
         <div className={classes.title}>{basename(path.path, ".git")}</div>
-        <div className={classes.stageLine}>
+        <div
+          className={classNames(classes.stageLine, {
+            [classes.focusRef]: mode === "stage",
+          })}
+          onClick={() => {
+            dispatch(setClientMode(mode === "history" ? "stage" : "history"));
+          }}
+        >
           <StageIcon className={classes.refIcon} />
           <div className={classes.stage}>Stage</div>
         </div>
@@ -165,10 +178,10 @@ export function RefsPanel() {
           .map((r) => (
             <div
               className={classNames(classes.branchLine, {
-                [classes.focusRef]: r.hash === focusCommit,
+                [classes.focusRef]: mode === "history" && r.hash === focusCommit,
               })}
               key={r.refName}
-              onClick={() => dispatch(setFocusCommit(r.hash))}
+              onClick={() => clickBranch(r.hash)}
             >
               <BranchIcon className={classes.refIcon} />
               <div className={classes.localBranch}>{r.name}</div>
@@ -204,10 +217,10 @@ export function RefsPanel() {
               : refs.map((ref) => (
                   <div
                     className={classNames(classes.remoteLine, {
-                      [classes.focusRef]: ref.hash === focusCommit,
+                      [classes.focusRef]: mode === "history" && ref.hash === focusCommit,
                     })}
                     key={ref.refName}
-                    onClick={() => dispatch(setFocusCommit(ref.hash))}
+                    onClick={() => clickBranch(ref.hash)}
                   >
                     <BranchIcon className={classes.remoteRefIcon} />
                     <div className={classes.remoteBranch}>

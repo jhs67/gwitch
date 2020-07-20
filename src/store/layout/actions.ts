@@ -6,6 +6,8 @@ import {
   SET_ORIGIN_CLOSED,
   SET_TAGS_CLOSED,
   SET_PATCH_SHOW,
+  ClientMode,
+  SET_CLIENT_MODE,
 } from "./types";
 
 export function setHistorySplit(split: number): LayoutStateActions {
@@ -30,4 +32,8 @@ export function setPatchShow(
   state: boolean,
 ): LayoutStateActions {
   return { type: SET_PATCH_SHOW, source, file, state };
+}
+
+export function setClientMode(mode: ClientMode): LayoutStateActions {
+  return { type: SET_CLIENT_MODE, mode };
 }

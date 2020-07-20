@@ -7,6 +7,7 @@ import {
   SET_ORIGIN_CLOSED,
   SET_TAGS_CLOSED,
   SET_PATCH_SHOW,
+  SET_CLIENT_MODE,
 } from "./types";
 
 export function layoutStateReducer(
@@ -36,6 +37,8 @@ export function layoutStateReducer(
           },
         },
       };
+    case SET_CLIENT_MODE:
+      return { ...state, clientMode: action.mode };
     default:
       return state;
   }

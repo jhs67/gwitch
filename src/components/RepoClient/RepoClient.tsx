@@ -2,6 +2,9 @@ import React from "react";
 import { History } from "../History";
 import { RefsPanel } from "../RefsPanel";
 import { createUseStyles } from "react-jss";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store";
+import { Stage } from "../Stage";
 
 const useStyles = createUseStyles({
   repoClient: {
@@ -21,12 +24,11 @@ const useStyles = createUseStyles({
 
 export function RepoClient() {
   const classes = useStyles();
+  const mode = useSelector((state: RootState) => state.layout.clientMode);
   return (
     <div className={classes.repoClient}>
       <RefsPanel />
-      <div className={classes.repoBody}>
-        <History />
-      </div>
+      <div className={classes.repoBody}>{mode === "history" ? <History /> : <Stage />}</div>
     </div>
   );
 }

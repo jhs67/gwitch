@@ -4,11 +4,14 @@ export interface PatchShow {
   };
 }
 
+export type ClientMode = "history" | "stage";
+
 export interface LayoutState {
   historySplit: number;
   originClosed: { [key: string]: boolean };
   tagsClosed: boolean;
   patchShow: PatchShow;
+  clientMode: ClientMode;
 }
 
 export const initialLayoutState: LayoutState = {
@@ -16,6 +19,7 @@ export const initialLayoutState: LayoutState = {
   originClosed: {},
   tagsClosed: true,
   patchShow: {},
+  clientMode: "stage",
 };
 
 export const SET_HISTORY_SPLIT = "SET_HISTORY_SPLIT";
@@ -23,6 +27,7 @@ export const SET_LAYOUT = "SET_LAYOUT";
 export const SET_ORIGIN_CLOSED = "SET_ORIGIN_CLOSED";
 export const SET_TAGS_CLOSED = "SET_TAGS_CLOSED";
 export const SET_PATCH_SHOW = "SET_PATCH_SHOW";
+export const SET_CLIENT_MODE = "SET_CLIENT_MODE";
 
 interface SetHistorySplitAction {
   type: typeof SET_HISTORY_SPLIT;
@@ -52,9 +57,15 @@ interface SetPatchShow {
   state: boolean;
 }
 
+interface SetClientMode {
+  type: typeof SET_CLIENT_MODE;
+  mode: ClientMode;
+}
+
 export type LayoutStateActions =
   | SetHistorySplitAction
   | SetLayoutAction
   | SetOriginClosedAction
   | SetTagsClosedAction
-  | SetPatchShow;
+  | SetPatchShow
+  | SetClientMode;
