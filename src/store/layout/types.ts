@@ -8,6 +8,7 @@ export type ClientMode = "history" | "stage";
 
 export interface LayoutState {
   historySplit: number;
+  stageSplit: number;
   originClosed: { [key: string]: boolean };
   tagsClosed: boolean;
   patchShow: PatchShow;
@@ -16,6 +17,7 @@ export interface LayoutState {
 
 export const initialLayoutState: LayoutState = {
   historySplit: 200,
+  stageSplit: 200,
   originClosed: {},
   tagsClosed: true,
   patchShow: {},
@@ -23,6 +25,7 @@ export const initialLayoutState: LayoutState = {
 };
 
 export const SET_HISTORY_SPLIT = "SET_HISTORY_SPLIT";
+export const SET_STAGE_SPLIT = "SET_STAGE_SPLIT";
 export const SET_LAYOUT = "SET_LAYOUT";
 export const SET_ORIGIN_CLOSED = "SET_ORIGIN_CLOSED";
 export const SET_TAGS_CLOSED = "SET_TAGS_CLOSED";
@@ -31,6 +34,11 @@ export const SET_CLIENT_MODE = "SET_CLIENT_MODE";
 
 interface SetHistorySplitAction {
   type: typeof SET_HISTORY_SPLIT;
+  split: number;
+}
+
+interface SetStageSplitAction {
+  type: typeof SET_STAGE_SPLIT;
   split: number;
 }
 
@@ -64,6 +72,7 @@ interface SetClientMode {
 
 export type LayoutStateActions =
   | SetHistorySplitAction
+  | SetStageSplitAction
   | SetLayoutAction
   | SetOriginClosedAction
   | SetTagsClosedAction

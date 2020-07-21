@@ -8,6 +8,7 @@ import {
   SET_TAGS_CLOSED,
   SET_PATCH_SHOW,
   SET_CLIENT_MODE,
+  SET_STAGE_SPLIT,
 } from "./types";
 
 export function layoutStateReducer(
@@ -17,6 +18,8 @@ export function layoutStateReducer(
   switch (action.type) {
     case SET_HISTORY_SPLIT:
       return { ...state, historySplit: action.split };
+    case SET_STAGE_SPLIT:
+      return { ...state, stageSplit: action.split };
     case SET_LAYOUT:
       return action.state;
     case SET_ORIGIN_CLOSED:

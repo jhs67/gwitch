@@ -1,6 +1,7 @@
 import {
   LayoutStateActions,
   SET_HISTORY_SPLIT,
+  SET_STAGE_SPLIT,
   LayoutState,
   SET_LAYOUT,
   SET_ORIGIN_CLOSED,
@@ -12,6 +13,10 @@ import {
 
 export function setHistorySplit(split: number): LayoutStateActions {
   return { type: SET_HISTORY_SPLIT, split };
+}
+
+export function setStageSplit(split: number): LayoutStateActions {
+  return { type: SET_STAGE_SPLIT, split };
 }
 
 export function setLayout(state: LayoutState): LayoutStateActions {
