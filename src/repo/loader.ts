@@ -1,5 +1,5 @@
 import { Dispatch, Store } from "redux";
-import { RepoPath } from "../store/repo/types";
+import { RepoPath, FileStatus } from "../store/repo/types";
 import {
   setRepoPath,
   resetRepoPath,
@@ -9,6 +9,7 @@ import {
   setFocusCommit,
   setFocusPatch,
   setFocusPatchDiff,
+  setStageStatus,
 } from "../store/repo/actions";
 import { Gwit } from "./gwit";
 import { cancellableRun, cancellableQueue } from "./cancellable";
@@ -16,6 +17,7 @@ import { Watcher } from "./watch";
 import { LazyUpdater } from "./lazy";
 import { createGraph } from "./graph";
 import { RootState } from "../store";
+import { resolve, basename, relative } from "path";
 
 export class RepoLoader {
   private gwit = new Gwit();
@@ -25,6 +27,9 @@ export class RepoLoader {
 
   private loadedFocusPatch: string;
   private focusPatchLazy = new LazyUpdater();
+
+  private statusLazy = new LazyUpdater();
+  private statusWatch: Watcher;
 
   private dispatch: Dispatch;
 
@@ -43,12 +48,44 @@ export class RepoLoader {
 
   async open(path: RepoPath) {
     this.dispatch(setRepoPath(path));
-    await this.gwit.open(path);
+    const top = await this.gwit.open(path);
     const gitdir = await this.gwit.gitDir().result;
 
     this.refsLazy.start(() => this.loadCommits());
-    this.refsWatch = new Watcher(gitdir, ["logs", "refs", "packed-refs", "HEAD"], () =>
-      this.refsLazy.poke(),
+    this.refsWatch = new Watcher(
+      gitdir,
+      ["logs", "refs", "packed-refs", "HEAD", "index"],
+      (paths) => {
+        const i = paths.filter((p) => p === "index").length;
+        if (paths.indexOf("HEAD") !== -1 || i != 0) this.statusLazy.poke();
+        if (i === 0 || i !== paths.length) this.refsLazy.poke();
+      },
+    );
+
+    this.statusLazy.start(() => this.loadStatus());
+    this.statusWatch = new Watcher(
+      top,
+      [""],
+      (paths: string[]) => {
+        // If a .gitignore file changes, check the ignores again
+        if (paths.indexOf(".gitignore") !== -1) this.statusWatch.invalidateIgnores();
+        this.statusLazy.poke();
+      },
+      (path) =>
+        cancellableRun(async (run) => {
+          const f = resolve(top, path);
+          const r = relative(top, f);
+
+          // always ignore the git dir
+          if (f === gitdir) return true;
+          // never ignore the root file
+          if (r === "") return false;
+          // never ignore gitignore files
+          if (basename(f) === ".gitignore") return false;
+
+          // check with git
+          return await run(this.gwit.isIgnored(r));
+        }),
     );
   }
 
@@ -68,9 +105,13 @@ export class RepoLoader {
         await run(this.gwit.getStashRefs()),
         await run(this.gwit.head()),
       ]);
+      const state = this.store.getState();
       const refs = std.concat(stash);
       this.dispatch(setRepoRefs(refs));
-      this.dispatch(setRepoHead(head));
+      if (head !== state.repo.head) {
+        this.dispatch(setRepoHead(head));
+        this.statusLazy.poke();
+      }
 
       // get the log from these heads
       const log = await run(this.gwit.log(refs.map((r) => r.hash)));
@@ -113,6 +154,60 @@ export class RepoLoader {
           this.dispatch(setFocusPatchDiff(patches.patches[0]));
         }),
       );
+    });
+  }
+
+  private loadStatus() {
+    return cancellableQueue(2, async (run) => {
+      const files = await run(() => this.gwit.stageStatus());
+
+      // sort the files into working and index changes
+      const working: FileStatus[] = [];
+      const index: FileStatus[] = [];
+      for (const f of files) {
+        if (f.workingStatus !== " ") {
+          const status = f.workingStatus;
+          const newFile = status === "D" ? null : f.file;
+          const oldFile = status === "D" ? f.file : f.oldFile || f.file;
+          working.push({ status, newFile, oldFile, unmerged: f.unmerged });
+        }
+        if (f.indexStatus !== " " && f.indexStatus !== "?") {
+          const status = f.indexStatus;
+          const newFile = f.file;
+          const oldFile = f.oldFile;
+          index.push({ status, newFile, oldFile, unmerged: f.unmerged });
+        }
+      }
+
+      // load the diffs
+      await Promise.all([
+        ...working.map(async (r) => {
+          const file = r.newFile || r.oldFile;
+          const status = r.status;
+          const patch = await run(() =>
+            status === "?"
+              ? this.gwit.diffFileUntracked(file)
+              : r.unmerged
+              ? this.gwit.diffFileWorkingToHead(file)
+              : this.gwit.diffFileWorkingToIndex(file),
+          );
+
+          if (status === "?" && patch.status === "A") patch.status = status;
+          Object.assign(r, patch);
+        }),
+        ...index.map(async (r) => {
+          if (r.unmerged) {
+            r.hunks = [];
+            return;
+          }
+
+          const file = r.newFile || r.oldFile;
+          const patch = await run(() => this.gwit.diffFileIndexToHead(file, r.oldFile));
+          Object.assign(r, patch);
+        }),
+      ]);
+
+      this.dispatch(setStageStatus(working, index));
     });
   }
 }

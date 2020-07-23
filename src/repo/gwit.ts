@@ -257,6 +257,33 @@ function parseDiff(
   return ret;
 }
 
+export interface StageFileStatus {
+  file: string;
+  oldFile?: string;
+  workingStatus: StatusLetter;
+  indexStatus: StatusLetter;
+  unmerged: boolean;
+}
+
+function isUnmerged(indexStatus: StatusLetter, workingStatus: StatusLetter) {
+  if (indexStatus === "U" || workingStatus === "U") return true;
+  if (indexStatus === "D" && workingStatus === "D") return true;
+  if (indexStatus === "A" && workingStatus === "A") return true;
+  return false;
+}
+
+function statusLine(line: string, next: string): StageFileStatus {
+  const indexStatus = line[0] as StatusLetter;
+  const workingStatus = line[1] as StatusLetter;
+  return {
+    indexStatus,
+    workingStatus,
+    file: line.substr(3),
+    unmerged: isUnmerged(indexStatus, workingStatus),
+    oldFile: line[0] === "R" ? next : undefined,
+  };
+}
+
 export class Gwit {
   private cmd?: string;
   private repoPath?: string;
@@ -267,6 +294,7 @@ export class Gwit {
     this.repoPath = join(path.path, ...path.submodules);
     const top = await this.git("rev-parse", "--show-toplevel").result;
     this.repoPath = top.trim();
+    return this.repoPath;
   }
 
   close() {
@@ -392,6 +420,56 @@ export class Gwit {
         ? this.git("diff", from + ":" + old, to + ":" + file)
         : this.git("diff", from, to, "--", file),
       (output) => parseDiff(output),
+    );
+  }
+
+  isIgnored(path: string) {
+    return cancellableX(this.gitRc("check-ignore", path), (res) => {
+      return res.code === 0;
+    });
+  }
+
+  stageStatus() {
+    return cancellableX(this.git("status", "-z"), (out) => {
+      const r = [];
+      const lines = out.split("\x00");
+      while (lines.length > 1) {
+        const line = lines.shift();
+        const e = statusLine(line, lines[0]);
+        if (e.indexStatus === "R") lines.shift();
+        r.push(e);
+      }
+      return r;
+    });
+  }
+
+  diffFileUntracked(file: string) {
+    return cancellableX(
+      this.gitRc("diff", "-M50", "-C50", "--no-index", "--", "/dev/null", file),
+      (res) => parseDiff(res.out).patches[0],
+    );
+  }
+
+  diffFileWorkingToHead(file: string) {
+    return cancellableX(
+      this.git("diff", "-M50", "-C50", "HEAD", "--", file),
+      (out) => parseDiff(out).patches[0],
+    );
+  }
+
+  diffFileWorkingToIndex(file: string) {
+    return cancellableX(
+      this.git("diff", "-M50", "-C50", "--", file),
+      (out) => parseDiff(out).patches[0],
+    );
+  }
+
+  diffFileIndexToHead(file: string, from?: string) {
+    return cancellableX(
+      from
+        ? this.git("diff", "-M50", "-C50", "-M01", "--cached", "--", from, file)
+        : this.git("diff", "-M50", "-C50", "--cached", "--", file),
+      (out) => parseDiff(out).patches[0],
     );
   }
 }

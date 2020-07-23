@@ -9,6 +9,7 @@ import {
   SET_REPO_HEAD,
   SET_FOCUS_PATCH,
   SET_FOCUS_PATCH_DIFF,
+  SET_STAGE_STATUS,
 } from "./types";
 
 const initialState: RepoState = { refs: [], commits: [] };
@@ -42,6 +43,8 @@ export function repoStateReducer(
           return { ...s, ...action.patch };
         }),
       };
+    case SET_STAGE_STATUS:
+      return { ...state, indexStatus: action.index, workingStatus: action.working };
     default:
       return state;
   }

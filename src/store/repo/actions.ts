@@ -12,6 +12,7 @@ import {
   FileStatus,
   SET_FOCUS_PATCH,
   SET_FOCUS_PATCH_DIFF,
+  SET_STAGE_STATUS,
 } from "./types";
 
 export function setRepoPath(path: RepoPath): RepoStateActions {
@@ -44,4 +45,11 @@ export function setFocusPatch(patch: FileStatus[]): RepoStateActions {
 
 export function setFocusPatchDiff(patch: FileStatus): RepoStateActions {
   return { type: SET_FOCUS_PATCH_DIFF, patch };
+}
+
+export function setStageStatus(
+  working: FileStatus[],
+  index: FileStatus[],
+): RepoStateActions {
+  return { type: SET_STAGE_STATUS, working, index };
 }

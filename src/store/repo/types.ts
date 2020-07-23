@@ -23,7 +23,7 @@ export interface Commit {
   graph: number[];
 }
 
-export type StatusLetter = "A" | "C" | "D" | "M" | "R" | "T" | "U" | "X";
+export type StatusLetter = "A" | "C" | "D" | "M" | "R" | "T" | "U" | "X" | " " | "?";
 export type DiffLineOrigin = " " | "-" | "+" | "\\";
 
 export interface DiffLine {
@@ -50,6 +50,7 @@ export interface FileStatus {
   oldMode?: string;
   newMode?: string;
   binary?: boolean;
+  unmerged?: boolean;
   hunks?: DiffHunk[];
 }
 
@@ -60,6 +61,8 @@ export interface RepoState {
   focusCommit?: string;
   head?: string;
   focusPatch?: FileStatus[];
+  workingStatus?: FileStatus[];
+  indexStatus?: FileStatus[];
 }
 
 export const SET_REPO_PATH = "SET_REPO_PATH";
@@ -70,6 +73,7 @@ export const SET_FOCUS_COMMIT = "SET_FOCUS_COMMIT";
 export const SET_REPO_HEAD = "SET_REPO_HEAD";
 export const SET_FOCUS_PATCH = "SET_FOCUS_PATCH";
 export const SET_FOCUS_PATCH_DIFF = "SET_FOCUS_PATCH_DIFF";
+export const SET_STAGE_STATUS = "SET_STAGE_STATUS";
 
 interface SetRepoPathAction {
   type: typeof SET_REPO_PATH;
@@ -110,6 +114,12 @@ interface SetFocusPatchDiff {
   patch: FileStatus;
 }
 
+interface SetStageStatus {
+  type: typeof SET_STAGE_STATUS;
+  working: FileStatus[];
+  index: FileStatus[];
+}
+
 export type RepoStateActions =
   | SetRepoPathAction
   | ResetRepoPathAction
@@ -118,4 +128,5 @@ export type RepoStateActions =
   | SetFocusCommit
   | SetRepoHead
   | SetFocusPatch
-  | SetFocusPatchDiff;
+  | SetFocusPatchDiff
+  | SetStageStatus;
