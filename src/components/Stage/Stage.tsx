@@ -9,7 +9,7 @@ import { Status } from "../Status";
 
 const useStyles = createUseStyles({
   history: {
-    "& .Resizer": {
+    "&>.Resizer": {
       zIndex: 1,
       background: "linear-gradient(#fcfcfc, #e0e0e0)",
       height: "5px",

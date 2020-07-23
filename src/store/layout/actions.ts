@@ -9,6 +9,8 @@ import {
   SET_PATCH_SHOW,
   ClientMode,
   SET_CLIENT_MODE,
+  SET_WORKING_SPLIT,
+  SET_INDEX_SPLIT,
 } from "./types";
 
 export function setHistorySplit(split: number): LayoutStateActions {
@@ -17,6 +19,14 @@ export function setHistorySplit(split: number): LayoutStateActions {
 
 export function setStageSplit(split: number): LayoutStateActions {
   return { type: SET_STAGE_SPLIT, split };
+}
+
+export function setWorkingSplit(split: number): LayoutStateActions {
+  return { type: SET_WORKING_SPLIT, split };
+}
+
+export function setIndexSplit(split: number): LayoutStateActions {
+  return { type: SET_INDEX_SPLIT, split };
 }
 
 export function setLayout(state: LayoutState): LayoutStateActions {

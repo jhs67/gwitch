@@ -9,6 +9,8 @@ import {
   SET_PATCH_SHOW,
   SET_CLIENT_MODE,
   SET_STAGE_SPLIT,
+  SET_WORKING_SPLIT,
+  SET_INDEX_SPLIT,
 } from "./types";
 
 export function layoutStateReducer(
@@ -20,6 +22,10 @@ export function layoutStateReducer(
       return { ...state, historySplit: action.split };
     case SET_STAGE_SPLIT:
       return { ...state, stageSplit: action.split };
+    case SET_WORKING_SPLIT:
+      return { ...state, workingSplit: action.split };
+    case SET_INDEX_SPLIT:
+      return { ...state, indexSplit: action.split };
     case SET_LAYOUT:
       return action.state;
     case SET_ORIGIN_CLOSED:
