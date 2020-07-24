@@ -2,8 +2,10 @@ import React from "react";
 import SplitPane from "react-split-pane";
 import { createUseStyles } from "react-jss";
 import { useSelector, useDispatch } from "react-redux";
+import classNames from "classnames";
 import { RootState } from "../../store";
 import { setWorkingSplit, setIndexSplit } from "../../store/layout/actions";
+import { FileStatus } from "../../store/repo/types";
 
 const useStyles = createUseStyles({
   working: {
@@ -18,12 +20,111 @@ const useStyles = createUseStyles({
         background: "#ddd",
       },
     },
+    "& .fileView": {
+      display: "flex",
+      flexFlow: "column nowrap",
+      height: "100%",
+    },
+    "& .fileHeader": {
+      flex: "0 0 auto",
+      paddingLeft: "6px",
+      paddingTop: "3px",
+      paddingBottom: "3px",
+    },
+    "& .fileItem": {
+      whiteSpace: "nowrap",
+    },
+    "& .fileList": {
+      flex: "1 1 auto",
+      backgroundColor: "white",
+      borderWidth: "1px",
+      borderColor: "#bbb",
+      borderStyle: "solid",
+      overflow: "auto",
+      outlineColor: "#888",
+
+      "& svg": {
+        height: "0.9em",
+        verticalAlign: "middle",
+      },
+      "& .statusM path": {
+        fill: "#00df49",
+        strokeWidth: "1px",
+        stroke: "#086a2d",
+      },
+      "& .statusU path": {
+        fill: "#94e000",
+        stroke: "#628622",
+      },
+      "& .statusD path": {
+        fill: "#e01a00",
+        stroke: "#863022",
+      },
+      "& .statusD.unmerged path": {
+        fill: "#dd00e0",
+        stroke: "#862285",
+      },
+      "& .statusA path": {
+        fill: "#0054e0",
+        stroke: "#224586",
+      },
+      "& .statusA.unmerged path": {
+        fill: "#00e0d3",
+        stroke: "#228683",
+      },
+      "& .statusR path": {
+        fill: "#b800e0",
+        stroke: "#772286",
+      },
+      "& .statusC path": {
+        fill: "#b800e0",
+        stroke: "#772286",
+      },
+      "& path": {
+        fill: "#000000",
+        strokeWidth: "1px",
+        stroke: "#080808",
+      },
+      "& path.flap": {
+        fill: "white",
+      },
+    },
   },
   secondPane: { position: "relative" },
 });
 
+interface FilesViewProps {
+  header: string;
+  files: FileStatus[];
+}
+
+function FilesView({ header, files }: FilesViewProps) {
+  return (
+    <div className="fileView">
+      <div className="fileHeader">{header}</div>
+      <div className="fileList" tabIndex={0}>
+        {(files || []).map((f) => (
+          <div
+            className={classNames("fileItem", `status${f.status}`, {
+              unmerged: f.unmerged,
+            })}
+            key={f.newFile || f.oldFile}
+          >
+            <svg viewBox="0 0 14 14">
+              <path d="M 3,1 l 0,12 8,0 0,-7 -5,0 0,-5 z"></path>
+              <path className="flap" d="M 6,1 l 1,0 4,4 0,1 -5,0 z"></path>
+            </svg>
+            {f.newFile || f.oldFile}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function WorkingFiles() {
-  return <div>Working Files</div>;
+  const workingFiles = useSelector((state: RootState) => state.repo.workingStatus);
+  return <FilesView header="Working Files" files={workingFiles} />;
 }
 
 function CommitCompose() {
@@ -31,7 +132,8 @@ function CommitCompose() {
 }
 
 function IndexFiles() {
-  return <div>Index Files</div>;
+  const indexFiles = useSelector((state: RootState) => state.repo.indexStatus);
+  return <FilesView header="Index Files" files={indexFiles} />;
 }
 
 export function Status() {
