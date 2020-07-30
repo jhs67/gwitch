@@ -89,6 +89,31 @@ const useStyles = createUseStyles({
         fill: "white",
       },
     },
+    "& .commitMessage": {
+      display: "flex",
+      flexFlow: "column nowrap",
+      height: "100%",
+
+      "& .indexHeader": {
+        flex: "0 0 auto",
+        paddingLeft: "6px",
+        paddingTop: "3px",
+        paddingBottom: "3px",
+      },
+      "& .message": {
+        flex: "1 1 auto",
+        outlineColor: "#888",
+        resize: "none",
+      },
+      "& .commitButtons": {
+        flex: "0 0 auto",
+        paddingTop: "9px",
+        paddingBottom: "9px",
+      },
+      "& .commitButton": {
+        float: "right",
+      },
+    },
   },
   secondPane: { position: "relative" },
 });
@@ -128,7 +153,19 @@ function WorkingFiles() {
 }
 
 function CommitCompose() {
-  return <div>Commit Message</div>;
+  return (
+    <div className="commitMessage">
+      <div className="indexHeader">Commit Message</div>
+      <textarea className="message"></textarea>
+      <div className="commitButtons">
+        <label>
+          <input className="amend" type="checkbox" />
+          Amend
+        </label>
+        <button className="commitButton">Commit</button>
+      </div>
+    </div>
+  );
 }
 
 function IndexFiles() {
