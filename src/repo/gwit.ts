@@ -430,7 +430,7 @@ export class Gwit {
   }
 
   stageStatus() {
-    return cancellableX(this.git("status", "-z"), (out) => {
+    return cancellableX(this.git("status", "-z", "-uall"), (out) => {
       const r = [];
       const lines = out.split("\x00");
       while (lines.length > 1) {
