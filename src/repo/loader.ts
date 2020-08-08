@@ -54,12 +54,17 @@ export class RepoLoader {
     this.refsLazy.start(() => this.loadCommits());
     this.refsWatch = new Watcher(
       gitdir,
-      ["logs", "refs", "packed-refs", "HEAD", "index"],
+      [""],
       (paths) => {
         const i = paths.filter((p) => p === "index").length;
         if (paths.indexOf("HEAD") !== -1 || i != 0) this.statusLazy.poke();
         if (i === 0 || i !== paths.length) this.refsLazy.poke();
       },
+      (path) =>
+        cancellableRun(async () => {
+          const roots = ["logs", "refs", "packed-refs", "HEAD", "index"];
+          return path !== "" && roots.indexOf(path.split("/")[0]) === -1;
+        }),
     );
 
     this.statusLazy.start(() => this.loadStatus());
