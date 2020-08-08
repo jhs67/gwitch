@@ -6,6 +6,8 @@ import classNames from "classnames";
 import { RootState } from "../../store";
 import { setWorkingSplit, setIndexSplit } from "../../store/layout/actions";
 import { FileStatus } from "../../store/repo/types";
+import { SelectList } from "../SelectList";
+import { ItemProps } from "../SelectList/SelectList";
 
 const useStyles = createUseStyles({
   working: {
@@ -33,6 +35,15 @@ const useStyles = createUseStyles({
     },
     "& .fileItem": {
       whiteSpace: "nowrap",
+      "&.selected": {
+        backgroundColor: "#0b82f5",
+        color: "white",
+      },
+      "&.focused": {
+        outlineWidth: "1px",
+        outlineColor: "#888",
+        outlineStyle: "dashed",
+      },
     },
     "& .fileList": {
       flex: "1 1 auto",
@@ -123,33 +134,41 @@ interface FilesViewProps {
   files: FileStatus[];
 }
 
+function FileItem({ item, selected, focused }: ItemProps<FileStatus>) {
+  return (
+    <div
+      className={classNames("fileItem", `status${item.status}`, {
+        unmerged: item.unmerged,
+        selected,
+        focused,
+      })}
+    >
+      <svg viewBox="0 0 14 14">
+        <path d="M 3,1 l 0,12 8,0 0,-7 -5,0 0,-5 z"></path>
+        <path className="flap" d="M 6,1 l 1,0 4,4 0,1 -5,0 z"></path>
+      </svg>
+      {item.newFile || item.oldFile}
+    </div>
+  );
+}
+
 function FilesView({ header, files }: FilesViewProps) {
   return (
     <div className="fileView">
       <div className="fileHeader">{header}</div>
-      <div className="fileList" tabIndex={0}>
-        {(files || []).map((f) => (
-          <div
-            className={classNames("fileItem", `status${f.status}`, {
-              unmerged: f.unmerged,
-            })}
-            key={f.newFile || f.oldFile}
-          >
-            <svg viewBox="0 0 14 14">
-              <path d="M 3,1 l 0,12 8,0 0,-7 -5,0 0,-5 z"></path>
-              <path className="flap" d="M 6,1 l 1,0 4,4 0,1 -5,0 z"></path>
-            </svg>
-            {f.newFile || f.oldFile}
-          </div>
-        ))}
-      </div>
+      <SelectList<FileStatus>
+        items={files}
+        itemComponent={FileItem}
+        itemKey={(i) => i.newFile || i.oldFile}
+        rootClass="fileList"
+      />
     </div>
   );
 }
 
 function WorkingFiles() {
   const workingFiles = useSelector((state: RootState) => state.repo.workingStatus);
-  return <FilesView header="Working Files" files={workingFiles} />;
+  return <FilesView header="Working Files" files={workingFiles || []} />;
 }
 
 function CommitCompose() {
@@ -170,7 +189,7 @@ function CommitCompose() {
 
 function IndexFiles() {
   const indexFiles = useSelector((state: RootState) => state.repo.indexStatus);
-  return <FilesView header="Index Files" files={indexFiles} />;
+  return <FilesView header="Index Files" files={indexFiles || []} />;
 }
 
 export function Status() {
