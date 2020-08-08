@@ -1,4 +1,4 @@
-import React, { useState, KeyboardEvent, FunctionComponent } from "react";
+import React, { KeyboardEvent, FunctionComponent } from "react";
 
 export interface ItemProps<T> {
   item: T;
@@ -11,10 +11,12 @@ export type ItemComponent<T> = FunctionComponent<ItemProps<T>>;
 
 export interface SelectListProps<T> {
   items: T[];
-  selected?: number[];
+  selected: number[];
+  focused: number | undefined;
   itemComponent?: ItemComponent<T>;
   itemKey?: (t: T, i: number) => string;
-  onChange?: (s: number[]) => void;
+  setSelected: (s: number[]) => void;
+  setFocused: (f: number | undefined) => void;
   rootClass?: string;
   itemClass?: string;
 }
@@ -27,16 +29,17 @@ const KeyCode = {
 };
 
 export function SelectList<T>(props: SelectListProps<T>) {
-  const [focused, setFocused] = useState<number | undefined>();
-  const [selected, rawSetSelected] = useState(props.selected || []);
-
-  const { items, rootClass, itemClass, onChange, itemComponent, itemKey } = props;
-
-  function setSelected(s: number[]) {
-    if (selected.length === s.length && selected.every((v, i) => v === s[i])) return;
-    rawSetSelected(s);
-    onChange && onChange(s);
-  }
+  const {
+    items,
+    selected,
+    focused,
+    rootClass,
+    itemClass,
+    setSelected,
+    setFocused,
+    itemComponent,
+    itemKey,
+  } = props;
 
   function lowerBound(i: number, c: number[]) {
     let n = 0;

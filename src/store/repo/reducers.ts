@@ -10,9 +10,15 @@ import {
   SET_FOCUS_PATCH,
   SET_FOCUS_PATCH_DIFF,
   SET_STAGE_STATUS,
+  SET_STAGE_SELECTED,
 } from "./types";
 
 const initialState: RepoState = { refs: [], commits: [] };
+
+function same(a: string[] | undefined, b: string[] | undefined) {
+  if (a === undefined || b === undefined) return a === undefined && b === undefined;
+  return a.length === b.length && a.every((v, i) => v === b[i]);
+}
 
 export function repoStateReducer(
   state: RepoState = initialState,
@@ -43,8 +49,38 @@ export function repoStateReducer(
           return { ...s, ...action.patch };
         }),
       };
-    case SET_STAGE_STATUS:
-      return { ...state, indexStatus: action.index, workingStatus: action.working };
+    case SET_STAGE_STATUS: {
+      // filter the selected list of missing files
+      const { workingSelected, indexSelected } = state;
+      let i = indexSelected
+        ? indexSelected
+            .map((p) => action.index.findIndex((s) => (s.newFile || s.oldFile) === p))
+            .filter((s) => s !== -1)
+            .sort()
+            .map((i) => action.index[i].newFile || action.index[i].oldFile)
+        : indexSelected;
+      let w = workingSelected
+        ? workingSelected
+            .map((p) => action.working.findIndex((s) => (s.newFile || s.oldFile) === p))
+            .filter((s) => s !== -1)
+            .sort()
+            .map((i) => action.working[i].newFile || action.working[i].oldFile)
+        : workingSelected;
+
+      // don't change if nothing changed
+      if (same(i, indexSelected)) i = indexSelected;
+      if (same(w, workingSelected)) w = workingSelected;
+
+      return {
+        ...state,
+        indexStatus: action.index,
+        workingStatus: action.working,
+        indexSelected: i,
+        workingSelected: w,
+      };
+    }
+    case SET_STAGE_SELECTED:
+      return { ...state, indexSelected: action.index, workingSelected: action.working };
     default:
       return state;
   }

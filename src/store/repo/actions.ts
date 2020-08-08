@@ -13,6 +13,7 @@ import {
   SET_FOCUS_PATCH,
   SET_FOCUS_PATCH_DIFF,
   SET_STAGE_STATUS,
+  SET_STAGE_SELECTED,
 } from "./types";
 
 export function setRepoPath(path: RepoPath): RepoStateActions {
@@ -52,4 +53,8 @@ export function setStageStatus(
   index: FileStatus[],
 ): RepoStateActions {
   return { type: SET_STAGE_STATUS, working, index };
+}
+
+export function setStageSelected(working: string[], index: string[]): RepoStateActions {
+  return { type: SET_STAGE_SELECTED, working, index };
 }

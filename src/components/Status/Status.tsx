@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import SplitPane from "react-split-pane";
 import { createUseStyles } from "react-jss";
 import { useSelector, useDispatch } from "react-redux";
@@ -8,6 +8,7 @@ import { setWorkingSplit, setIndexSplit } from "../../store/layout/actions";
 import { FileStatus } from "../../store/repo/types";
 import { SelectList } from "../SelectList";
 import { ItemProps } from "../SelectList/SelectList";
+import { setStageSelected } from "../../store/repo/actions";
 
 const useStyles = createUseStyles({
   working: {
@@ -132,6 +133,8 @@ const useStyles = createUseStyles({
 interface FilesViewProps {
   header: string;
   files: FileStatus[];
+  selected: number[];
+  setSelected: (s: number[]) => void;
 }
 
 function FileItem({ item, selected, focused }: ItemProps<FileStatus>) {
@@ -152,14 +155,20 @@ function FileItem({ item, selected, focused }: ItemProps<FileStatus>) {
   );
 }
 
-function FilesView({ header, files }: FilesViewProps) {
+function FilesView({ header, files, selected, setSelected }: FilesViewProps) {
+  const [focused, setFocused] = useState<number | undefined>();
+
   return (
     <div className="fileView">
       <div className="fileHeader">{header}</div>
       <SelectList<FileStatus>
         items={files}
+        selected={selected}
+        focused={focused}
         itemComponent={FileItem}
         itemKey={(i) => i.newFile || i.oldFile}
+        setSelected={setSelected}
+        setFocused={setFocused}
         rootClass="fileList"
       />
     </div>
@@ -167,8 +176,28 @@ function FilesView({ header, files }: FilesViewProps) {
 }
 
 function WorkingFiles() {
-  const workingFiles = useSelector((state: RootState) => state.repo.workingStatus);
-  return <FilesView header="Working Files" files={workingFiles || []} />;
+  const selectedPaths = useSelector((state: RootState) => state.repo.workingSelected) || [];
+  const workingFiles = useSelector((state: RootState) => state.repo.workingStatus) || [];
+  const dispatch = useDispatch();
+
+  const selected = selectedPaths
+    .map((p) => workingFiles.findIndex((s) => (s.newFile || s.oldFile) === p))
+    .filter((s) => s !== -1)
+    .sort();
+
+  const setSelected = (s: number[]) => {
+    const f = s.map((s) => workingFiles[s].newFile || workingFiles[s].oldFile);
+    dispatch(setStageSelected(f, undefined));
+  };
+
+  return (
+    <FilesView
+      header="Working Files"
+      files={workingFiles || []}
+      selected={selected}
+      setSelected={setSelected}
+    />
+  );
 }
 
 function CommitCompose() {
@@ -188,8 +217,28 @@ function CommitCompose() {
 }
 
 function IndexFiles() {
-  const indexFiles = useSelector((state: RootState) => state.repo.indexStatus);
-  return <FilesView header="Index Files" files={indexFiles || []} />;
+  const selectedPaths = useSelector((state: RootState) => state.repo.indexSelected) || [];
+  const indexFiles = useSelector((state: RootState) => state.repo.indexStatus) || [];
+  const dispatch = useDispatch();
+
+  const selected = selectedPaths
+    .map((p) => indexFiles.findIndex((s) => (s.newFile || s.oldFile) === p))
+    .filter((s) => s !== -1)
+    .sort();
+
+  const setSelected = (s: number[]) => {
+    const f = s.map((s) => indexFiles[s].newFile || indexFiles[s].oldFile);
+    dispatch(setStageSelected(undefined, f));
+  };
+
+  return (
+    <FilesView
+      header="Index Files"
+      files={indexFiles}
+      selected={selected}
+      setSelected={setSelected}
+    />
+  );
 }
 
 export function Status() {
