@@ -8,6 +8,7 @@ import { Commit, FileStatus } from "../../store/repo/types";
 import { setFocusCommit } from "../../store/repo/actions";
 import { Diff } from "../Diff";
 import { GwitchTheme } from "../../theme/theme";
+import { setPatchShow } from "../../store/layout/actions";
 
 const useStyles = createUseStyles((theme: GwitchTheme) => ({
   commit: {
@@ -173,13 +174,19 @@ export function Commit() {
   const commits = useSelector((state: RootState) => state.repo.commits);
   const patch = useSelector((state: RootState) => state.repo.focusPatch) || [];
   const commit = commits.find((commit) => commit.hash == focusCommit);
+  const show = useSelector((state: RootState) => state.layout.patchShow);
+  const dispatch = useDispatch();
   const classes = useStyles();
 
   return commit ? (
     <div className={classes.commit}>
       <CommitInfo commit={commit} classes={classes} />
       <CommitSummary commit={commit} classes={classes} patch={patch} />
-      <Diff patch={patch} source={focusCommit} />
+      <Diff
+        patch={patch}
+        show={show[focusCommit] || {}}
+        setShow={(file, state) => dispatch(setPatchShow(focusCommit, file, state))}
+      />
     </div>
   ) : null;
 }

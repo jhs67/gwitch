@@ -1,11 +1,8 @@
 import React, { Fragment } from "react";
 import classNames from "classnames";
 import { createUseStyles } from "react-jss";
-import { useSelector, useDispatch } from "react-redux";
 import { FileStatus } from "../../store/repo/types";
 import { GwitchTheme } from "../../theme/theme";
-import { RootState } from "../../store";
-import { setPatchShow } from "../../store/layout/actions";
 
 const useStyles = createUseStyles((theme: GwitchTheme) => ({
   patch: {
@@ -188,22 +185,19 @@ export function Diff({
   patch,
   diffLimit,
   addLimit,
-  source,
+  setShow,
+  show,
 }: {
   patch: FileStatus[];
   diffLimit?: number;
   addLimit?: number;
-  source?: string;
+  setShow: (file: string, state: boolean) => void;
+  show: { [source: string]: boolean };
 }) {
   const classes = useStyles();
-  const show = useSelector((state: RootState) => state.layout.patchShow);
-  const dispatch = useDispatch();
 
-  if (source == null) source = "";
   if (!diffLimit) diffLimit = 200;
   if (!addLimit) addLimit = 50;
-
-  const sourceShow = show[source] || {};
 
   return (
     <div>
@@ -215,9 +209,9 @@ export function Diff({
             classes={classes}
             diffLimit={diffLimit}
             addLimit={addLimit}
-            show={sourceShow[file]}
-            setShow={(state: boolean) => dispatch(setPatchShow(source, file, state))}
-            key={`${source}/${file}`}
+            show={show[file]}
+            setShow={(state: boolean) => setShow(file, state)}
+            key={file}
           />
         );
       })}
