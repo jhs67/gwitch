@@ -84,6 +84,7 @@
     "@typescript-eslint/parser": "^3.9.0",
     "css-loader": "^4.2.1",
     "electron": "^9.2.0",
+    "electron-installer-debian": "^3.1.0",
     "eslint": "^7.6.0",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-react": "^7.20.5",
