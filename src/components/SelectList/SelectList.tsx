@@ -17,6 +17,7 @@ export interface SelectListProps<T> {
   itemKey?: (t: T, i: number) => string;
   setSelected: (s: number[]) => void;
   setFocused: (f: number | undefined) => void;
+  onContext?: (ev: MouseEvent) => void;
   rootClass?: string;
   itemClass?: string;
 }
@@ -37,6 +38,7 @@ export function SelectList<T>(props: SelectListProps<T>) {
     itemClass,
     setSelected,
     setFocused,
+    onContext,
     itemComponent,
     itemKey,
   } = props;
@@ -111,6 +113,12 @@ export function SelectList<T>(props: SelectListProps<T>) {
     }
   }
 
+  function contextItem(index: number) {
+    if (isSelected(index, selected)) return;
+    setFocused(index);
+    setSelected([index]);
+  }
+
   function onKeyDown(event: KeyboardEvent) {
     switch (event.keyCode) {
       case KeyCode.DOWN:
@@ -163,6 +171,10 @@ export function SelectList<T>(props: SelectListProps<T>) {
             onClick={(event) => {
               focusItem(i, event.shiftKey, event.ctrlKey);
               event.stopPropagation();
+            }}
+            onContextMenu={(ev) => {
+              contextItem(i);
+              onContext && onContext(ev.nativeEvent);
             }}
           >
             {itemComponent({ item: t, index: i, selected: s, focused: f })}
