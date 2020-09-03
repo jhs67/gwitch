@@ -2,9 +2,14 @@ import React from "react";
 import SplitPane from "react-split-pane";
 import { createUseStyles } from "react-jss";
 import { useSelector, useDispatch } from "react-redux";
+import { resolve } from "path";
+import { shell, remote } from "electron";
 import { RootState } from "../../store";
+import { FileStatus, RepoPath } from "../../store/repo/types";
 import { setWorkingSplit, setIndexSplit } from "../../store/layout/actions";
 import { setStageSelected } from "../../store/repo/actions";
+import { RepoLoader } from "../../repo/loader";
+import { LoaderContext } from "../../renderer";
 import { FilesView } from "./FilesView";
 
 const useStyles = createUseStyles({
@@ -127,12 +132,17 @@ const useStyles = createUseStyles({
   secondPane: { position: "relative" },
 });
 
-function WorkingFiles() {
+function statusToPath(s: FileStatus, r: RepoPath) {
+  return resolve(r.path, ...r.submodules, s.newFile || s.oldFile);
+}
+
+function WorkingFiles({ loader }: { loader: RepoLoader }) {
+  const rootPath = useSelector((state: RootState) => state.repo.path);
   const selectedPaths = useSelector((state: RootState) => state.repo.workingSelected) || [];
   const workingFiles = useSelector((state: RootState) => state.repo.workingStatus) || [];
   const dispatch = useDispatch();
 
-  const selected = selectedPaths
+  const selected_ = selectedPaths
     .map((p) => workingFiles.findIndex((s) => (s.newFile || s.oldFile) === p))
     .filter((s) => s !== -1)
     .sort();
@@ -142,12 +152,69 @@ function WorkingFiles() {
     dispatch(setStageSelected(f, undefined));
   };
 
+  const menu = [
+    {
+      label: "Stage",
+      click: () =>
+        loader.stageFiles(loader.workingSelected().map((s) => s.newFile || s.oldFile)),
+    },
+    {
+      label: "Open",
+      click: () =>
+        loader.workingSelected().forEach((s) => shell.openPath(statusToPath(s, rootPath))),
+    },
+    {
+      label: "Show",
+      click: () =>
+        loader
+          .workingSelected()
+          .forEach((s) => shell.showItemInFolder(statusToPath(s, rootPath))),
+    },
+    {
+      label: "Discard",
+      click: () => {
+        const trashList: string[] = [];
+        const discardList: string[] = [];
+        let detail = loader
+          .workingSelected()
+          .map((s) => {
+            const p = s.newFile || s.oldFile;
+            if (s.status === "?") trashList.push(p);
+            else discardList.push(p);
+            return p;
+          })
+          .join("\n");
+        const trash = trashList.length && !discardList.length;
+        if (detail.length > 80) detail = detail.substr(0, 77) + "...";
+
+        const r = remote.dialog.showMessageBoxSync(remote.getCurrentWindow(), {
+          type: "warning",
+          buttons: ["Cancel", "Continue"],
+          title: trash ? "Move to Trash" : "Discard Changes",
+          message: trash
+            ? "Move to the Trash?"
+            : "Discard Changes? This can not be undone.",
+          detail,
+        });
+
+        if (!r) return;
+
+        trashList.forEach((s) => shell.moveItemToTrash(s));
+        loader.discardChanges(discardList);
+      },
+    },
+  ];
+
   return (
     <FilesView
       header="Working Files"
       files={workingFiles || []}
-      selected={selected}
+      selected={selected_}
       setSelected={setSelected}
+      onDoubleClick={() =>
+        loader.stageFiles(loader.workingSelected().map((s) => s.newFile || s.oldFile))
+      }
+      menu={menu}
     />
   );
 }
@@ -168,7 +235,8 @@ function CommitCompose() {
   );
 }
 
-function IndexFiles() {
+function IndexFiles({ loader }: { loader: RepoLoader }) {
+  const rootPath = useSelector((state: RootState) => state.repo.path);
   const selectedPaths = useSelector((state: RootState) => state.repo.indexSelected) || [];
   const indexFiles = useSelector((state: RootState) => state.repo.indexStatus) || [];
   const dispatch = useDispatch();
@@ -183,12 +251,36 @@ function IndexFiles() {
     dispatch(setStageSelected(undefined, f));
   };
 
+  const menu = [
+    {
+      label: "Unstage",
+      click: () =>
+        loader.unstageFiles(loader.indexSelected().map((s) => s.newFile || s.oldFile)),
+    },
+    {
+      label: "Open",
+      click: () =>
+        loader.indexSelected().forEach((s) => shell.openPath(statusToPath(s, rootPath))),
+    },
+    {
+      label: "Show",
+      click: () =>
+        loader
+          .indexSelected()
+          .forEach((s) => shell.showItemInFolder(statusToPath(s, rootPath))),
+    },
+  ];
+
   return (
     <FilesView
       header="Index Files"
       files={indexFiles}
       selected={selected}
       setSelected={setSelected}
+      menu={menu}
+      onDoubleClick={() =>
+        loader.unstageFiles(loader.indexSelected().map((s) => s.newFile || s.oldFile))
+      }
     />
   );
 }
@@ -200,30 +292,34 @@ export function Status() {
   const indexSplit = useSelector((state: RootState) => state.layout.indexSplit);
 
   return (
-    <SplitPane
-      className={classes.working}
-      maxSize={-300}
-      minSize={100}
-      defaultSize={workingSplit}
-      onChange={(nsplit) => {
-        if (nsplit !== workingSplit) dispatch(setWorkingSplit(nsplit));
-      }}
-    >
-      <WorkingFiles />
-      <SplitPane
-        className={classes.working}
-        primary="second"
-        maxSize={-200}
-        minSize={100}
-        defaultSize={indexSplit}
-        onChange={(nsplit) => {
-          if (nsplit !== indexSplit) dispatch(setIndexSplit(nsplit));
-        }}
-      >
-        <CommitCompose />
-        <IndexFiles />
-      </SplitPane>
-    </SplitPane>
+    <LoaderContext.Consumer>
+      {(loader: RepoLoader) => (
+        <SplitPane
+          className={classes.working}
+          maxSize={-300}
+          minSize={100}
+          defaultSize={workingSplit}
+          onChange={(nsplit) => {
+            if (nsplit !== workingSplit) dispatch(setWorkingSplit(nsplit));
+          }}
+        >
+          <WorkingFiles loader={loader} />
+          <SplitPane
+            className={classes.working}
+            primary="second"
+            maxSize={-200}
+            minSize={100}
+            defaultSize={indexSplit}
+            onChange={(nsplit) => {
+              if (nsplit !== indexSplit) dispatch(setIndexSplit(nsplit));
+            }}
+          >
+            <CommitCompose />
+            <IndexFiles loader={loader} />
+          </SplitPane>
+        </SplitPane>
+      )}
+    </LoaderContext.Consumer>
   );
   return <div>status</div>;
 }

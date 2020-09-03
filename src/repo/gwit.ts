@@ -472,4 +472,22 @@ export class Gwit {
       (out) => parseDiff(out).patches[0],
     );
   }
+
+  checkoutFiles(files: string[]) {
+    return cancellableX(this.git("checkout", "--", ...files), () => {
+      return;
+    });
+  }
+
+  stageFiles(files: string[]) {
+    return cancellableX(this.git("add", "--", ...files), () => {
+      return;
+    });
+  }
+
+  unstageFiles(files: string[]) {
+    return cancellableX(this.git("reset", "HEAD", "--", ...files), () => {
+      return;
+    });
+  }
 }

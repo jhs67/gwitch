@@ -15,7 +15,9 @@ export default class Gwitch {
   }
 
   createWindow(path?: RepoPath): void {
-    const windowOpts = this.windows.opts({ webPreferences: { nodeIntegration: true } });
+    const windowOpts = this.windows.opts({
+      webPreferences: { nodeIntegration: true, enableRemoteModule: true },
+    });
 
     // Create the browser window.
     const window = new BrowserWindow(windowOpts);

@@ -102,6 +102,32 @@ export class RepoLoader {
     this.refsWatch = null;
   }
 
+  workingSelected() {
+    const { workingSelected, workingStatus } = this.store.getState().repo;
+    return workingStatus.filter(
+      (s) => workingSelected.indexOf(s.newFile || s.oldFile) !== -1,
+    );
+  }
+
+  indexSelected() {
+    const { indexSelected, indexStatus } = this.store.getState().repo;
+    return indexStatus.filter((s) => indexSelected.indexOf(s.newFile || s.oldFile) !== -1);
+  }
+
+  async discardChanges(files: string[]) {
+    await this.gwit.checkoutFiles(files).result;
+  }
+
+  async stageFiles(files: string[]) {
+    console.log("stageFiles", files);
+    await this.gwit.stageFiles(files).result;
+  }
+
+  async unstageFiles(files: string[]) {
+    console.log("stageFiles", files);
+    await this.gwit.unstageFiles(files).result;
+  }
+
   private loadCommits() {
     return cancellableRun(async (run) => {
       // graph the refs and stashes

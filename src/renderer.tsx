@@ -19,6 +19,8 @@ const loader = new RepoLoader(store);
 const layout = new LayoutProxy(store);
 const eventQueue = new CancellableQueue(1);
 
+export const LoaderContext = React.createContext<RepoLoader>(loader);
+
 ReactDOM.render(
   <Provider store={store}>
     <ThemeProvider theme={theme}>
