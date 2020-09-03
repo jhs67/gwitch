@@ -18,6 +18,7 @@ export interface SelectListProps<T> {
   setSelected: (s: number[]) => void;
   setFocused: (f: number | undefined) => void;
   onContext?: (ev: MouseEvent) => void;
+  onDoubleClick?: (ev: MouseEvent) => void;
   rootClass?: string;
   itemClass?: string;
 }
@@ -39,6 +40,7 @@ export function SelectList<T>(props: SelectListProps<T>) {
     setSelected,
     setFocused,
     onContext,
+    onDoubleClick,
     itemComponent,
     itemKey,
   } = props;
@@ -175,6 +177,10 @@ export function SelectList<T>(props: SelectListProps<T>) {
             onContextMenu={(ev) => {
               contextItem(i);
               onContext && onContext(ev.nativeEvent);
+            }}
+            onDoubleClick={(ev) => {
+              contextItem(i);
+              onDoubleClick && onDoubleClick(ev.nativeEvent);
             }}
           >
             {itemComponent({ item: t, index: i, selected: s, focused: f })}

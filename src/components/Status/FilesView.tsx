@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { remote, MenuItemConstructorOptions } from "electron";
 import classNames from "classnames";
 import { SelectList, ItemProps } from "../SelectList";
 import { FileStatus } from "../../store/repo/types";
@@ -7,7 +8,9 @@ interface FilesViewProps {
   header: string;
   files: FileStatus[];
   selected: number[];
+  menu?: MenuItemConstructorOptions[];
   setSelected: (s: number[]) => void;
+  onDoubleClick?: (ev: MouseEvent) => void;
 }
 
 function FileItem({ item, selected, focused }: ItemProps<FileStatus>) {
@@ -28,8 +31,20 @@ function FileItem({ item, selected, focused }: ItemProps<FileStatus>) {
   );
 }
 
-export function FilesView({ header, files, selected, setSelected }: FilesViewProps) {
+export function FilesView({
+  header,
+  files,
+  selected,
+  setSelected,
+  menu,
+  onDoubleClick,
+}: FilesViewProps) {
   const [focused, setFocused] = useState<number | undefined>();
+
+  function onContext() {
+    if (menu)
+      remote.Menu.buildFromTemplate(menu).popup({ window: remote.getCurrentWindow() });
+  }
 
   return (
     <div className="fileView">
@@ -42,6 +57,8 @@ export function FilesView({ header, files, selected, setSelected }: FilesViewPro
         itemKey={(i) => i.newFile || i.oldFile}
         setSelected={setSelected}
         setFocused={setFocused}
+        onContext={onContext}
+        onDoubleClick={onDoubleClick}
         rootClass="fileList"
       />
     </div>
