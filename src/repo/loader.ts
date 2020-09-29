@@ -57,13 +57,18 @@ export class RepoLoader {
       [""],
       (paths) => {
         const i = paths.filter((p) => p === "index").length;
-        if (paths.indexOf("HEAD") !== -1 || i != 0) this.statusLazy.poke();
+        if (
+          i != 0 ||
+          paths.includes("HEAD") ||
+          paths.includes(this.store.getState().repo.head)
+        )
+          this.statusLazy.poke();
         if (i === 0 || i !== paths.length) this.refsLazy.poke();
       },
       (path) =>
         cancellableRun(async () => {
           const roots = ["logs", "refs", "packed-refs", "HEAD", "index"];
-          return path !== "" && roots.indexOf(path.split("/")[0]) === -1;
+          return path !== "" && !roots.includes(path.split("/")[0]);
         }),
     );
 
@@ -119,12 +124,10 @@ export class RepoLoader {
   }
 
   async stageFiles(files: string[]) {
-    console.log("stageFiles", files);
     await this.gwit.stageFiles(files).result;
   }
 
   async unstageFiles(files: string[]) {
-    console.log("stageFiles", files);
     await this.gwit.unstageFiles(files).result;
   }
 
