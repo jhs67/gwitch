@@ -11,6 +11,7 @@ import {
   setFocusPatchDiff,
   setStageStatus,
   setCommitMessage,
+  setRepoAmend,
 } from "../store/repo/actions";
 import { Gwit } from "./gwit";
 import { cancellableRun, cancellableQueue } from "./cancellable";
@@ -151,6 +152,12 @@ export class RepoLoader {
 
   async unstageFiles(files: string[]) {
     await this.gwit.unstageFiles(files).result;
+  }
+
+  async commit(amend: boolean, message: string) {
+    this.dispatch(setCommitMessage(""));
+    this.dispatch(setRepoAmend(false));
+    await this.gwit.commit(amend, message).result;
   }
 
   private loadCommits() {

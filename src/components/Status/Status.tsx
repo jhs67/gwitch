@@ -219,9 +219,10 @@ function WorkingFiles({ loader }: { loader: RepoLoader }) {
   );
 }
 
-function CommitCompose() {
+function CommitCompose({ loader }: { loader: RepoLoader }) {
   const amend = useSelector((state: RootState) => state.repo.amend);
   const message = useSelector((state: RootState) => state.repo.commitMessage);
+  const status = useSelector((state: RootState) => state.repo.indexStatus);
   const dispatch = useDispatch();
 
   const toggleAmend = () => {
@@ -230,6 +231,10 @@ function CommitCompose() {
 
   const messageChange = (ev: ChangeEvent<HTMLTextAreaElement>) => {
     dispatch(setCommitMessage(ev.target.value));
+  };
+
+  const commitClick = () => {
+    loader.commit(amend, message);
   };
 
   return (
@@ -241,7 +246,13 @@ function CommitCompose() {
           <input className="amend" type="checkbox" checked={amend} onChange={toggleAmend} />
           Amend
         </label>
-        <button className="commitButton">Commit</button>
+        <button
+          className="commitButton"
+          disabled={message === "" || status.length === 0}
+          onClick={commitClick}
+        >
+          Commit
+        </button>
       </div>
     </div>
   );
@@ -326,7 +337,7 @@ export function Status() {
               if (nsplit !== indexSplit) dispatch(setIndexSplit(nsplit));
             }}
           >
-            <CommitCompose />
+            <CommitCompose loader={loader} />
             <IndexFiles loader={loader} />
           </SplitPane>
         </SplitPane>

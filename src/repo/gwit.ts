@@ -501,4 +501,15 @@ export class Gwit {
       return;
     });
   }
+
+  commit(amend: boolean, message: string) {
+    return cancellableX(
+      amend
+        ? this.git("commit", "--amend", "-m", message)
+        : this.git("commit", "-m", message),
+      () => {
+        return;
+      },
+    );
+  }
 }
