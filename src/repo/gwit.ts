@@ -14,31 +14,26 @@ import { Cancellable, cancellableX } from "./cancellable";
 import { gitPath } from "./gitpath";
 
 function parseNameStatus(out: string): FileStatus[] {
-  const lines = out.trim().split("\n");
-  return lines.map(
-    (line): FileStatus => {
-      const r = line.split("\t");
-      let status = r[0] as StatusLetter;
-      let similarity: number;
-      let oldFile, newFile;
-      if (status.length > 1) {
-        similarity = parseInt(status.substr(1));
-        status = status[0] as StatusLetter;
-      }
-      if (status === "A") {
-        newFile = r[1];
-      } else if (status === "D") {
-        oldFile = r[1];
-      } else if (status === "R" || status === "C") {
-        oldFile = r[1];
-        newFile = r[2];
-      } else {
-        oldFile = r[1];
-        newFile = r[2] || r[1];
-      }
-      return { newFile, oldFile, status, similarity };
-    },
-  );
+  const z = [];
+  const records = out.trim().split("\x00");
+  for (let i = 0; i < records.length - 1; ) {
+    const r = records[i++];
+    const a = records[i++];
+    const status = r[0] as StatusLetter;
+    const similarity = r.length > 1 ? parseInt(r.substr(1)) : undefined;
+    let oldFile, newFile;
+    if (status === "A") {
+      newFile = a;
+    } else if (status === "R" || status === "C") {
+      if (i == records.length) throw new Error("name status entry missing second file");
+      oldFile = a;
+      newFile = records[i++];
+    } else {
+      oldFile = a;
+    }
+    z.push({ newFile, oldFile, status, similarity });
+  }
+  return z;
 }
 
 function diffEHeader(l: string, m: string) {
@@ -406,7 +401,7 @@ export class Gwit {
 
   commitStatus(ref: string): Cancellable<FileStatus[]> {
     return cancellableX(
-      this.git("show", "--name-status", "--format=", "-M50", "-C50", ref),
+      this.git("show", "--name-status", "--format=", "-M50", "-C50", "-z", ref),
       (output) => parseNameStatus(output),
     );
   }
