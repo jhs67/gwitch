@@ -28,6 +28,7 @@ export class RepoLoader {
   private loadedFocusPatch: string;
   private focusPatchLazy = new LazyUpdater();
 
+  private loadedStatusAmend = false;
   private statusLazy = new LazyUpdater();
   private statusWatch: Watcher;
 
@@ -35,13 +36,19 @@ export class RepoLoader {
 
   constructor(private store: Store<RootState>) {
     this.dispatch = this.store.dispatch;
+    this.loadedStatusAmend = this.store.getState().repo.amend;
 
     this.store.subscribe(() => {
-      const { focusCommit } = this.store.getState().repo;
+      const { focusCommit, amend } = this.store.getState().repo;
       if (this.loadedFocusPatch != focusCommit) {
         this.focusPatchLazy.stop();
         this.loadedFocusPatch = focusCommit;
         this.focusPatchLazy.start(() => this.loadFocusPatch(focusCommit));
+      }
+      if (this.loadedStatusAmend !== amend) {
+        this.statusLazy.stop();
+        this.loadedStatusAmend = amend;
+        this.statusLazy.start(() => this.loadStatus(this.loadedStatusAmend));
       }
     });
   }
@@ -72,7 +79,7 @@ export class RepoLoader {
         }),
     );
 
-    this.statusLazy.start(() => this.loadStatus());
+    this.statusLazy.start(() => this.loadStatus(this.loadedStatusAmend));
     this.statusWatch = new Watcher(
       top,
       [""],
@@ -191,9 +198,12 @@ export class RepoLoader {
     });
   }
 
-  private loadStatus() {
+  private loadStatus(amending: boolean) {
     return cancellableQueue(2, async (run) => {
-      const files = await run(() => this.gwit.stageStatus());
+      const [files, amend] = await Promise.all([
+        run(() => this.gwit.stageStatus()),
+        amending ? run(() => this.gwit.amendStatus()) : [],
+      ]);
 
       // sort the files into working and index changes
       const working: FileStatus[] = [];
@@ -205,12 +215,23 @@ export class RepoLoader {
           const oldFile = status === "D" ? f.file : f.oldFile || f.file;
           working.push({ status, newFile, oldFile, unmerged: f.unmerged });
         }
-        if (f.indexStatus !== " " && f.indexStatus !== "?") {
+        if (!amending && f.indexStatus !== " " && f.indexStatus !== "?") {
           const status = f.indexStatus;
           const newFile = f.file;
           const oldFile = f.oldFile;
           index.push({ status, newFile, oldFile, unmerged: f.unmerged });
         }
+      }
+
+      if (amending) {
+        amend.forEach((f) =>
+          index.push({
+            status: f.status,
+            newFile: f.newFile,
+            oldFile: f.oldFile,
+            unmerged: f.unmerged,
+          }),
+        );
       }
 
       // load the diffs
@@ -236,7 +257,11 @@ export class RepoLoader {
           }
 
           const file = r.newFile || r.oldFile;
-          const patch = await run(() => this.gwit.diffFileIndexToHead(file, r.oldFile));
+          const patch = await run(() =>
+            amending
+              ? this.gwit.diffFileIndexToAmend(file, r.oldFile)
+              : this.gwit.diffFileIndexToHead(file, r.oldFile),
+          );
           Object.assign(r, patch);
         }),
       ]);

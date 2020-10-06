@@ -14,6 +14,7 @@ import {
   SET_FOCUS_PATCH_DIFF,
   SET_STAGE_STATUS,
   SET_STAGE_SELECTED,
+  SET_REPO_AMEND,
 } from "./types";
 
 export function setRepoPath(path: RepoPath): RepoStateActions {
@@ -57,4 +58,8 @@ export function setStageStatus(
 
 export function setStageSelected(working: string[], index: string[]): RepoStateActions {
   return { type: SET_STAGE_SELECTED, working, index };
+}
+
+export function setRepoAmend(amend: boolean): RepoStateActions {
+  return { type: SET_REPO_AMEND, amend };
 }

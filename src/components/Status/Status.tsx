@@ -7,7 +7,7 @@ import { shell, remote } from "electron";
 import { RootState } from "../../store";
 import { FileStatus, RepoPath } from "../../store/repo/types";
 import { setWorkingSplit, setIndexSplit } from "../../store/layout/actions";
-import { setStageSelected } from "../../store/repo/actions";
+import { setRepoAmend, setStageSelected } from "../../store/repo/actions";
 import { RepoLoader } from "../../repo/loader";
 import { LoaderContext } from "../../renderer";
 import { FilesView } from "./FilesView";
@@ -220,13 +220,20 @@ function WorkingFiles({ loader }: { loader: RepoLoader }) {
 }
 
 function CommitCompose() {
+  const amend = useSelector((state: RootState) => state.repo.amend);
+  const dispatch = useDispatch();
+
+  const toggleAmend = () => {
+    dispatch(setRepoAmend(!amend));
+  };
+
   return (
     <div className="commitMessage">
       <div className="indexHeader">Commit Message</div>
       <textarea className="message"></textarea>
       <div className="commitButtons">
         <label>
-          <input className="amend" type="checkbox" />
+          <input className="amend" type="checkbox" checked={amend} onChange={toggleAmend} />
           Amend
         </label>
         <button className="commitButton">Commit</button>

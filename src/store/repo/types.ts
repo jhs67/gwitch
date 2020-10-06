@@ -65,6 +65,7 @@ export interface RepoState {
   indexStatus?: FileStatus[];
   workingSelected?: string[];
   indexSelected?: string[];
+  amend: boolean;
 }
 
 export const SET_REPO_PATH = "SET_REPO_PATH";
@@ -77,6 +78,7 @@ export const SET_FOCUS_PATCH = "SET_FOCUS_PATCH";
 export const SET_FOCUS_PATCH_DIFF = "SET_FOCUS_PATCH_DIFF";
 export const SET_STAGE_STATUS = "SET_STAGE_STATUS";
 export const SET_STAGE_SELECTED = "SET_STAGE_SELECTED";
+export const SET_REPO_AMEND = "SET_REPO_AMEND";
 
 interface SetRepoPathAction {
   type: typeof SET_REPO_PATH;
@@ -129,6 +131,11 @@ interface SetStageSelected {
   index?: string[];
 }
 
+interface SetRepoAmend {
+  type: typeof SET_REPO_AMEND;
+  amend: boolean;
+}
+
 export type RepoStateActions =
   | SetRepoPathAction
   | ResetRepoPathAction
@@ -139,4 +146,5 @@ export type RepoStateActions =
   | SetFocusPatch
   | SetFocusPatchDiff
   | SetStageStatus
-  | SetStageSelected;
+  | SetStageSelected
+  | SetRepoAmend;

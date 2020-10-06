@@ -11,9 +11,10 @@ import {
   SET_FOCUS_PATCH_DIFF,
   SET_STAGE_STATUS,
   SET_STAGE_SELECTED,
+  SET_REPO_AMEND,
 } from "./types";
 
-const initialState: RepoState = { refs: [], commits: [] };
+const initialState: RepoState = { refs: [], commits: [], amend: false };
 
 function same(a: string[] | undefined, b: string[] | undefined) {
   if (a === undefined || b === undefined) return a === undefined && b === undefined;
@@ -81,6 +82,8 @@ export function repoStateReducer(
     }
     case SET_STAGE_SELECTED:
       return { ...state, indexSelected: action.index, workingSelected: action.working };
+    case SET_REPO_AMEND:
+      return { ...state, amend: action.amend };
     default:
       return state;
   }

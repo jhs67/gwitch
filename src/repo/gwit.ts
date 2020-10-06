@@ -438,6 +438,13 @@ export class Gwit {
     });
   }
 
+  amendStatus() {
+    return cancellableX(
+      this.git("diff", "-M50", "-C50", "--cached", "--name-status", "-z", "HEAD^"),
+      (out) => parseNameStatus(out),
+    );
+  }
+
   diffFileUntracked(file: string) {
     return cancellableX(
       this.gitRc("diff", "-M50", "-C50", "--no-index", "--", "/dev/null", file),
@@ -462,8 +469,17 @@ export class Gwit {
   diffFileIndexToHead(file: string, from?: string) {
     return cancellableX(
       from
-        ? this.git("diff", "-M50", "-C50", "-M01", "--cached", "--", from, file)
+        ? this.git("diff", "-M50", "-C50", "--cached", "--", from, file)
         : this.git("diff", "-M50", "-C50", "--cached", "--", file),
+      (out) => parseDiff(out).patches[0],
+    );
+  }
+
+  diffFileIndexToAmend(file: string, from?: string) {
+    return cancellableX(
+      from
+        ? this.git("diff", "-M50", "-C50", "--cached", "HEAD^", "--", from, file)
+        : this.git("diff", "-M50", "-C50", "--cached", "HEAD^", "--", file),
       (out) => parseDiff(out).patches[0],
     );
   }
