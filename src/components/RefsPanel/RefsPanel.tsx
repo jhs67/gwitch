@@ -18,7 +18,7 @@ const useStyles = createUseStyles({
     flex: "0 0 auto",
     padding: "5px",
     maxWidth: "20vw",
-    minWidth: "15rem",
+    minWidth: "12rem",
     backgroundColor: "#eef1f1",
     borderRight: "1px solid #d5d5d5",
     display: "flex",
