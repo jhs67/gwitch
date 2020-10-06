@@ -15,6 +15,7 @@ import {
   SET_STAGE_STATUS,
   SET_STAGE_SELECTED,
   SET_REPO_AMEND,
+  SET_COMMIT_MESSAGE,
 } from "./types";
 
 export function setRepoPath(path: RepoPath): RepoStateActions {
@@ -62,4 +63,8 @@ export function setStageSelected(working: string[], index: string[]): RepoStateA
 
 export function setRepoAmend(amend: boolean): RepoStateActions {
   return { type: SET_REPO_AMEND, amend };
+}
+
+export function setCommitMessage(message: string): RepoStateActions {
+  return { type: SET_COMMIT_MESSAGE, message };
 }

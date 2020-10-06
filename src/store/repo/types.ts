@@ -66,6 +66,7 @@ export interface RepoState {
   workingSelected?: string[];
   indexSelected?: string[];
   amend: boolean;
+  commitMessage: string;
 }
 
 export const SET_REPO_PATH = "SET_REPO_PATH";
@@ -79,6 +80,7 @@ export const SET_FOCUS_PATCH_DIFF = "SET_FOCUS_PATCH_DIFF";
 export const SET_STAGE_STATUS = "SET_STAGE_STATUS";
 export const SET_STAGE_SELECTED = "SET_STAGE_SELECTED";
 export const SET_REPO_AMEND = "SET_REPO_AMEND";
+export const SET_COMMIT_MESSAGE = "SET_COMMIT_MESSAGE";
 
 interface SetRepoPathAction {
   type: typeof SET_REPO_PATH;
@@ -136,6 +138,11 @@ interface SetRepoAmend {
   amend: boolean;
 }
 
+interface SetCommitMessage {
+  type: typeof SET_COMMIT_MESSAGE;
+  message: string;
+}
+
 export type RepoStateActions =
   | SetRepoPathAction
   | ResetRepoPathAction
@@ -147,4 +154,5 @@ export type RepoStateActions =
   | SetFocusPatchDiff
   | SetStageStatus
   | SetStageSelected
-  | SetRepoAmend;
+  | SetRepoAmend
+  | SetCommitMessage;

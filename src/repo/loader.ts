@@ -10,6 +10,7 @@ import {
   setFocusPatch,
   setFocusPatchDiff,
   setStageStatus,
+  setCommitMessage,
 } from "../store/repo/actions";
 import { Gwit } from "./gwit";
 import { cancellableRun, cancellableQueue } from "./cancellable";
@@ -39,7 +40,14 @@ export class RepoLoader {
     this.loadedStatusAmend = this.store.getState().repo.amend;
 
     this.store.subscribe(() => {
-      const { focusCommit, amend } = this.store.getState().repo;
+      const {
+        focusCommit,
+        amend,
+        commitMessage,
+        head,
+        refs,
+        commits,
+      } = this.store.getState().repo;
       if (this.loadedFocusPatch != focusCommit) {
         this.focusPatchLazy.stop();
         this.loadedFocusPatch = focusCommit;
@@ -49,6 +57,13 @@ export class RepoLoader {
         this.statusLazy.stop();
         this.loadedStatusAmend = amend;
         this.statusLazy.start(() => this.loadStatus(this.loadedStatusAmend));
+
+        const r = refs.find((r) => r.refName === head);
+        const h = r?.hash || head;
+        const c = commits.find((c) => c.hash === h);
+        const m = `${c.subject}${c.body && "\n\n"}${c.body}`;
+        if (amend && commitMessage === "") this.dispatch(setCommitMessage(m));
+        if (!amend && commitMessage === m) this.dispatch(setCommitMessage(""));
       }
     });
   }

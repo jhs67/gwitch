@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ChangeEvent } from "react";
 import SplitPane from "react-split-pane";
 import { createUseStyles } from "react-jss";
 import { useSelector, useDispatch } from "react-redux";
@@ -7,7 +7,7 @@ import { shell, remote } from "electron";
 import { RootState } from "../../store";
 import { FileStatus, RepoPath } from "../../store/repo/types";
 import { setWorkingSplit, setIndexSplit } from "../../store/layout/actions";
-import { setRepoAmend, setStageSelected } from "../../store/repo/actions";
+import { setCommitMessage, setRepoAmend, setStageSelected } from "../../store/repo/actions";
 import { RepoLoader } from "../../repo/loader";
 import { LoaderContext } from "../../renderer";
 import { FilesView } from "./FilesView";
@@ -221,16 +221,21 @@ function WorkingFiles({ loader }: { loader: RepoLoader }) {
 
 function CommitCompose() {
   const amend = useSelector((state: RootState) => state.repo.amend);
+  const message = useSelector((state: RootState) => state.repo.commitMessage);
   const dispatch = useDispatch();
 
   const toggleAmend = () => {
     dispatch(setRepoAmend(!amend));
   };
 
+  const messageChange = (ev: ChangeEvent<HTMLTextAreaElement>) => {
+    dispatch(setCommitMessage(ev.target.value));
+  };
+
   return (
     <div className="commitMessage">
       <div className="indexHeader">Commit Message</div>
-      <textarea className="message"></textarea>
+      <textarea className="message" value={message} onChange={messageChange} />
       <div className="commitButtons">
         <label>
           <input className="amend" type="checkbox" checked={amend} onChange={toggleAmend} />

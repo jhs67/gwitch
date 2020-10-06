@@ -12,9 +12,10 @@ import {
   SET_STAGE_STATUS,
   SET_STAGE_SELECTED,
   SET_REPO_AMEND,
+  SET_COMMIT_MESSAGE,
 } from "./types";
 
-const initialState: RepoState = { refs: [], commits: [], amend: false };
+const initialState: RepoState = { refs: [], commits: [], amend: false, commitMessage: "" };
 
 function same(a: string[] | undefined, b: string[] | undefined) {
   if (a === undefined || b === undefined) return a === undefined && b === undefined;
@@ -84,6 +85,8 @@ export function repoStateReducer(
       return { ...state, indexSelected: action.index, workingSelected: action.working };
     case SET_REPO_AMEND:
       return { ...state, amend: action.amend };
+    case SET_COMMIT_MESSAGE:
+      return { ...state, commitMessage: action.message };
     default:
       return state;
   }
