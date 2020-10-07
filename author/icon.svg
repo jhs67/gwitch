@@ -7,16 +7,18 @@
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
-   xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    id="svg12709"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
    width="640"
    height="640"
    viewBox="0 0 640 640"
-   sodipodi:docname="icon.svg">
+   sodipodi:docname="icon.svg"
+   inkscape:export-filename="/home/jon/devel/gwitch-n/resources/icon256.png"
+   inkscape:export-xdpi="38.400002"
+   inkscape:export-ydpi="38.400002">
   <metadata
      id="metadata12715">
     <rdf:RDF>
@@ -40,26 +42,17 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1615"
-     inkscape:window-height="1026"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
      id="namedview12711"
      showgrid="false"
-     inkscape:zoom="0.65641366"
-     inkscape:cx="307.87536"
-     inkscape:cy="338.74317"
-     inkscape:window-x="65"
-     inkscape:window-y="24"
+     inkscape:zoom="0.53981387"
+     inkscape:cx="327.52054"
+     inkscape:cy="177.98274"
+     inkscape:window-x="0"
+     inkscape:window-y="26"
      inkscape:window-maximized="1"
      inkscape:current-layer="svg12709" />
-  <image
-     sodipodi:absref="/home/jon/devel/gwitch/assets/hat-huge.png"
-     xlink:href="hat-huge.png"
-     y="0"
-     x="0"
-     id="image12717"
-     preserveAspectRatio="none"
-     height="640"
-     width="640" />
   <g
      id="g17232">
     <path

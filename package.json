@@ -20,7 +20,9 @@
   "license": "ISC",
   "config": {
     "forge": {
-      "packagerConfig": {},
+      "packagerConfig": {
+        "icon": "resources/icon"
+      },
       "makers": [
         {
           "name": "@electron-forge/maker-squirrel",
@@ -36,11 +38,27 @@
         },
         {
           "name": "@electron-forge/maker-deb",
-          "config": {}
+          "config": {
+            "icon": {
+              "48x48": "resources/icon48.png",
+              "64x64": "resources/icon64.png",
+              "128x128": "resources/icon128.png",
+              "256x256": "resources/icon256.png",
+              "scalable": "resources/icon.svg"
+            }
+          }
         },
         {
           "name": "@electron-forge/maker-rpm",
-          "config": {}
+          "config": {
+            "icon": {
+              "48x48": "resources/icon48.png",
+              "64x64": "resources/icon64.png",
+              "128x128": "resources/icon128.png",
+              "256x256": "resources/icon256.png",
+              "scalable": "resources/icon.svg"
+            }
+          }
         }
       ],
       "plugins": [
