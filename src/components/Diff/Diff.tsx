@@ -69,6 +69,10 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
       color: "#bb0704",
     },
 
+    "& td:nth-child(1),td:nth-child(2),td:nth-child(3)": {
+      userSelect: "none",
+    },
+
     "& .msg": {
       marginLeft: "2em",
     },
@@ -169,7 +173,7 @@ function Patch({
                     <td>{formatLine(l.oldLine)}</td>
                     <td>{formatLine(l.newLine)}</td>
                     <td>{l.origin}</td>
-                    <td>{l.content}</td>
+                    <td>{l.content + "\n"}</td>
                   </tr>
                 ))}
               </Fragment>
