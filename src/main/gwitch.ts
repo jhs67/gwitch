@@ -32,13 +32,13 @@ export default class Gwitch {
   }
 
   sendOpenRecent(window: BrowserWindow): void {
-    window.setTitle("Gwitch");
+    window.setTitle("gwitch");
     window.webContents.send("recent", this.recent.all());
   }
 
   sendOpenPath(window: BrowserWindow, path: RepoPath) {
     window.setTitle(
-      `Gwitch - ${[basename(path.path, ".git"), ...path.submodules].join("/")}`,
+      `gwitch - ${[basename(path.path, ".git"), ...path.submodules].join("/")}`,
     );
     window.webContents.send("open", path);
   }

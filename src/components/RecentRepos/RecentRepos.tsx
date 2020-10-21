@@ -95,7 +95,7 @@ export function RecentRepos() {
     <div className={classes.recentRepos}>
       <div className={classes.repoList}>
         {repos.length == 0 ? (
-          <div className={classes.noRecent}>Welcome to Gwitch</div>
+          <div className={classes.noRecent}>Welcome to gwitch</div>
         ) : (
           repos.map((l) => (
             <div key={l} className={classes.repoItem} onClick={() => itemClick(l)}>
