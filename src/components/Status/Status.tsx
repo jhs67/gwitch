@@ -29,6 +29,9 @@ const useStyles = createUseStyles({
       display: "flex",
       flexFlow: "column nowrap",
       height: "100%",
+      paddingLeft: "1px",
+      paddingRight: "1px",
+      paddingBottom: "1px",
     },
     "& .fileHeader": {
       flex: "0 0 auto",
@@ -55,7 +58,11 @@ const useStyles = createUseStyles({
       borderColor: "#bbb",
       borderStyle: "solid",
       overflow: "auto",
-      outlineColor: "#888",
+
+      "&:focus": {
+        outlineColor: "#aaa",
+        outlineStyle: "outset",
+      },
 
       "& svg": {
         height: "0.9em",
@@ -107,6 +114,8 @@ const useStyles = createUseStyles({
       display: "flex",
       flexFlow: "column nowrap",
       height: "100%",
+      paddingLeft: "1px",
+      paddingRight: "1px",
 
       "& .indexHeader": {
         flex: "0 0 auto",
@@ -116,8 +125,15 @@ const useStyles = createUseStyles({
       },
       "& .message": {
         flex: "1 1 auto",
-        outlineColor: "#888",
         resize: "none",
+        borderWidth: "1px",
+        borderColor: "#bbb",
+        borderStyle: "solid",
+
+        "&:focus": {
+          outlineColor: "#aaa",
+          outlineStyle: "outset",
+        },
       },
       "& .commitButtons": {
         flex: "0 0 auto",
