@@ -1,7 +1,12 @@
-import { RecentRepos, RecentReposAction, SET_RECENT_REPOS } from "./types";
+import {
+  RecentRepos,
+  RecentReposAction,
+  RESET_RECENT_REPOS,
+  SET_RECENT_REPOS,
+} from "./types";
 
 const initialState: RecentRepos = {
-  repos: [],
+  repos: null,
 };
 
 export function recentReposReducer(
@@ -11,6 +16,8 @@ export function recentReposReducer(
   switch (action.type) {
     case SET_RECENT_REPOS:
       return { ...state, repos: action.repos };
+    case RESET_RECENT_REPOS:
+      return { ...state, repos: null };
     default:
       return state;
   }

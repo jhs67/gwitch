@@ -17,8 +17,11 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
 export default function NotHotApp() {
   const classes = useStyles();
   const path = useSelector((state: RootState) => state.repo.path);
+  const recent = useSelector((state: RootState) => state.recent.repos);
   return (
-    <div className={classes.app}>{path == null ? <RecentRepos /> : <RepoClient />}</div>
+    <div className={classes.app}>
+      {path == null ? recent ? <RecentRepos /> : <div /> : <RepoClient />}
+    </div>
   );
 }
 

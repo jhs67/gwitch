@@ -3,9 +3,10 @@ import { ipcRenderer } from "electron";
 import { basename } from "path";
 import DeleteIcon from "../../assets/delete.svg";
 import { createUseStyles } from "react-jss";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { OPEN_PATH, OPEN_OTHER } from "../../main/ipc";
+import { resetRecentRepos } from "../../store/recent/actions";
 
 const useStyles = createUseStyles({
   recentRepos: {
@@ -82,12 +83,14 @@ const useStyles = createUseStyles({
 export function RecentRepos() {
   const classes = useStyles();
   const repos = useSelector((state: RootState) => state.recent.repos);
+  const dispatch = useDispatch();
 
   function openRepo() {
     ipcRenderer.send(OPEN_OTHER);
   }
 
   function itemClick(path: string) {
+    dispatch(resetRecentRepos());
     ipcRenderer.send(OPEN_PATH, path);
   }
 

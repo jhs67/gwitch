@@ -6,7 +6,7 @@ import { App } from "./components/App";
 import { rootReducer } from "./store";
 import { createStore } from "redux";
 import { Provider } from "react-redux";
-import { setRecentRepos } from "./store/recent/actions";
+import { resetRecentRepos, setRecentRepos } from "./store/recent/actions";
 import { ipcRenderer } from "electron";
 import { RepoPath } from "./store/repo/types";
 import { RepoLoader } from "./repo/loader";
@@ -40,6 +40,7 @@ ipcRenderer.on("recent", (event, repos: string[]) => {
 
 ipcRenderer.on("open", (event, path: RepoPath) => {
   eventQueue.add(async () => {
+    store.dispatch(resetRecentRepos());
     await layout.setup(path);
     await loader.open(path);
   });
