@@ -16,6 +16,8 @@ import {
   SET_STAGE_SELECTED,
   SET_REPO_AMEND,
   SET_COMMIT_MESSAGE,
+  Submodule,
+  SET_SUBMODULES,
 } from "./types";
 
 export function setRepoPath(path: RepoPath): RepoStateActions {
@@ -67,4 +69,8 @@ export function setRepoAmend(amend: boolean): RepoStateActions {
 
 export function setCommitMessage(message: string): RepoStateActions {
   return { type: SET_COMMIT_MESSAGE, message };
+}
+
+export function setSubmodules(submodules: Submodule[]): RepoStateActions {
+  return { type: SET_SUBMODULES, submodules };
 }

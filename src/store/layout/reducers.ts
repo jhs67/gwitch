@@ -11,6 +11,7 @@ import {
   SET_STAGE_SPLIT,
   SET_WORKING_SPLIT,
   SET_INDEX_SPLIT,
+  SET_SUBMODULES_CLOSED,
 } from "./types";
 
 export function layoutStateReducer(
@@ -35,6 +36,8 @@ export function layoutStateReducer(
       };
     case SET_TAGS_CLOSED:
       return { ...state, tagsClosed: action.closed };
+    case SET_SUBMODULES_CLOSED:
+      return { ...state, submodulesClosed: action.closed };
     case SET_PATCH_SHOW:
       return {
         ...state,

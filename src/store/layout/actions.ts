@@ -11,6 +11,7 @@ import {
   SET_CLIENT_MODE,
   SET_WORKING_SPLIT,
   SET_INDEX_SPLIT,
+  SET_SUBMODULES_CLOSED,
 } from "./types";
 
 export function setHistorySplit(split: number): LayoutStateActions {
@@ -39,6 +40,10 @@ export function setOriginClosed(origin: string, closed: boolean): LayoutStateAct
 
 export function setTagsClosed(closed: boolean): LayoutStateActions {
   return { type: SET_TAGS_CLOSED, closed };
+}
+
+export function setSubmodulesClosed(closed: boolean): LayoutStateActions {
+  return { type: SET_SUBMODULES_CLOSED, closed };
 }
 
 export function setPatchShow(

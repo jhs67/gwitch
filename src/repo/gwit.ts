@@ -426,7 +426,7 @@ export class Gwit {
 
   getIgnored(paths: string[]) {
     return cancellableX(this.gitRc("check-ignore", paths), (res) => {
-      return res.out ? res.out.trim().split('\n') : [];
+      return res.out ? res.out.trim().split("\n") : [];
     });
   }
 
@@ -488,6 +488,18 @@ export class Gwit {
         : this.git("diff", "-M50", "-C50", "--cached", "HEAD^", "--", file),
       (out) => parseDiff(out).patches[0],
     );
+  }
+
+  getSubmodules() {
+    return cancellableX(this.git("submodule", "status"), (out) => {
+      return out
+        .split("\n")
+        .map((line) => {
+          const match = line.match(/([ +-U])([a-fA-F0-9]*) ([^ ]*) \(([^)]*)\)/);
+          return match && { path: match[3], hash: match[2], status: match[1] };
+        })
+        .filter((sub) => sub);
+    });
   }
 
   checkoutFiles(files: string[]) {

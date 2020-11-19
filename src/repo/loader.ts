@@ -12,6 +12,7 @@ import {
   setStageStatus,
   setCommitMessage,
   setRepoAmend,
+  setSubmodules,
 } from "../store/repo/actions";
 import { Gwit } from "./gwit";
 import { cancellableRun, cancellableQueue } from "./cancellable";
@@ -34,6 +35,8 @@ export class RepoLoader {
   private loadedStatusAmend = false;
   private statusLazy = new LazyUpdater();
   private statusWatch: Watcher;
+
+  private submoduleLazy = new LazyUpdater();
 
   private batchIgnored = new IgnoreBatch(this.gwit);
 
@@ -104,8 +107,10 @@ export class RepoLoader {
       [""],
       (paths: string[]) => {
         // If a .gitignore file changes, check the ignores again
-        if (paths.indexOf(".gitignore") !== -1) this.statusWatch.invalidateIgnores();
+        if (paths.some((p) => basename(p) == ".gitignore"))
+          this.statusWatch.invalidateIgnores();
         this.statusLazy.poke();
+        if (paths.indexOf(".gitmodules") != -1) this.submoduleLazy.poke();
       },
       (path) =>
         cancellableRun(async (run) => {
@@ -123,6 +128,8 @@ export class RepoLoader {
           return await run(this.batchIgnored.ignore(r));
         }),
     );
+
+    this.submoduleLazy.start(() => this.loadSubmodules());
   }
 
   async close() {
@@ -138,6 +145,8 @@ export class RepoLoader {
 
     this.focusPatchLazy.stop();
     this.loadedFocusPatch = null;
+
+    this.submoduleLazy.stop();
   }
 
   workingSelected() {
@@ -299,6 +308,13 @@ export class RepoLoader {
       ]);
 
       this.dispatch(setStageStatus(working, index));
+    });
+  }
+
+  private loadSubmodules() {
+    return cancellableRun(async (run) => {
+      const subs = await run(this.gwit.getSubmodules());
+      this.dispatch(setSubmodules(subs.map((s) => ({ path: s.path }))));
     });
   }
 }

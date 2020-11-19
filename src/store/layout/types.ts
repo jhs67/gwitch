@@ -13,6 +13,7 @@ export interface LayoutState {
   indexSplit: number;
   originClosed: { [key: string]: boolean };
   tagsClosed: boolean;
+  submodulesClosed: boolean;
   patchShow: PatchShow;
   clientMode: ClientMode;
 }
@@ -24,6 +25,7 @@ export const initialLayoutState: LayoutState = {
   indexSplit: 200,
   originClosed: {},
   tagsClosed: true,
+  submodulesClosed: false,
   patchShow: {},
   clientMode: "stage",
 };
@@ -35,6 +37,7 @@ export const SET_INDEX_SPLIT = "SET_INDEX_SPLIT";
 export const SET_LAYOUT = "SET_LAYOUT";
 export const SET_ORIGIN_CLOSED = "SET_ORIGIN_CLOSED";
 export const SET_TAGS_CLOSED = "SET_TAGS_CLOSED";
+export const SET_SUBMODULES_CLOSED = "SET_SUBMODULES_CLOSED";
 export const SET_PATCH_SHOW = "SET_PATCH_SHOW";
 export const SET_CLIENT_MODE = "SET_CLIENT_MODE";
 
@@ -74,6 +77,11 @@ interface SetTagsClosedAction {
   closed: boolean;
 }
 
+interface SetSubmodulesClosedAction {
+  type: typeof SET_SUBMODULES_CLOSED;
+  closed: boolean;
+}
+
 interface SetPatchShow {
   type: typeof SET_PATCH_SHOW;
   source: string;
@@ -94,5 +102,6 @@ export type LayoutStateActions =
   | SetLayoutAction
   | SetOriginClosedAction
   | SetTagsClosedAction
+  | SetSubmodulesClosedAction
   | SetPatchShow
   | SetClientMode;

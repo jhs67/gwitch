@@ -54,6 +54,10 @@ export interface FileStatus {
   hunks?: DiffHunk[];
 }
 
+export interface Submodule {
+  path: string;
+}
+
 export interface RepoState {
   path?: RepoPath;
   refs: RepoRef[];
@@ -65,6 +69,7 @@ export interface RepoState {
   indexStatus?: FileStatus[];
   workingSelected?: string[];
   indexSelected?: string[];
+  submodules: Submodule[];
   amend: boolean;
   commitMessage: string;
 }
@@ -81,6 +86,7 @@ export const SET_STAGE_STATUS = "SET_STAGE_STATUS";
 export const SET_STAGE_SELECTED = "SET_STAGE_SELECTED";
 export const SET_REPO_AMEND = "SET_REPO_AMEND";
 export const SET_COMMIT_MESSAGE = "SET_COMMIT_MESSAGE";
+export const SET_SUBMODULES = "SET_SUBMODULES";
 
 interface SetRepoPathAction {
   type: typeof SET_REPO_PATH;
@@ -143,6 +149,11 @@ interface SetCommitMessage {
   message: string;
 }
 
+interface SetSubmodules {
+  type: typeof SET_SUBMODULES;
+  submodules: Submodule[];
+}
+
 export type RepoStateActions =
   | SetRepoPathAction
   | ResetRepoPathAction
@@ -155,4 +166,5 @@ export type RepoStateActions =
   | SetStageStatus
   | SetStageSelected
   | SetRepoAmend
-  | SetCommitMessage;
+  | SetCommitMessage
+  | SetSubmodules;

@@ -9,7 +9,13 @@ import BranchIcon from "../../assets/branch.svg";
 import OriginIcon from "../../assets/cloud.svg";
 import TagIcon from "../../assets/tag.svg";
 import ActiveBadge from "../../assets/active.svg";
-import { setOriginClosed, setTagsClosed, setClientMode } from "../../store/layout/actions";
+import SubmoduleIcon from "../../assets/submodule.svg";
+import {
+  setOriginClosed,
+  setTagsClosed,
+  setClientMode,
+  setSubmodulesClosed,
+} from "../../store/layout/actions";
 import { RepoRef } from "../../store/repo/types";
 import { setFocusCommit } from "../../store/repo/actions";
 import { goBack } from "../../renderer";
@@ -117,6 +123,7 @@ const useStyles = createUseStyles({
     verticalAlign: "middle",
     display: "flex",
     flexFlow: "row nowrap",
+    marginBottom: "0.2rem",
   },
   tagLine: {
     padding: "2px",
@@ -127,6 +134,29 @@ const useStyles = createUseStyles({
   tagIcon: {
     height: "1em",
     marginRight: "5px",
+    marginLeft: "5px",
+    flex: "0 0 auto",
+  },
+  submodules: {
+    marginBottom: "0.5rem",
+  },
+  submodulesHeader: {
+    height: "1em",
+    verticalAlign: "middle",
+    display: "flex",
+    flexFlow: "row nowrap",
+    marginBottom: "0.2rem",
+  },
+  submoduleLine: {
+    padding: "2px",
+    display: "flex",
+    flexFlow: "row nowrap",
+  },
+  submoduleName: {},
+  submoduleIcon: {
+    height: "1em",
+    marginRight: "5px",
+    marginLeft: "5px",
     flex: "0 0 auto",
   },
   focusRef: {
@@ -149,9 +179,11 @@ export function RefsPanel() {
   const refs = useSelector((state: RootState) => state.repo.refs);
   const path = useSelector((state: RootState) => state.repo.path);
   const head = useSelector((state: RootState) => state.repo.head);
+  const submodules = useSelector((state: RootState) => state.repo.submodules);
   const focusCommit = useSelector((state: RootState) => state.repo.focusCommit);
   const originClosed = useSelector((state: RootState) => state.layout.originClosed);
   const tagsClosed = useSelector((state: RootState) => state.layout.tagsClosed);
+  const submodulesClosed = useSelector((state: RootState) => state.layout.submodulesClosed);
   const mode = useSelector((state: RootState) => state.layout.clientMode);
   const dispatch = useDispatch();
 
@@ -279,6 +311,36 @@ export function RefsPanel() {
                       <div className={classes.tagName}>{r.name}</div>
                     </div>
                   ))}
+          </div>
+        ) : undefined}
+        {submodules.length ? (
+          <div className={classes.submodules}>
+            <div
+              className={classes.submodulesHeader}
+              onClick={(ev) => {
+                dispatch(setSubmodulesClosed(!submodulesClosed));
+                ev.preventDefault();
+              }}
+            >
+              {submodulesClosed ? (
+                <svg className={classes.arrow} viewBox="0 0 24 24">
+                  <path d="M 5 4 l 14 8 -14 8 z" />
+                </svg>
+              ) : (
+                <svg className={classes.arrow} viewBox="0 0 24 24">
+                  <path d="M 4 5 l 16 0 -8 14 z" />
+                </svg>
+              )}
+              <div className={classes.title}>Submodules</div>
+            </div>
+            {submodulesClosed
+              ? null
+              : submodules.map((r) => (
+                  <div className={classes.tagLine} key={r.path}>
+                    <SubmoduleIcon className={classes.submoduleIcon} />
+                    <div className={classes.submoduleName}>{r.path}</div>
+                  </div>
+                ))}
           </div>
         ) : undefined}
       </div>
