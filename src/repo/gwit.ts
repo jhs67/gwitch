@@ -424,6 +424,12 @@ export class Gwit {
     });
   }
 
+  getIgnored(paths: string[]) {
+    return cancellableX(this.gitRc("check-ignore", paths), (res) => {
+      return res.out ? res.out.trim().split('\n') : [];
+    });
+  }
+
   stageStatus() {
     return cancellableX(this.git("status", "-z", "-uall"), (out) => {
       const r = [];

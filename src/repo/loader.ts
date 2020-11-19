@@ -20,6 +20,7 @@ import { LazyUpdater } from "./lazy";
 import { createGraph } from "./graph";
 import { RootState } from "../store";
 import { resolve, basename, relative } from "path";
+import { IgnoreBatch } from "./ignorebatch";
 
 export class RepoLoader {
   private gwit = new Gwit();
@@ -33,6 +34,8 @@ export class RepoLoader {
   private loadedStatusAmend = false;
   private statusLazy = new LazyUpdater();
   private statusWatch: Watcher;
+
+  private batchIgnored = new IgnoreBatch(this.gwit);
 
   private dispatch: Dispatch;
 
@@ -117,7 +120,7 @@ export class RepoLoader {
           if (basename(f) === ".gitignore") return false;
 
           // check with git
-          return await run(this.gwit.isIgnored(r));
+          return await run(this.batchIgnored.ignore(r));
         }),
     );
   }
