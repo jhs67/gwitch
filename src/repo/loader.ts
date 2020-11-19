@@ -128,6 +128,13 @@ export class RepoLoader {
     this.refsLazy.stop();
     await this.refsWatch?.close();
     this.refsWatch = null;
+
+    this.statusLazy.stop();
+    await this.statusWatch?.close();
+    this.statusWatch = null;
+
+    this.focusPatchLazy.stop();
+    this.loadedFocusPatch = null;
   }
 
   workingSelected() {
