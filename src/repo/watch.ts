@@ -1,5 +1,5 @@
 import chokidar, { FSWatcher } from "chokidar";
-import { Cancellable } from "./cancellable";
+import { Cancellable, CancelledError } from "./cancellable";
 import { relative } from "path";
 
 class Ignored {
@@ -34,19 +34,23 @@ export class Watcher {
     if (ignore) {
       this.ignore = (path: string, i: Ignored) => {
         i.pending = ignore(path);
-        i.pending.result.then((r) => {
-          i.pending = undefined;
-          i.ignored = r;
-          if (!i.ignored) {
-            this.watcher.add(path);
-            // check for defered change result pending ignore update
-            if (i.changed) hook([path]);
-          }
-          i.changed = undefined;
+        i.pending.result
+          .then((r) => {
+            i.pending = undefined;
+            i.ignored = r;
+            if (!i.ignored) {
+              this.watcher.add(path);
+              // check for defered change result pending ignore update
+              if (i.changed) hook([path]);
+            }
+            i.changed = undefined;
 
-          // roll back the _readyCount
-          (this.watcher as WatcherInternal)._emitReady();
-        });
+            // roll back the _readyCount
+            (this.watcher as WatcherInternal)._emitReady();
+          })
+          .catch((err) => {
+            if (!(err instanceof CancelledError)) throw err;
+          });
       };
 
       opts.ignored = (path: string, stat?: unknown) => {
@@ -122,7 +126,11 @@ export class Watcher {
   }
 
   async close() {
+    for (const [, i] of this.ignoresMap.entries()) {
+      if (i.pending != null) i.pending.cancel();
+    }
     await this.watcher.close();
+    this.ignoresMap.clear();
   }
 
   private ignores(path: string) {
