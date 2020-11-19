@@ -8,6 +8,7 @@ import {
   GET_LAYOUT_STATE,
   SET_LAYOUT_STATE,
   GO_BACK,
+  OPEN_SUBMODULE,
 } from "./main/ipc";
 import { RepoPath } from "./store/repo/types";
 
@@ -62,4 +63,8 @@ ipcMain.handle(SET_LAYOUT_STATE, async (event, path: string, state: LayoutState)
 
 ipcMain.on(GO_BACK, (event, path: RepoPath) => {
   gwitch.goBack(BrowserWindow.fromWebContents(event.sender), path);
+});
+
+ipcMain.on(OPEN_SUBMODULE, (event, path: RepoPath, newWindow: boolean) => {
+  gwitch.openSubmodule(BrowserWindow.fromWebContents(event.sender), path, newWindow);
 });

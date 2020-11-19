@@ -71,4 +71,12 @@ export default class Gwitch {
       this.sendOpenRecent(window);
     }
   }
+
+  openSubmodule(window: BrowserWindow, path: RepoPath, newWindow: boolean) {
+    if (newWindow) {
+      this.createWindow(path);
+    } else {
+      this.sendOpenPath(window, path);
+    }
+  }
 }

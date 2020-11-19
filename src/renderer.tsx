@@ -13,7 +13,7 @@ import { RepoLoader } from "./repo/loader";
 import { LayoutProxy } from "./repo/layout";
 import { CancellableQueue } from "./repo/cancellable";
 import { theme } from "./theme/theme";
-import { GO_BACK } from "./main/ipc";
+import { GO_BACK, OPEN_SUBMODULE } from "./main/ipc";
 
 const store = createStore(rootReducer);
 const loader = new RepoLoader(store);
@@ -51,4 +51,15 @@ export function goBack() {
   eventQueue.add(async () => {
     await Promise.all([loader.close(), layout.teardown()]);
   });
+}
+
+export function openSubmodule(sub: string, newWindow: boolean) {
+  const path = store.getState().repo.path;
+  const newPath = { ...path, submodules: [...path.submodules, sub] };
+  ipcRenderer.send(OPEN_SUBMODULE, newPath, newWindow);
+  if (!newWindow) {
+    eventQueue.add(async () => {
+      await Promise.all([loader.close(), layout.teardown()]);
+    });
+  }
 }

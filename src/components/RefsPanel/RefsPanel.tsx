@@ -18,7 +18,7 @@ import {
 } from "../../store/layout/actions";
 import { RepoRef } from "../../store/repo/types";
 import { setFocusCommit } from "../../store/repo/actions";
-import { goBack } from "../../renderer";
+import { goBack, openSubmodule } from "../../renderer";
 
 const useStyles = createUseStyles({
   refsPanel: {
@@ -306,8 +306,12 @@ export function RefsPanel() {
               : refs
                   .filter((r) => r.type === "tags")
                   .map((r) => (
-                    <div className={classes.tagLine} key={r.refName}>
-                      <TagIcon className={classes.remoteRefIcon} />
+                    <div
+                      className={classes.tagLine}
+                      key={r.refName}
+                      onClick={() => clickBranch(r.hash)}
+                    >
+                      <TagIcon className={classes.tagIcon} />
                       <div className={classes.tagName}>{r.name}</div>
                     </div>
                   ))}
@@ -336,7 +340,11 @@ export function RefsPanel() {
             {submodulesClosed
               ? null
               : submodules.map((r) => (
-                  <div className={classes.tagLine} key={r.path}>
+                  <div
+                    className={classes.tagLine}
+                    key={r.path}
+                    onClick={(ev) => openSubmodule(r.path, ev.ctrlKey)}
+                  >
                     <SubmoduleIcon className={classes.submoduleIcon} />
                     <div className={classes.submoduleName}>{r.path}</div>
                   </div>
