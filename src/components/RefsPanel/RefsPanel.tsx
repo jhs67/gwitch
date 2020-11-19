@@ -12,6 +12,7 @@ import ActiveBadge from "../../assets/active.svg";
 import { setOriginClosed, setTagsClosed, setClientMode } from "../../store/layout/actions";
 import { RepoRef } from "../../store/repo/types";
 import { setFocusCommit } from "../../store/repo/actions";
+import { goBack } from "../../renderer";
 
 const useStyles = createUseStyles({
   refsPanel: {
@@ -24,6 +25,10 @@ const useStyles = createUseStyles({
     display: "flex",
     flexFlow: "column nowrap",
     overflow: "hidden",
+  },
+  refsSect: {
+    flex: "1 1 auto",
+    flexFlow: "column nowrap",
   },
   stageSection: {
     marginBottom: "0.5rem",
@@ -127,6 +132,16 @@ const useStyles = createUseStyles({
   focusRef: {
     backgroundColor: "#ccd7da",
   },
+  navButtons: {
+    flex: "0 0 auto",
+    "& button": {
+      padding: "1px",
+    },
+    "& svg": {
+      verticalAlign: "middle",
+      height: "1.2em",
+    },
+  },
 });
 
 export function RefsPanel() {
@@ -157,50 +172,93 @@ export function RefsPanel() {
 
   return (
     <div className={classes.refsPanel}>
-      <div className={classes.stageSection}>
-        <div className={classes.title}>{basename(path.path, ".git")}</div>
-        <div
-          className={classNames(classes.stageLine, {
-            [classes.focusRef]: mode === "stage",
-          })}
-          onClick={() => {
-            dispatch(setClientMode(mode === "history" ? "stage" : "history"));
-          }}
-        >
-          <StageIcon className={classes.refIcon} />
-          <div className={classes.stage}>Stage</div>
+      <div className={classes.refsSect}>
+        <div className={classes.stageSection}>
+          <div className={classes.title}>{basename(path.path, ".git")}</div>
+          <div
+            className={classNames(classes.stageLine, {
+              [classes.focusRef]: mode === "stage",
+            })}
+            onClick={() => {
+              dispatch(setClientMode(mode === "history" ? "stage" : "history"));
+            }}
+          >
+            <StageIcon className={classes.refIcon} />
+            <div className={classes.stage}>Stage</div>
+          </div>
         </div>
-      </div>
-      <div className={classes.branches}>
-        <div className={classes.title}>Branches</div>
-        {refs
-          .filter((r) => r.type === "heads")
-          .map((r) => (
-            <div
-              className={classNames(classes.branchLine, {
-                [classes.focusRef]: mode === "history" && r.hash === focusCommit,
-              })}
-              key={r.refName}
-              onClick={() => clickBranch(r.hash)}
-            >
-              <BranchIcon className={classes.refIcon} />
-              <div className={classes.localBranch}>{r.name}</div>
-              {r.refName === head ? <ActiveBadge className={classes.activeBadge} /> : null}
+        <div className={classes.branches}>
+          <div className={classes.title}>Branches</div>
+          {refs
+            .filter((r) => r.type === "heads")
+            .map((r) => (
+              <div
+                className={classNames(classes.branchLine, {
+                  [classes.focusRef]: mode === "history" && r.hash === focusCommit,
+                })}
+                key={r.refName}
+                onClick={() => clickBranch(r.hash)}
+              >
+                <BranchIcon className={classes.refIcon} />
+                <div className={classes.localBranch}>{r.name}</div>
+                {r.refName === head ? (
+                  <ActiveBadge className={classes.activeBadge} />
+                ) : null}
+              </div>
+            ))}
+        </div>
+        <div className={classes.remotes}>
+          <div className={classes.title}>Remotes</div>
+          {[...origins.entries()].map(([origin, refs]) => (
+            <div className={classes.remoteSection} key={origin}>
+              <div
+                className={classes.remoteHeader}
+                onClick={(ev) => {
+                  dispatch(setOriginClosed(origin, !originClosed[origin]));
+                  ev.preventDefault();
+                }}
+              >
+                {originClosed[origin] ? (
+                  <svg className={classes.arrow} viewBox="0 0 24 24">
+                    <path d="M 5 4 l 14 8 -14 8 z" />
+                  </svg>
+                ) : (
+                  <svg className={classes.arrow} viewBox="0 0 24 24">
+                    <path d="M 4 5 l 16 0 -8 14 z" />
+                  </svg>
+                )}
+                <OriginIcon className={classes.originIcon} />
+                <div className={classes.remoteName}>{origin}</div>
+              </div>
+              {originClosed[origin]
+                ? null
+                : refs.map((ref) => (
+                    <div
+                      className={classNames(classes.remoteLine, {
+                        [classes.focusRef]: mode === "history" && ref.hash === focusCommit,
+                      })}
+                      key={ref.refName}
+                      onClick={() => clickBranch(ref.hash)}
+                    >
+                      <BranchIcon className={classes.remoteRefIcon} />
+                      <div className={classes.remoteBranch}>
+                        {ref.name.replace(/^[^/]+\//, "")}
+                      </div>
+                    </div>
+                  ))}
             </div>
           ))}
-      </div>
-      <div className={classes.remotes}>
-        <div className={classes.title}>Remotes</div>
-        {[...origins.entries()].map(([origin, refs]) => (
-          <div className={classes.remoteSection} key={origin}>
+        </div>
+        {refs.some((r) => r.type === "tags") ? (
+          <div className={classes.tags}>
             <div
-              className={classes.remoteHeader}
+              className={classes.tagsHeader}
               onClick={(ev) => {
-                dispatch(setOriginClosed(origin, !originClosed[origin]));
+                dispatch(setTagsClosed(!tagsClosed));
                 ev.preventDefault();
               }}
             >
-              {originClosed[origin] ? (
+              {tagsClosed ? (
                 <svg className={classes.arrow} viewBox="0 0 24 24">
                   <path d="M 5 4 l 14 8 -14 8 z" />
                 </svg>
@@ -209,60 +267,28 @@ export function RefsPanel() {
                   <path d="M 4 5 l 16 0 -8 14 z" />
                 </svg>
               )}
-              <OriginIcon className={classes.originIcon} />
-              <div className={classes.remoteName}>{origin}</div>
+              <div className={classes.title}>Tags</div>
             </div>
-            {originClosed[origin]
+            {tagsClosed
               ? null
-              : refs.map((ref) => (
-                  <div
-                    className={classNames(classes.remoteLine, {
-                      [classes.focusRef]: mode === "history" && ref.hash === focusCommit,
-                    })}
-                    key={ref.refName}
-                    onClick={() => clickBranch(ref.hash)}
-                  >
-                    <BranchIcon className={classes.remoteRefIcon} />
-                    <div className={classes.remoteBranch}>
-                      {ref.name.replace(/^[^/]+\//, "")}
+              : refs
+                  .filter((r) => r.type === "tags")
+                  .map((r) => (
+                    <div className={classes.tagLine} key={r.refName}>
+                      <TagIcon className={classes.remoteRefIcon} />
+                      <div className={classes.tagName}>{r.name}</div>
                     </div>
-                  </div>
-                ))}
+                  ))}
           </div>
-        ))}
+        ) : undefined}
       </div>
-      {refs.some((r) => r.type === "tags") ? (
-        <div className={classes.tags}>
-          <div
-            className={classes.tagsHeader}
-            onClick={(ev) => {
-              dispatch(setTagsClosed(!tagsClosed));
-              ev.preventDefault();
-            }}
-          >
-            {tagsClosed ? (
-              <svg className={classes.arrow} viewBox="0 0 24 24">
-                <path d="M 5 4 l 14 8 -14 8 z" />
-              </svg>
-            ) : (
-              <svg className={classes.arrow} viewBox="0 0 24 24">
-                <path d="M 4 5 l 16 0 -8 14 z" />
-              </svg>
-            )}
-            <div className={classes.title}>Tags</div>
-          </div>
-          {tagsClosed
-            ? null
-            : refs
-                .filter((r) => r.type === "tags")
-                .map((r) => (
-                  <div className={classes.tagLine} key={r.refName}>
-                    <TagIcon className={classes.remoteRefIcon} />
-                    <div className={classes.tagName}>{r.name}</div>
-                  </div>
-                ))}
-        </div>
-      ) : undefined}
+      <div className={classes.navButtons}>
+        <button className="showRecent" onClick={() => goBack()}>
+          <svg viewBox="0 0 24 24">
+            <path d="M 2 12 l 10 10 l 0 -6.5 l 10 0 l 0 -7 l -10 0 l 0 -6.5 z" />
+          </svg>
+        </button>
+      </div>
     </div>
   );
 }

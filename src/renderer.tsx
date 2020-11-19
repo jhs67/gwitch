@@ -13,6 +13,7 @@ import { RepoLoader } from "./repo/loader";
 import { LayoutProxy } from "./repo/layout";
 import { CancellableQueue } from "./repo/cancellable";
 import { theme } from "./theme/theme";
+import { GO_BACK } from "./main/ipc";
 
 const store = createStore(rootReducer);
 const loader = new RepoLoader(store);
@@ -43,3 +44,11 @@ ipcRenderer.on("open", (event, path: RepoPath) => {
     await loader.open(path);
   });
 });
+
+export function goBack() {
+  const path = store.getState().repo.path;
+  ipcRenderer.send(GO_BACK, path);
+  eventQueue.add(async () => {
+    await Promise.all([loader.close(), layout.teardown()]);
+  });
+}

@@ -62,4 +62,13 @@ export default class Gwitch {
     await this.recent.add(path);
     this.sendOpenPath(window, { path, submodules: [] });
   }
+
+  goBack(window: BrowserWindow, path: RepoPath) {
+    if (path.submodules.length) {
+      path.submodules.pop();
+      this.sendOpenPath(window, path);
+    } else {
+      this.sendOpenRecent(window);
+    }
+  }
 }

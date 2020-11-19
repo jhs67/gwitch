@@ -2,7 +2,14 @@ import { app, BrowserWindow, ipcMain } from "electron";
 import Gwitch from "./main/gwitch";
 import { LayoutStore } from "./main/layout-store";
 import { LayoutState } from "./store/layout/types";
-import { OPEN_OTHER, OPEN_PATH, GET_LAYOUT_STATE, SET_LAYOUT_STATE } from "./main/ipc";
+import {
+  OPEN_OTHER,
+  OPEN_PATH,
+  GET_LAYOUT_STATE,
+  SET_LAYOUT_STATE,
+  GO_BACK,
+} from "./main/ipc";
+import { RepoPath } from "./store/repo/types";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -51,4 +58,8 @@ ipcMain.handle(GET_LAYOUT_STATE, async (event, path: string) => {
 
 ipcMain.handle(SET_LAYOUT_STATE, async (event, path: string, state: LayoutState) => {
   return await layoutStore.save(path, state);
+});
+
+ipcMain.on(GO_BACK, (event, path: RepoPath) => {
+  gwitch.goBack(BrowserWindow.fromWebContents(event.sender), path);
 });
