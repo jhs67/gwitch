@@ -1,7 +1,10 @@
 import { useRef } from "react";
 import { useUnmount } from "./unmount";
 
-export function useMouseTrack(onMove: (ev: MouseEvent) => void): [() => void] {
+export function useMouseTrack(
+  onMove: (ev: MouseEvent) => void,
+  onUp?: (ev: MouseEvent) => void,
+): [() => void] {
   // ref to track the window event listeners
   interface MouseTrack {
     mover?: (ev: MouseEvent) => void;
@@ -14,7 +17,7 @@ export function useMouseTrack(onMove: (ev: MouseEvent) => void): [() => void] {
   const startTrack = () => {
     if (mouseTrack.current.mover) return;
     mouseTrack.current.mover = onMove;
-    mouseTrack.current.upper = () => stopTrack();
+    mouseTrack.current.upper = (ev) => (stopTrack(), onUp && onUp(ev));
     window.addEventListener("mousemove", mouseTrack.current.mover);
     window.addEventListener("mouseup", mouseTrack.current.upper);
   };
