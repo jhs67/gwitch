@@ -69,6 +69,10 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
       color: "#bb0704",
     },
 
+    "& .selected td:nth-child(n+3)": {
+      backgroundColor: "#b7d6fb",
+    },
+
     "& td:nth-child(1),td:nth-child(2),td:nth-child(3)": {
       userSelect: "none",
     },
@@ -90,19 +94,29 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
   },
 }));
 
+type LineRefType = HTMLTableRowElement | null;
+
+interface FileDiffProps {
+  patch: FileStatus;
+  show?: boolean;
+  diffLimit: number;
+  addLimit: number;
+  setShow: (state: boolean) => void;
+  origin?: number;
+  clickLine?: ((a: MouseEvent) => void) | undefined;
+  lineRefs?: LineRefType[];
+}
+
 export function FileDiff({
   patch,
   show,
   diffLimit,
   addLimit,
   setShow,
-}: {
-  patch: FileStatus;
-  show?: boolean;
-  diffLimit: number;
-  addLimit: number;
-  setShow: (state: boolean) => void;
-}) {
+  origin,
+  clickLine,
+  lineRefs,
+}: FileDiffProps) {
   const classes = useStyles();
   const msgs: string[] = [];
 
@@ -131,6 +145,7 @@ export function FileDiff({
   const lines = (hunks || []).reduce((p, n) => p + n.lines.length, 0);
   const large = status === "A" || status === "D" ? lines > addLimit : lines > diffLimit;
   if (show == null) show = !large;
+  let cursor = origin || 0;
 
   return (
     <div className={classes.patch}>
@@ -159,20 +174,27 @@ export function FileDiff({
                   <td></td>
                   <td>{h.header}</td>
                 </tr>
-                {h.lines.map((l, j) => (
-                  <tr
-                    className={classNames("diff", {
-                      new: l.origin === "+",
-                      old: l.origin === "-",
-                    })}
-                    key={j}
-                  >
-                    <td>{formatLine(l.oldLine)}</td>
-                    <td>{formatLine(l.newLine)}</td>
-                    <td>{l.origin}</td>
-                    <td>{l.content + "\n"}</td>
-                  </tr>
-                ))}
+                {h.lines.map((l, j) => {
+                  const line = cursor;
+                  cursor += 1;
+                  return (
+                    <tr
+                      className={classNames("diff", {
+                        new: l.origin === "+",
+                        old: l.origin === "-",
+                      })}
+                      key={j}
+                      data-line={line}
+                      ref={lineRefs && ((v) => (lineRefs[line] = v))}
+                      onMouseDown={clickLine && ((ev) => clickLine(ev.nativeEvent))}
+                    >
+                      <td>{formatLine(l.oldLine)}</td>
+                      <td>{formatLine(l.newLine)}</td>
+                      <td>{l.origin}</td>
+                      <td>{l.content + "\n"}</td>
+                    </tr>
+                  );
+                })}
               </Fragment>
             ))}
           </tbody>

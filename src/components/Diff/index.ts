@@ -1,1 +1,2 @@
-export { Diff } from "./Diff";
+export * from "./SelectDiff";
+export * from "./Diff";
