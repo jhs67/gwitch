@@ -11,6 +11,7 @@ export function execRc(
   cmd: string,
   args: string[],
   options: SpawnOptions,
+  input?: string,
 ): Cancellable<RcResult> {
   // create a promise and record the callbacks
   let accept: (r: RcResult) => void;
@@ -30,6 +31,7 @@ export function execRc(
       reject(err);
     }
   });
+  if (input) child.stdin.end(input);
 
   return {
     cancel: () => {
@@ -40,8 +42,13 @@ export function execRc(
   };
 }
 
-export function exec(cmd: string, args: string[], opts: SpawnOptions): Cancellable<string> {
-  return cancellableX(execRc(cmd, args, opts), (res) => {
+export function exec(
+  cmd: string,
+  args: string[],
+  opts: SpawnOptions,
+  input?: string,
+): Cancellable<string> {
+  return cancellableX(execRc(cmd, args, opts, input), (res) => {
     if (res.code != 0)
       throw new Error(
         `command '${cmd} ${args.join(" ")}' failed with exit code ${res.code}`,
