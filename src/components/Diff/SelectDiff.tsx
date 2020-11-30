@@ -36,7 +36,7 @@ const useStyles = createUseStyles({
   },
 });
 
-interface SelectRange {
+export interface SelectRange {
   start: number;
   end: number;
 }
@@ -201,7 +201,16 @@ export function SelectDiff({
         {lines ? (
           <div className={classes.buttons} ref={buttonsRef}>
             {lines.map((l) => (
-              <div key={l.label}>{l.label}</div>
+              <div
+                key={l.label}
+                onClick={() => {
+                  l.act(selectRef.current);
+                  setSelectRange(undefined);
+                  hideButtons();
+                }}
+              >
+                {l.label}
+              </div>
             ))}
           </div>
         ) : null}

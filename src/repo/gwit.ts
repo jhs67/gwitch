@@ -314,6 +314,12 @@ export class Gwit {
     return execRc(this.cmd, a, opts);
   }
 
+  gitInput(input: string, ...args: (string | string[])[]) {
+    const a = [].concat(...args);
+    const opts = { cwd: this.repoPath, maxBuffer: 200 * 1024 * 1024 };
+    return exec(this.cmd, a, opts, input);
+  }
+
   getRefs(): Cancellable<RepoRef[]> {
     return cancellableX(this.gitRc("show-ref", "--head"), (result) => {
       if (result.code === 1) return [];
@@ -518,6 +524,28 @@ export class Gwit {
     return cancellableX(this.git("reset", "HEAD", "--", ...files), () => {
       return;
     });
+  }
+
+  addIntent(files: string[]) {
+    return cancellableX(
+      this.git("add", "--intent-to-add", "--", ...files),
+      () => undefined,
+    );
+  }
+
+  stagePatch(patch: string) {
+    return cancellableX(this.gitInput(patch, "apply", "--cached"), () => undefined);
+  }
+
+  unstagePatch(patch: string) {
+    return cancellableX(
+      this.gitInput(patch, "apply", "--cached", "--reverse"),
+      () => undefined,
+    );
+  }
+
+  unapplyPatch(patch: string) {
+    return cancellableX(this.gitInput(patch, "apply", "--reverse"), () => undefined);
   }
 
   commit(amend: boolean, message: string) {

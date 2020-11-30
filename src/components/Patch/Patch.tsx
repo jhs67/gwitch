@@ -2,6 +2,9 @@ import React from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { SelectDiff } from "../Diff";
+import { LoaderContext } from "../../renderer";
+import { RepoLoader } from "../../repo/loader";
+import { remote } from "electron";
 
 export function Patch() {
   const workingStatus = useSelector((state: RootState) => state.repo.workingStatus);
@@ -19,20 +22,48 @@ export function Patch() {
   );
 
   return (
-    <SelectDiff
-      patch={patch}
-      diffLimit={400}
-      addLimit={50}
-      show={{}}
-      setShow={() => undefined}
-      lines={
-        isWorking
-          ? [
-              { label: "discard", act: () => undefined },
-              { label: "stage", act: () => undefined },
-            ]
-          : [{ label: "unsage", act: () => undefined }]
-      }
-    />
+    <LoaderContext.Consumer>
+      {(loader: RepoLoader) => (
+        <SelectDiff
+          patch={patch}
+          diffLimit={400}
+          addLimit={50}
+          show={{}}
+          setShow={() => undefined}
+          lines={
+            isWorking
+              ? [
+                  {
+                    label: "discard",
+                    act: (range) => {
+                      const r = remote.dialog.showMessageBoxSync(
+                        remote.getCurrentWindow(),
+                        {
+                          type: "warning",
+                          buttons: ["Cancel", "Continue"],
+                          title: "Discard Changes",
+                          message: "Discard Changes? This can not be undone.",
+                        },
+                      );
+
+                      if (!r) return;
+                      loader.discardRange(patch, range.start, range.end);
+                    },
+                  },
+                  {
+                    label: "stage",
+                    act: (range) => loader.stageRange(patch, range.start, range.end),
+                  },
+                ]
+              : [
+                  {
+                    label: "unstage",
+                    act: (range) => loader.unstageRange(patch, range.start, range.end),
+                  },
+                ]
+          }
+        />
+      )}
+    </LoaderContext.Consumer>
   );
 }

@@ -22,6 +22,7 @@ import { createGraph } from "./graph";
 import { RootState } from "../store";
 import { resolve, basename, relative } from "path";
 import { IgnoreBatch } from "./ignorebatch";
+import { rangePatch } from "./rangepatch";
 
 export class RepoLoader {
   private gwit = new Gwit();
@@ -177,6 +178,49 @@ export class RepoLoader {
     this.dispatch(setCommitMessage(""));
     this.dispatch(setRepoAmend(false));
     await this.gwit.commit(amend, message).result;
+  }
+
+  async stageRange(files: FileStatus[], start: number, end: number) {
+    try {
+      // freeze the status update during the operation
+      this.statusLazy.freeze();
+
+      // parse into a patch
+      const [patch, toadd] = rangePatch(files, { start, end }, true);
+
+      // intent to add unstaged files
+      if (toadd.length) await this.gwit.addIntent(toadd).result;
+
+      await this.gwit.stagePatch(patch).result;
+    } finally {
+      this.statusLazy.unfreeze();
+    }
+  }
+
+  async unstageRange(files: FileStatus[], start: number, end: number) {
+    try {
+      // freeze the status update during the operation
+      this.statusLazy.freeze();
+
+      const [patch] = rangePatch(files, { start, end }, false);
+
+      await this.gwit.unstagePatch(patch).result;
+    } finally {
+      this.statusLazy.unfreeze();
+    }
+  }
+
+  async discardRange(files: FileStatus[], start: number, end: number) {
+    try {
+      // freeze the status update during the operation
+      this.statusLazy.freeze();
+
+      const [patch] = rangePatch(files, { start, end }, false);
+
+      await this.gwit.unapplyPatch(patch).result;
+    } finally {
+      this.statusLazy.unfreeze();
+    }
   }
 
   private loadCommits() {
