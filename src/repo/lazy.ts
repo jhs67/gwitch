@@ -3,11 +3,13 @@ import { Cancellable, CancelledError } from "./cancellable";
 export class LazyUpdater {
   task: () => Cancellable<void>;
   run: Cancellable<void>;
+  frozen = false;
   clean = false;
 
   start(t: () => Cancellable<void>, clean = false) {
     this.task = t;
     this.clean = clean;
+    this.frozen = false;
     if (!this.clean) this.kick();
   }
 
@@ -22,7 +24,18 @@ export class LazyUpdater {
 
   poke() {
     this.clean = false;
-    this.kick();
+    if (!this.frozen) this.kick();
+  }
+
+  freeze() {
+    if (this.frozen) throw new Error("can't double freeze");
+    this.frozen = true;
+  }
+
+  unfreeze() {
+    if (!this.frozen) throw new Error("unfreeze no frozeon");
+    this.frozen = false;
+    if (!this.clean) this.kick();
   }
 
   private kick() {
