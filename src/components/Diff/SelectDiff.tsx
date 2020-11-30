@@ -33,6 +33,10 @@ const useStyles = createUseStyles({
     width: "100%",
     overflow: "auto",
     padding: 5,
+
+    "&.selected .hunk .buttons": {
+      display: "none",
+    },
   },
 });
 
@@ -110,6 +114,8 @@ export function SelectDiff({
       for (let i = ms; i <= me; ++i) setLineUnselected(i);
     }
     selectRef.current = r;
+    if (selectRef.current) scrollRef.current.classList.add("selected");
+    else scrollRef.current.classList.remove("selected");
   };
 
   if (!diffLimit) diffLimit = 200;
@@ -230,6 +236,7 @@ export function SelectDiff({
               key={file}
               origin={origin}
               clickLine={clickStart}
+              actions={lines}
               lineRefs={lineRefs.current}
             />
           );
