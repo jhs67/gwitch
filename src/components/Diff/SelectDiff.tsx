@@ -13,6 +13,9 @@ const useStyles = createUseStyles({
     "&.show": {
       display: "flex",
     },
+    "&.show.pending": {
+      display: "none",
+    },
     "& div": {
       border: "1px solid #7f8db7",
       padding: "0px 2px 1px 2px",
@@ -37,6 +40,10 @@ const useStyles = createUseStyles({
     "&.selected .hunk .buttons": {
       display: "none",
     },
+
+    "&.pending .hunk .buttons": {
+      display: "none",
+    },
   },
 });
 
@@ -47,7 +54,7 @@ export interface SelectRange {
 
 export interface LineOption {
   label: string;
-  act: (r: SelectRange) => void;
+  act: (r: SelectRange) => Promise<void>;
 }
 
 export function SelectDiff({
@@ -116,6 +123,26 @@ export function SelectDiff({
     selectRef.current = r;
     if (selectRef.current) scrollRef.current.classList.add("selected");
     else scrollRef.current.classList.remove("selected");
+  };
+
+  const startAction = async (
+    act: (r: SelectRange) => Promise<void>,
+    range: SelectRange,
+  ) => {
+    buttonsRef.current.classList.add("pending");
+    scrollRef.current.classList.add("pending");
+    setSelectRange(undefined);
+    hideButtons();
+    try {
+      await act(range);
+    } finally {
+      finishAction();
+    }
+  };
+
+  const finishAction = () => {
+    scrollRef.current.classList.remove("pending");
+    buttonsRef.current.classList.remove("pending");
   };
 
   if (!diffLimit) diffLimit = 200;
@@ -209,11 +236,7 @@ export function SelectDiff({
             {lines.map((l) => (
               <div
                 key={l.label}
-                onClick={() => {
-                  l.act(selectRef.current);
-                  setSelectRange(undefined);
-                  hideButtons();
-                }}
+                onClick={async () => startAction(l.act, selectRef.current)}
               >
                 {l.label}
               </div>
@@ -236,7 +259,10 @@ export function SelectDiff({
               key={file}
               origin={origin}
               clickLine={clickStart}
-              actions={lines}
+              actions={lines.map((l) => ({
+                ...l,
+                act: async (range) => startAction(l.act, range),
+              }))}
               lineRefs={lineRefs.current}
             />
           );

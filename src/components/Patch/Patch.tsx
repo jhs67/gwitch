@@ -47,7 +47,7 @@ export function Patch() {
                       );
 
                       if (!r) return;
-                      loader.discardRange(patch, range.start, range.end);
+                      return loader.discardRange(patch, range.start, range.end);
                     },
                   },
                   {
