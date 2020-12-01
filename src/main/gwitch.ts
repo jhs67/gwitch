@@ -1,6 +1,7 @@
 import { RecentStore } from "./recent-store";
 import { BrowserWindow, dialog } from "electron";
 import { WindowManager } from "./window-manager";
+import { setAppMenu } from "./appmenu";
 import { RepoPath } from "../store/repo/types";
 import { basename } from "path";
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
@@ -10,6 +11,7 @@ export default class Gwitch {
   private windows = new WindowManager();
 
   async init(): Promise<void> {
+    setAppMenu();
     await Promise.all([await this.recent.load(), await this.windows.load()]);
     this.createWindow();
   }

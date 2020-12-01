@@ -17,7 +17,7 @@ if (require("electron-squirrel-startup")) {
   app.quit();
 }
 
-const gwitch = new Gwitch();
+export const gwitch = new Gwitch();
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
