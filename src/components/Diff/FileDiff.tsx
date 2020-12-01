@@ -4,6 +4,8 @@ import { FileStatus } from "../../store/repo/types";
 import { GwitchTheme } from "../../theme/theme";
 import { createUseStyles } from "react-jss";
 import { LineOption } from "./SelectDiff";
+import ContractIcon from "../../assets/contract.svg";
+import ExpandIcon from "../../assets/expand.svg";
 
 const useStyles = createUseStyles((theme: GwitchTheme) => ({
   patch: {
@@ -28,6 +30,14 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
       fontWeight: "bold",
       display: "flex",
       flexFlow: "row nowrap",
+
+      "& .name": {
+        flex: "1 1",
+      },
+      "& .expand": {
+        width: 16,
+        height: 16,
+      },
     },
 
     "& .hunk": {
@@ -181,6 +191,9 @@ export function FileDiff({
     <div className={classes.patch}>
       <div className="header" onClick={() => setShow(!show)}>
         <div className="name">{patch.newFile || patch.oldFile}</div>
+        {!loading && !binary ? (
+          <div className="expand">{show ? <ContractIcon /> : <ExpandIcon />}</div>
+        ) : null}
       </div>
       {msgs.map((m, i) => (
         <div className="msg" key={i}>
