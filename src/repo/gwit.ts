@@ -348,7 +348,7 @@ export class Gwit {
           return {
             hash: hash,
             refName: refName,
-            type: type as "heads" | "remotes" | "tags",
+            type: type as "heads" | "remotes" | "tags" | "stash",
             name: name,
           };
         });
@@ -360,7 +360,7 @@ export class Gwit {
       return output
         .trim()
         .split("\n")
-        .filter((hash) => hash.length)
+        .filter((hash, i) => i && hash.length)
         .map((hash, i) => {
           return {
             hash,
