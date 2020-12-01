@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { SelectDiff } from "../Diff";
@@ -11,6 +11,7 @@ export function Patch() {
   const indexStatus = useSelector((state: RootState) => state.repo.indexStatus);
   const workingSelected = useSelector((state: RootState) => state.repo.workingSelected);
   const indexSelected = useSelector((state: RootState) => state.repo.indexSelected);
+  const [show, setShow] = useState<{ [file: string]: boolean }>({});
 
   const isWorking = !indexSelected?.length;
   const [status, selected] = !isWorking
@@ -28,8 +29,8 @@ export function Patch() {
           patch={patch}
           diffLimit={400}
           addLimit={50}
-          show={{}}
-          setShow={() => undefined}
+          show={show}
+          setShow={(file, state) => setShow({ ...show, [file]: state })}
           lines={
             isWorking
               ? [
