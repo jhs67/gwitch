@@ -13,7 +13,10 @@ export class LayoutProxy {
   private lastState = initialLayoutState;
 
   constructor(private store: Store<RootState>) {
+    let layoutState: LayoutState;
     this.store.subscribe(() => {
+      if (layoutState === this.store.getState().layout) return;
+      layoutState = this.store.getState().layout;
       this.saver.poke();
     });
   }
