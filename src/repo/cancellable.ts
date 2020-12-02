@@ -53,7 +53,7 @@ export function asCancellable<R>(result: Promise<R>) {
   result.then((v) => x.accept(v)).catch((e) => x.reject(e));
   return {
     cancel: () => x.reject(new CancelledError()),
-    result,
+    result: x.promise,
   };
 }
 
