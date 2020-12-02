@@ -57,6 +57,18 @@ export function asCancellable<R>(result: Promise<R>) {
   };
 }
 
+export function cancelTimeout(timeout: number): Cancellable<void> {
+  const x = new ExPromise<void>();
+  const n = setTimeout(() => x.accept(), timeout);
+  return {
+    cancel: () => {
+      clearTimeout(n);
+      x.reject(new CancelledError());
+    },
+    result: x.promise,
+  };
+}
+
 interface RunTask {
   cancel?: () => void;
   reject: (err: Error) => void;

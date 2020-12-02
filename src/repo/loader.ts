@@ -27,14 +27,14 @@ import { rangePatch } from "./rangepatch";
 export class RepoLoader {
   private gwit = new Gwit();
 
-  private refsLazy = new LazyUpdater();
+  private refsLazy = new LazyUpdater(100, 1000);
   private refsWatch: Watcher;
 
   private loadedFocusPatch: string;
   private focusPatchLazy = new LazyUpdater();
 
   private loadedStatusAmend = false;
-  private statusLazy = new LazyUpdater();
+  private statusLazy = new LazyUpdater(100, 1000);
   private statusWatch: Watcher;
 
   private submoduleLazy = new LazyUpdater();
