@@ -188,7 +188,10 @@ export function FileDiff({
   let cursor = origin || 0;
 
   return (
-    <div className={classes.patch}>
+    <div
+      className={classes.patch}
+      onMouseDown={clickLine && ((ev) => clickLine(ev.nativeEvent))}
+    >
       <div className="header" onClick={() => setShow(!show)}>
         <div className="name">{patch.newFile || patch.oldFile}</div>
         {!loading && !binary ? (
@@ -247,7 +250,6 @@ export function FileDiff({
                         key={j}
                         data-line={line}
                         ref={lineRefs && ((v) => (lineRefs[line] = v))}
-                        onMouseDown={clickLine && ((ev) => clickLine(ev.nativeEvent))}
                       >
                         <td>{formatLine(l.oldLine)}</td>
                         <td>{formatLine(l.newLine)}</td>

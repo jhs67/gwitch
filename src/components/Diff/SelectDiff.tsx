@@ -153,24 +153,20 @@ export function SelectDiff({
     if (selectRef.current != null) setSelectRange(undefined);
   }
 
-  const getLine = function (e: HTMLElement): number {
-    if (e.nodeName === "TR") {
-      if (e.dataset.line == null) throw new Error("not a diff line");
-      return parseInt(e.dataset.line);
-    }
-    return getLine(e.parentElement);
+  const getLine = function (e: HTMLElement): number | undefined {
+    if (e === scrollRef.current) return;
+    if (e.nodeName !== "TR") return getLine(e.parentElement);
+    const r = parseInt(e.dataset.line);
+    return isNaN(r) ? undefined : r;
   };
 
   const onMove = (ev: MouseEvent) => {
-    try {
-      const line = getLine(ev.target as HTMLElement);
-      setSelectRange({
-        start: Math.min(line, anchorRef.current),
-        end: Math.max(line, anchorRef.current),
-      });
-    } catch (err) {
-      err;
-    }
+    const line = getLine(ev.target as HTMLElement);
+    if (line == null) return;
+    setSelectRange({
+      start: Math.min(line, anchorRef.current),
+      end: Math.max(line, anchorRef.current),
+    });
   };
 
   const onUp = () => {
@@ -184,6 +180,11 @@ export function SelectDiff({
 
   const clickStart = (ev: MouseEvent) => {
     const line = getLine(ev.target as HTMLElement);
+    if (line == null) {
+      setSelectRange(undefined);
+      hideButtons();
+      return;
+    }
     anchorRef.current = line;
     setSelectRange({ start: line, end: line });
     startTrack();
