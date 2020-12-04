@@ -42,7 +42,15 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
 
     "& .hunk": {
       backgroundColor: "#ececec",
-      transform: "scale(1)",
+
+      "& .hunktop": {
+        display: "flex",
+        alignItems: "center",
+      },
+
+      "& .hunklabel": {
+        flex: 1,
+      },
 
       "&:hover .buttons": {
         display: "flex",
@@ -109,11 +117,9 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
     },
 
     "& .buttons": {
-      position: "absolute",
       display: "none",
-      right: "1px",
-      top: "2px",
       flexFlow: "row",
+      flex: "0",
       "& div": {
         fontFamily: theme.typography.bodyFace,
         border: "1px solid #7f8db7",
@@ -221,21 +227,23 @@ export function FileDiff({
                     <td>...</td>
                     <td></td>
                     <td>
-                      {h.header}
-                      {actions ? (
-                        <div className="buttons">
-                          {actions.map((a) => (
-                            <div
-                              key={a.label}
-                              onClick={() =>
-                                a.act({ start: origin, end: origin + h.lines.length - 1 })
-                              }
-                            >
-                              {a.label}
-                            </div>
-                          ))}
-                        </div>
-                      ) : null}
+                      <div className="hunktop">
+                        <div className="hunklabel">{h.header}</div>
+                        {actions ? (
+                          <div className="buttons">
+                            {actions.map((a) => (
+                              <div
+                                key={a.label}
+                                onClick={() =>
+                                  a.act({ start: origin, end: origin + h.lines.length - 1 })
+                                }
+                              >
+                                {a.label}
+                              </div>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
                     </td>
                   </tr>
                   {h.lines.map((l, j) => {
