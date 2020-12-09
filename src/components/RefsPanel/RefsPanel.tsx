@@ -19,15 +19,16 @@ import {
 import { RepoRef } from "../../store/repo/types";
 import { setFocusCommit } from "../../store/repo/actions";
 import { goBack, openSubmodule } from "../../renderer";
+import { GwitchTheme } from "../../theme/theme";
 
-const useStyles = createUseStyles({
+const useStyles = createUseStyles((theme: GwitchTheme) => ({
   refsPanel: {
     flex: "0 0 auto",
     padding: "5px",
     maxWidth: "20vw",
     minWidth: "12rem",
-    backgroundColor: "#eef1f1",
-    borderRight: "1px solid #d5d5d5",
+    backgroundColor: theme.colors.panel.background,
+    borderRight: `1px solid ${theme.colors.softBorder}`,
     display: "flex",
     flexFlow: "column nowrap",
     overflow: "hidden",
@@ -35,6 +36,7 @@ const useStyles = createUseStyles({
   refsSect: {
     flex: "1 1 auto",
     flexFlow: "column nowrap",
+    fill: theme.colors.primary,
   },
   stageSection: {
     marginBottom: "0.5rem",
@@ -160,7 +162,7 @@ const useStyles = createUseStyles({
     flex: "0 0 auto",
   },
   focusRef: {
-    backgroundColor: "#ccd7da",
+    backgroundColor: theme.colors.panel.focus.background,
   },
   navButtons: {
     flex: "0 0 auto",
@@ -170,9 +172,10 @@ const useStyles = createUseStyles({
     "& svg": {
       verticalAlign: "middle",
       height: "1.2em",
+      fill: theme.colors.primary,
     },
   },
-});
+}));
 
 export function RefsPanel() {
   const classes = useStyles();

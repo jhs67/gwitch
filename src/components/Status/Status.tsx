@@ -11,18 +11,20 @@ import { setCommitMessage, setRepoAmend, setStageSelected } from "../../store/re
 import { RepoLoader } from "../../repo/loader";
 import { LoaderContext } from "../../renderer";
 import { FilesView } from "./FilesView";
+import { GwitchTheme } from "../../theme/theme";
 
-const useStyles = createUseStyles({
+const useStyles = createUseStyles((theme: GwitchTheme) => ({
   working: {
-    backgroundColor: "#ededed",
+    backgroundColor: theme.colors.frame,
     "& .Resizer": {
       zIndex: 1,
       width: "5px",
       height: "100%",
       padding: "1px",
       cursor: "col-resize",
+      border: `solid 1px ${theme.colors.frame}`,
       "&:hover": {
-        background: "#ddd",
+        background: theme.sizer.horizontalHover,
       },
     },
     "& .fileView": {
@@ -42,8 +44,8 @@ const useStyles = createUseStyles({
     "& .fileItem": {
       whiteSpace: "nowrap",
       "&.selected": {
-        backgroundColor: "#0b82f5",
-        color: "white",
+        backgroundColor: `${theme.colors.commitFocus.background}`,
+        color: theme.colors.commitFocus.primary,
       },
       "&.focused": {
         outlineWidth: "1px",
@@ -52,62 +54,38 @@ const useStyles = createUseStyles({
       },
     },
     "& .fileList": {
+      userSelect: "none",
       flex: "1 1 auto",
-      backgroundColor: "white",
+      backgroundColor: theme.colors.background,
       borderWidth: "1px",
-      borderColor: "#bbb",
+      borderColor: theme.colors.hardBorder,
       borderStyle: "solid",
       overflow: "auto",
 
       "&:focus": {
-        outlineColor: "#aaa",
-        outlineStyle: "outset",
+        outlineColor: theme.colors.hardBorder,
+        outlineStyle: "solid",
       },
 
       "& svg": {
         height: "0.9em",
         verticalAlign: "middle",
       },
-      "& .statusM path": {
-        fill: "#00df49",
-        strokeWidth: "1px",
-        stroke: "#086a2d",
-      },
-      "& .statusU path": {
-        fill: "#94e000",
-        stroke: "#628622",
-      },
-      "& .statusD path": {
-        fill: "#e01a00",
-        stroke: "#863022",
-      },
-      "& .statusD.unmerged path": {
-        fill: "#dd00e0",
-        stroke: "#862285",
-      },
-      "& .statusA path": {
-        fill: "#0054e0",
-        stroke: "#224586",
-      },
-      "& .statusA.unmerged path": {
-        fill: "#00e0d3",
-        stroke: "#228683",
-      },
-      "& .statusR path": {
-        fill: "#b800e0",
-        stroke: "#772286",
-      },
-      "& .statusC path": {
-        fill: "#b800e0",
-        stroke: "#772286",
-      },
+      "& .statusM path": theme.colors.files.statusM,
+      "& .statusU path": theme.colors.files.statusU,
+      "& .statusD path": theme.colors.files.statusD,
+      "& .statusD.unmerged path": theme.colors.files.statusDU,
+      "& .statusA path": theme.colors.files.statusA,
+      "& .statusA.unmerged path": theme.colors.files.statusAU,
+      "& .statusR path": theme.colors.files.statusR,
+      "& .statusC path": theme.colors.files.statusC,
       "& path": {
-        fill: "#000000",
         strokeWidth: "1px",
-        stroke: "#080808",
+        fill: theme.colors.primary,
+        stroke: theme.colors.files.stroke,
       },
       "& path.flap": {
-        fill: "white",
+        fill: theme.colors.background,
       },
     },
     "& .commitMessage": {
@@ -126,13 +104,15 @@ const useStyles = createUseStyles({
       "& .message": {
         flex: "1 1 auto",
         resize: "none",
+        backgroundColor: theme.colors.background,
+        color: theme.colors.primary,
         borderWidth: "1px",
-        borderColor: "#bbb",
+        borderColor: theme.colors.hardBorder,
         borderStyle: "solid",
 
         "&:focus": {
-          outlineColor: "#aaa",
-          outlineStyle: "outset",
+          outlineColor: theme.colors.hardBorder,
+          outlineStyle: "solid",
         },
       },
       "& .commitButtons": {
@@ -146,7 +126,7 @@ const useStyles = createUseStyles({
     },
   },
   secondPane: { position: "relative" },
-});
+}));
 
 function statusToPath(s: FileStatus, r: RepoPath) {
   return resolve(r.path, ...r.submodules, s.newFile || s.oldFile);

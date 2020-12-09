@@ -7,8 +7,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { OPEN_PATH, OPEN_OTHER } from "../../main/ipc";
 import { resetRecentRepos } from "../../store/recent/actions";
+import { GwitchTheme } from "../../theme/theme";
 
-const useStyles = createUseStyles({
+const useStyles = createUseStyles((theme: GwitchTheme) => ({
   recentRepos: {
     marginLeft: "auto",
     marginRight: "auto",
@@ -26,7 +27,7 @@ const useStyles = createUseStyles({
     padding: "3px 6px 3px 6px",
     borderRadius: "0.6em",
     borderWidth: "2px",
-    borderColor: "#dedede",
+    borderColor: theme.colors.softBorder,
     borderStyle: "solid",
     overflow: "auto",
     height: "60vh",
@@ -34,9 +35,9 @@ const useStyles = createUseStyles({
   repoItem: {
     borderRadius: "0.4em",
     borderWidth: "1px",
-    borderColor: "#dedede",
+    borderColor: theme.colors.softBorder,
     borderStyle: "solid",
-    background: "linear-gradient(#fcfcfc, #e0e0e0)",
+    background: `linear-gradient(${theme.colors.recentTop}, ${theme.colors.recentBot})`,
     marginBottom: "4px",
     marginTop: "4px",
     textAlign: "center",
@@ -45,7 +46,7 @@ const useStyles = createUseStyles({
     "&:hover": {
       padding: "2px",
       borderWidth: "2px",
-      borderColor: "#cdcdcd",
+      borderColor: theme.colors.softHilight,
     },
     "&:hover $repoRm": {
       display: "inline-block",
@@ -58,7 +59,7 @@ const useStyles = createUseStyles({
   },
   repoPath: {
     fontSize: "0.9em",
-    color: "#888888",
+    color: theme.colors.secondary,
   },
   repoRm: {
     position: "absolute",
@@ -78,7 +79,7 @@ const useStyles = createUseStyles({
     height: "10vh",
     textAlign: "center",
   },
-});
+}));
 
 export function RecentRepos() {
   const classes = useStyles();

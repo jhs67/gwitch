@@ -17,7 +17,7 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
 
     borderRadius: "0.6em",
     borderWidth: "2px",
-    borderColor: "#dedede",
+    borderColor: theme.colors.softBorder,
     borderStyle: "solid",
 
     padding: "8px",
@@ -37,11 +37,12 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
       "& .expand": {
         width: 16,
         height: 16,
+        fill: theme.colors.primary,
       },
     },
 
     "& .hunk": {
-      backgroundColor: "#ececec",
+      backgroundColor: theme.colors.frame,
 
       "& .hunktop": {
         display: "flex",
@@ -71,10 +72,10 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
 
     "& td:nth-child(-n+2)": {
       borderWidth: "0 1px 0 1px",
-      borderColor: "#dddddd",
+      borderColor: theme.colors.softBorder,
       borderStyle: "solid",
 
-      backgroundColor: "#ececec",
+      backgroundColor: theme.colors.frame,
       textAlign: "right",
     },
 
@@ -84,17 +85,17 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
     },
 
     "& .new td:nth-child(n+3)": {
-      backgroundColor: "#ddffdd",
-      color: "#06772c",
+      backgroundColor: theme.colors.diff.new.background,
+      color: theme.colors.diff.new.primary,
     },
 
     "& .old td:nth-child(n+3)": {
-      backgroundColor: "#ffeeee",
-      color: "#bb0704",
+      backgroundColor: theme.colors.diff.old.background,
+      color: theme.colors.diff.old.primary,
     },
 
     "& .selected td:nth-child(n+3)": {
-      backgroundColor: "#b7d6fb",
+      backgroundColor: theme.colors.diff.selected.background,
     },
 
     "& td:nth-child(1),td:nth-child(2),td:nth-child(3)": {
@@ -106,13 +107,13 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
     },
 
     "& .large": {
-      color: "#6a6a6a",
+      color: theme.colors.lessprimary,
       marginLeft: "2em",
       marginTop: "5px",
     },
 
     "& .large:hover": {
-      color: "#1a54ab",
+      color: theme.colors.link.primary,
       textDecoration: "underline",
     },
 
@@ -122,16 +123,16 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
       flex: "0",
       "& div": {
         fontFamily: theme.typography.bodyFace,
-        border: "1px solid #7f8db7",
+        border: `1px solid ${theme.colors.diff.buttons.border}`,
         padding: "0px 2px 1px 2px",
         fontSize: "80%",
-        backgroundColor: "#d4ebff",
+        backgroundColor: theme.colors.diff.buttons.background,
         borderRadius: "3px",
-        color: "#34426b",
+        color: theme.colors.diff.buttons.primary,
         marginLeft: "3px",
         "&:hover": {
-          borderColor: "#34426b",
-          color: "#131d3a",
+          borderColor: theme.colors.diff.buttons.hover.border,
+          color: theme.colors.diff.buttons.hover.primary,
         },
       },
     },

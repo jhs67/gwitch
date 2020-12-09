@@ -30,8 +30,8 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
       position: "sticky",
       top: 0,
       zIndex: 10,
-      background: "#fff",
-      borderBottom: "1px solid #d8d8d8d8",
+      background: theme.colors.background,
+      borderBottom: `1px solid ${theme.colors.softBorder}`,
     },
     "& td": {
       overflow: "hidden",
@@ -42,12 +42,12 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
       verticalAlign: "middle",
     },
     "& tr:nth-child(2n)": {
-      backgroundColor: "#f4f4f4",
+      backgroundColor: theme.colors.backalt,
     },
     "& .graph-node": {
-      fill: "#ffffff",
+      fill: theme.colors.background,
       strokeWidth: "1px",
-      stroke: "#000000",
+      stroke: theme.colors.primary,
     },
     "& .graph-path": {
       fill: "none",
@@ -61,14 +61,14 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
   },
   authorHeader: {
     width: "9em",
-    borderLeft: "1px solid #d8d8d8d8",
+    borderLeft: `1px solid ${theme.colors.softBorder}`,
   },
   dateHeader: {
     width: "14em",
-    borderLeft: "1px solid #d8d8d8d8",
+    borderLeft: `1px solid ${theme.colors.softBorder}`,
   },
   summaryHeader: {
-    borderLeft: "1px solid #d8d8d8d8",
+    borderLeft: `1px solid ${theme.colors.softBorder}`,
   },
   shortHash: {
     paddingLeft: "4px",
@@ -109,8 +109,8 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
     },
   },
   focusRef: {
-    backgroundColor: "#096ed3 !important",
-    color: "#ffffff",
+    backgroundColor: `${theme.colors.commitFocus.background} !important`,
+    color: theme.colors.commitFocus.primary,
   },
 }));
 

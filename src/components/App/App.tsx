@@ -11,6 +11,11 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
   app: {
     fontFamily: theme.typography.bodyFace,
     fontSize: theme.typography.bodySize,
+    color: theme.colors.primary,
+    backgroundColor: theme.colors.background,
+    position: "absolute",
+    width: "100%",
+    height: "100%",
   },
 }));
 
@@ -19,9 +24,11 @@ export default function NotHotApp() {
   const path = useSelector((state: RootState) => state.repo.path);
   const recent = useSelector((state: RootState) => state.recent.repos);
   return (
-    <div className={classes.app}>
-      {path == null ? recent ? <RecentRepos /> : <div /> : <RepoClient />}
-    </div>
+    <>
+      {path || recent ? (
+        <div className={classes.app}>{path ? <RepoClient /> : <RecentRepos />}</div>
+      ) : null}
+    </>
   );
 }
 

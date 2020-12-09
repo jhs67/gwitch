@@ -21,7 +21,7 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
     display: "flex",
     flexFlow: "row wrap",
     margin: "1em 1em 0 1em",
-    borderBottom: "solid #dfdfdf 1px",
+    borderBottom: `solid ${theme.colors.softBorder} 1px`,
     borderCollapse: "collapse",
     alignItems: "stretch",
   },
@@ -32,7 +32,7 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
   infoLabel: {
     textAlign: "right",
     fontWeight: "bold",
-    color: "#838394",
+    color: theme.colors.secondary,
   },
   metaSubject: {
     fontWeight: "bold",
@@ -50,7 +50,7 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
     fontFamily: theme.typography.monospaceFace,
   },
   parentRef: {
-    color: "#1a54ab",
+    color: theme.colors.link.primary,
     "&:hover": {
       textDecoration: "underline",
     },
@@ -70,11 +70,11 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
       margin: "1.1em 0 1.4em 1.0em",
     },
     "& .file": {
-      color: "#6a6a6a",
+      color: theme.colors.lessprimary,
       marginLeft: "2em",
     },
     "& .file:hover": {
-      color: "#1a54ab",
+      color: theme.colors.link.primary,
       textDecoration: "underline",
     },
   },

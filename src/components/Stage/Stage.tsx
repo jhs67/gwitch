@@ -6,24 +6,21 @@ import { RootState } from "../../store";
 import { setStageSplit } from "../../store/layout/actions";
 import { Patch } from "../Patch";
 import { Status } from "../Status";
+import { GwitchTheme } from "../../theme/theme";
 
-const useStyles = createUseStyles({
+const useStyles = createUseStyles((theme: GwitchTheme) => ({
   history: {
     "&>.Resizer": {
       zIndex: 1,
-      background: "linear-gradient(#fcfcfc, #e0e0e0)",
+      background: theme.sizer.vertical,
       height: "5px",
-      borderTop: "1px solid",
-      borderBottom: "1px solid",
-      borderColor: "#a8a8a8",
-      padding: "1px",
       cursor: "row-resize",
       "&:hover": {
-        background: "linear-gradient(#ccc, #eee)",
+        background: theme.sizer.verticalHover,
       },
     },
   },
-});
+}));
 
 export function Stage() {
   const classes = useStyles();

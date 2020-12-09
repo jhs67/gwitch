@@ -3,8 +3,9 @@ import { createUseStyles } from "react-jss";
 import { FileStatus } from "../../store/repo/types";
 import { useMouseTrack } from "../../hooks/mousetrack";
 import { FileDiff } from "./FileDiff";
+import { GwitchTheme } from "../../theme/theme";
 
-const useStyles = createUseStyles({
+const useStyles = createUseStyles((theme: GwitchTheme) => ({
   buttons: {
     position: "absolute",
     right: "17px",
@@ -17,16 +18,16 @@ const useStyles = createUseStyles({
       display: "none",
     },
     "& div": {
-      border: "1px solid #7f8db7",
+      border: `1px solid ${theme.colors.diff.buttons.border}`,
       padding: "0px 2px 1px 2px",
       fontSize: "80%",
-      backgroundColor: "#d4ebff",
+      backgroundColor: theme.colors.diff.buttons.background,
       borderRadius: "3px",
-      color: "#34426b",
+      color: theme.colors.diff.buttons.primary,
       marginLeft: "3px",
       "&:hover": {
-        borderColor: "#34426b",
-        color: "#131d3a",
+        borderColor: theme.colors.diff.buttons.hover.border,
+        color: theme.colors.diff.buttons.hover.primary,
       },
     },
   },
@@ -45,7 +46,7 @@ const useStyles = createUseStyles({
       display: "none",
     },
   },
-});
+}));
 
 export interface SelectRange {
   start: number;
