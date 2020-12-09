@@ -321,14 +321,14 @@ export class Gwit {
   }
 
   getRefs(): Cancellable<RepoRef[]> {
-    return cancellableX(this.gitRc("show-ref", "--head"), (result) => {
+    return cancellableX(this.gitRc("show-ref", "--head", "-d"), (result) => {
       if (result.code === 1) return [];
       if (result.code !== 0) throw new Error(`show-ref returned error code ${result.code}`);
 
-      return result.out
+      let refs: RepoRef[] = result.out
         .trim()
         .split("\n")
-        .map(function (line) {
+        .map(function (line): RepoRef {
           const split = line.indexOf(" ");
           const hash = line.substr(0, split);
           const refName = line.substr(split + 1);
@@ -352,6 +352,19 @@ export class Gwit {
             name: name,
           };
         });
+
+      // filter non-dereferenced tags
+      refs = refs.filter((r) => {
+        return r.type !== "tags" || !refs.some((s) => s.refName === r.refName + "^{}");
+      });
+
+      // remove dereference tag
+      refs.forEach((r) => {
+        if (r.type === "tags" && r.name.endsWith("^{}"))
+          r.name = r.name.substr(0, r.name.length - 3);
+      });
+
+      return refs;
     });
   }
 
