@@ -12,6 +12,7 @@ import { RepoLoader } from "../../repo/loader";
 import { LoaderContext } from "../../renderer";
 import { FilesView } from "./FilesView";
 import { GwitchTheme } from "../../theme/theme";
+import classNames from "classnames";
 
 const useStyles = createUseStyles((theme: GwitchTheme) => ({
   working: {
@@ -121,7 +122,31 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
         paddingBottom: "9px",
       },
       "& .commitButton": {
+        userSelect: "none",
         float: "right",
+        padding: "4px 14px",
+        borderStyle: "solid",
+        borderWidth: "1px",
+        borderColor: theme.colors.button.border,
+        background: theme.colors.button.background,
+        borderRadius: "2px",
+        "&:hover:not(.disabled)": {
+          backgroundColor: theme.colors.button.hover.background,
+          borderColor: theme.colors.button.hover.border,
+          "&:active": {
+            backgroundColor: theme.colors.button.active.background,
+            borderColor: theme.colors.button.active.border,
+          },
+        },
+        "&.disabled": {
+          color: theme.colors.button.disabled.primary,
+          borderColor: theme.colors.button.disabled.border,
+        },
+      },
+      "& .amend": {
+        "-webkit-appearance": "none",
+        width: "10px",
+        height: "10px",
       },
     },
   },
@@ -233,6 +258,8 @@ function CommitCompose({ loader }: { loader: RepoLoader }) {
     loader.commit(amend, message);
   };
 
+  const disabled = message === "" || status.length === 0;
+
   return (
     <div className="commitMessage">
       <div className="indexHeader">Commit Message</div>
@@ -242,13 +269,12 @@ function CommitCompose({ loader }: { loader: RepoLoader }) {
           <input className="amend" type="checkbox" checked={amend} onChange={toggleAmend} />
           Amend
         </label>
-        <button
-          className="commitButton"
-          disabled={message === "" || status.length === 0}
-          onClick={commitClick}
+        <div
+          className={classNames("commitButton", { disabled })}
+          onClick={!disabled ? commitClick : null}
         >
           Commit
-        </button>
+        </div>
       </div>
     </div>
   );

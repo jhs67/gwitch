@@ -78,6 +78,26 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
   repoButton: {
     height: "10vh",
     textAlign: "center",
+    "& .button": {
+      display: "inline-block",
+      userSelect: "none",
+      padding: "4px 14px",
+      borderStyle: "solid",
+      borderWidth: "1px",
+      borderColor: theme.colors.button.border,
+      backgroundColor: theme.colors.button.background,
+      borderRadius: "2px",
+      color: theme.colors.primary,
+
+      "&:hover": {
+        backgroundColor: theme.colors.button.hover.background,
+        borderColor: theme.colors.button.hover.border,
+        "&:active": {
+          backgroundColor: theme.colors.button.active.background,
+          borderColor: theme.colors.button.active.border,
+        },
+      },
+    },
   },
 }));
 
@@ -111,9 +131,9 @@ export function RecentRepos() {
         )}
       </div>
       <div className={classes.repoButton}>
-        <button type="button" onClick={openRepo}>
+        <div className="button" onClick={openRepo}>
           Open Repository
-        </button>
+        </div>
       </div>
     </div>
   );

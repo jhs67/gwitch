@@ -17,6 +17,22 @@ export const theme = {
     recentBot: "#e0e0e0",
     buttonBack: "rgb(239,239,239)",
     frame: "#ececec",
+    button: {
+      background: "rgb(239,239,239)",
+      border: "rgb(165,165,165)",
+      hover: {
+        background: "rgb(224,224,224)",
+        border: "rgb(165,165,165)",
+      },
+      active: {
+        background: "rgb(210,210,210)",
+        border: "rgb(125,125,125)",
+      },
+      disabled: {
+        primary: "#888",
+        border: "rgb(165,165,165)",
+      },
+    },
     panel: {
       background: "#eef1f1",
       focus: {

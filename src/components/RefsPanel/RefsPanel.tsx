@@ -166,8 +166,23 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
   },
   navButtons: {
     flex: "0 0 auto",
-    "& button": {
-      padding: "1px",
+    display: "flex",
+    "& div": {
+      flex: "0 0 auto",
+      padding: "3px",
+      borderStyle: "solid",
+      borderWidth: "1px",
+      borderColor: theme.colors.button.border,
+      background: theme.colors.button.background,
+      borderRadius: "2px",
+      "&:hover": {
+        backgroundColor: theme.colors.button.hover.background,
+        borderColor: theme.colors.button.hover.border,
+        "&:active": {
+          backgroundColor: theme.colors.button.active.background,
+          borderColor: theme.colors.button.active.border,
+        },
+      },
     },
     "& svg": {
       verticalAlign: "middle",
@@ -356,11 +371,11 @@ export function RefsPanel() {
         ) : undefined}
       </div>
       <div className={classes.navButtons}>
-        <button className="showRecent" onClick={() => goBack()}>
+        <div className="showRecent" onClick={() => goBack()}>
           <svg viewBox="0 0 24 24">
             <path d="M 2 12 l 10 10 l 0 -6.5 l 10 0 l 0 -7 l -10 0 l 0 -6.5 z" />
           </svg>
-        </button>
+        </div>
       </div>
     </div>
   );
