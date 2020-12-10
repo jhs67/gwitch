@@ -106,6 +106,12 @@ const baseTheme = {
         stroke: "#772286",
       },
     },
+    scroll: {
+      track: "#eeeeee",
+      thumb: "#c0c0c0",
+      hover: "#cccccc",
+      active: "#999999",
+    },
   },
   sizer: {
     vertical: "#ececec",
@@ -198,6 +204,12 @@ export const darkTheme = themeCopy(baseTheme, {
       statusAU: darkFill("#008c84"),
       statusR: darkFill("#73008c"),
       statusC: darkFill("#73008c"),
+    },
+    scroll: {
+      track: "#222222",
+      thumb: "#666666",
+      hover: "#444444",
+      active: "#777777",
     },
   },
   sizer: {
