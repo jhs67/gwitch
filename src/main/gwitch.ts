@@ -1,24 +1,46 @@
 import { RecentStore } from "./recent-store";
-import { BrowserWindow, dialog } from "electron";
+import { BrowserWindow, dialog, nativeTheme } from "electron";
 import { WindowManager } from "./window-manager";
 import { setAppMenu } from "./appmenu";
 import { RepoPath } from "../store/repo/types";
 import { basename } from "path";
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 
+export type ThemeType = "light" | "dark" | "system";
+
 export default class Gwitch {
   private recent = new RecentStore();
   private windows = new WindowManager();
 
+  setTheme(v: ThemeType) {
+    this.windows.theme = v;
+    nativeTheme.themeSource = v;
+    this.windows.all().forEach((w) => this.sendTheme(w));
+  }
+
+  get activeTheme() {
+    return this.windows.theme === "system"
+      ? nativeTheme.shouldUseDarkColors
+        ? "dark"
+        : "light"
+      : this.windows.theme;
+  }
+
   async init(): Promise<void> {
-    setAppMenu();
     await Promise.all([await this.recent.load(), await this.windows.load()]);
+    nativeTheme.on("updated", () => this.windows.all().forEach((w) => this.sendTheme(w)));
+    setAppMenu(this.windows.theme);
     this.createWindow();
   }
 
   createWindow(path?: RepoPath): void {
     const windowOpts = this.windows.opts({
-      webPreferences: { nodeIntegration: true, enableRemoteModule: true },
+      webPreferences: {
+        nodeIntegration: true,
+        enableRemoteModule: true,
+        contextIsolation: false,
+      },
+      backgroundColor: this.activeTheme === "dark" ? "#1e1e1e" : "#fff",
     });
 
     // Create the browser window.
@@ -28,6 +50,7 @@ export default class Gwitch {
     // and load the index.html of the app.
     window.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
     window.webContents.on("did-finish-load", () => {
+      this.sendTheme(window);
       if (path == null) this.sendOpenRecent(window);
       else this.sendOpenPath(window, path);
     });
@@ -43,6 +66,10 @@ export default class Gwitch {
       `gwitch - ${[basename(path.path, ".git"), ...path.submodules].join("/")}`,
     );
     window.webContents.send("open", path);
+  }
+
+  sendTheme(window: BrowserWindow) {
+    window.webContents.send("theme", this.activeTheme);
   }
 
   async openOther(window: BrowserWindow): Promise<void> {

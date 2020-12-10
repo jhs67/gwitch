@@ -8,6 +8,7 @@ import {
 import { promises as fs } from "fs";
 import { join } from "path";
 import deepEqual from "deep-equal";
+import { ThemeType } from "./gwitch";
 
 const FileName = "window-state-n.json";
 
@@ -19,6 +20,11 @@ interface WindowState {
   isMaximized: boolean;
   isFullScreen: boolean;
   displayBounds: Rectangle;
+}
+
+function validThemeState(theme: string): ThemeType {
+  if (theme !== "dark" && theme !== "system" && theme !== "light") return "system";
+  return theme;
 }
 
 function isValidWindowState(body: WindowState) {
@@ -37,17 +43,30 @@ function isValidWindowState(body: WindowState) {
 export class WindowManager {
   private windows = new Map();
   private state?: WindowState;
+  private theme_: ThemeType;
 
   async load() {
+    this.theme_ = "system";
     try {
       const file = join(app.getPath("userData"), FileName);
       const body = JSON.parse(await fs.readFile(file, "utf8"));
+      this.theme_ = validThemeState(body.theme);
+      delete body.theme;
       if (!isValidWindowState(body)) throw new Error("loaded window state no longer valid");
       this.state = body;
     } catch (err) {
       console.info("error loading window state", err);
       this.state = undefined;
     }
+  }
+
+  get theme() {
+    return this.theme_;
+  }
+
+  set theme(v: ThemeType) {
+    this.theme_ = v;
+    this.save();
   }
 
   loadState(window: BrowserWindow) {
@@ -65,7 +84,7 @@ export class WindowManager {
 
   async save() {
     const file = join(app.getPath("userData"), FileName);
-    await fs.writeFile(file, JSON.stringify(this.state), "utf8");
+    await fs.writeFile(file, JSON.stringify({ theme: this.theme_, ...this.state }), "utf8");
   }
 
   track(window: BrowserWindow) {
@@ -104,5 +123,9 @@ export class WindowManager {
     }
 
     return r;
+  }
+
+  all(): BrowserWindow[] {
+    return [...this.windows.values()];
   }
 }

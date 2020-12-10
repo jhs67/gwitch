@@ -12,7 +12,7 @@ import { RepoPath } from "./store/repo/types";
 import { RepoLoader } from "./repo/loader";
 import { LayoutProxy } from "./repo/layout";
 import { CancellableQueue } from "./repo/cancellable";
-import { theme } from "./theme/theme";
+import { darkTheme, GwitchTheme, lightTheme } from "./theme/theme";
 import { GO_BACK, OPEN_SUBMODULE } from "./main/ipc";
 
 const store = createStore(rootReducer);
@@ -22,11 +22,21 @@ const eventQueue = new CancellableQueue(1);
 
 export const LoaderContext = React.createContext<RepoLoader>(loader);
 
-ReactDOM.render(
-  <Provider store={store}>
+let setTheme: (a: GwitchTheme) => void;
+
+function ThemedApp() {
+  const [theme, _setTheme] = React.useState(lightTheme);
+  setTheme = _setTheme;
+  return (
     <ThemeProvider theme={theme}>
       <App />
     </ThemeProvider>
+  );
+}
+
+ReactDOM.render(
+  <Provider store={store}>
+    <ThemedApp />
   </Provider>,
   document.getElementById("root"),
 );
@@ -44,6 +54,10 @@ ipcRenderer.on("open", (event, path: RepoPath) => {
     await layout.setup(path);
     await loader.open(path);
   });
+});
+
+ipcRenderer.on("theme", (event, theme: "dark" | "light") => {
+  setTheme(theme === "dark" ? darkTheme : lightTheme);
 });
 
 export function goBack() {

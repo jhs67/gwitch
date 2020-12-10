@@ -1,4 +1,7 @@
-export const theme = {
+import { themeCopy } from "./themecopy";
+import Color from "color";
+
+const baseTheme = {
   typography: {
     bodySize: "12px",
     bodyFace: "freesans, Helvetica, arial, nimbussansl, liberationsans, clean, sans-serif",
@@ -111,4 +114,95 @@ export const theme = {
   },
 };
 
-export type GwitchTheme = typeof theme;
+export type GwitchTheme = typeof baseTheme;
+
+export const lightTheme = themeCopy(baseTheme, {});
+
+function darkFill(color: string) {
+  const f = Color(color);
+  return { fill: f.hex(), stroke: f.lighten(0.8).saturate(-0.4).hex() };
+}
+
+export const darkTheme = themeCopy(baseTheme, {
+  colors: {
+    primary: "#ddd",
+    secondary: "#aaa",
+    lessprimary: "#aaa",
+    background: "#1e1e1e",
+    backalt: "#282828",
+    softBorder: "#3e3e3e",
+    hardBorder: "#555",
+    softHilight: "#888",
+    recentTop: "#555",
+    recentBot: "#333",
+    buttonBack: "rgb(59,59,59)",
+    frame: "#383838",
+    button: {
+      background: "rgb(59,59,59)",
+      border: "rgb(125,125,125)",
+      hover: {
+        background: "rgb(80,80,80)",
+        border: "rgb(125,125,125)",
+      },
+      active: {
+        background: "rgb(100,100,100)",
+        border: "rgb(155,155,155)",
+      },
+      disabled: {
+        primary: "#777",
+        border: "rgb(95,95,95)",
+      },
+    },
+    panel: {
+      background: "#151622",
+      focus: {
+        background: "#393b5f",
+      },
+    },
+    commitFocus: {
+      primary: "#ffffff",
+      background: "#144a80",
+    },
+    link: {
+      primary: "#b3daf0",
+    },
+    diff: {
+      new: {
+        primary: "#daffda",
+        background: "#1f3c29",
+      },
+      old: {
+        primary: "#ffdada",
+        background: "#422322",
+      },
+      selected: {
+        background: "#304056",
+      },
+      buttons: {
+        background: "#0a3458",
+        primary: "#bbb",
+        border: "#888",
+        hover: {
+          border: "#bbb",
+          primary: "#ddd",
+        },
+      },
+    },
+    files: {
+      stroke: "#ccc",
+      statusM: darkFill("#1c9042"),
+      statusU: darkFill("#5e8f00"),
+      statusD: darkFill("#992719"),
+      statusDU: darkFill("#8a008c"),
+      statusA: darkFill("#164ca5"),
+      statusAU: darkFill("#008c84"),
+      statusR: darkFill("#73008c"),
+      statusC: darkFill("#73008c"),
+    },
+  },
+  sizer: {
+    vertical: "#383838",
+    verticalHover: "#555",
+    horizontalHover: "#555",
+  },
+});
