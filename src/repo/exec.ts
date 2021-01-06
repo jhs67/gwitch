@@ -24,14 +24,14 @@ export function execRc(
   const child = spawn(cmd, args, options);
   const out = getStream(child.stdout);
   child.on("error", (err) => reject(err));
-  child.on("exit", async (code) => {
+  child.on("close", async (code) => {
     try {
       accept({ code, out: await out });
     } catch (err) {
       reject(err);
     }
   });
-  if (input) child.stdin.end(input);
+  if (input) process.nextTick(() => child.stdin.end(input));
 
   return {
     cancel: () => {
