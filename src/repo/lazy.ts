@@ -36,6 +36,10 @@ export class LazyUpdater {
     this.kick();
   }
 
+  cancel() {
+    if (this.run) this.run.cancel();
+  }
+
   freeze() {
     if (this.frozen) throw new Error("can't double freeze");
     this.frozen = true;

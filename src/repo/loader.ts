@@ -62,9 +62,9 @@ export class RepoLoader {
         this.focusPatchLazy.start(() => this.loadFocusPatch(focusCommit));
       }
       if (this.loadedStatusAmend !== amend) {
-        this.statusLazy.stop();
         this.loadedStatusAmend = amend;
-        this.statusLazy.start(() => this.loadStatus(this.loadedStatusAmend));
+        this.statusLazy.cancel();
+        this.statusLazy.poke();
 
         const r = refs.find((r) => r.refName === head);
         const h = r?.hash || head;
@@ -175,9 +175,17 @@ export class RepoLoader {
   }
 
   async commit(amend: boolean, message: string) {
-    this.dispatch(setCommitMessage(""));
-    this.dispatch(setRepoAmend(false));
-    await this.gwit.commit(amend, message).result;
+    try {
+      // freeze the status update during the operation
+      this.statusLazy.freeze();
+
+      this.dispatch(setCommitMessage(""));
+      this.dispatch(setRepoAmend(false));
+
+      await this.gwit.commit(amend, message).result;
+    } finally {
+      this.statusLazy.unfreeze();
+    }
   }
 
   async stageRange(files: FileStatus[], start: number, end: number) {
