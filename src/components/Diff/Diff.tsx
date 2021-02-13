@@ -8,12 +8,14 @@ export function Diff({
   addLimit,
   setShow,
   show,
+  patchRef,
 }: {
   patch: FileStatus[];
   diffLimit?: number;
   addLimit?: number;
   setShow: (file: string, state: boolean) => void;
   show: { [source: string]: boolean };
+  patchRef?: (f: FileStatus, el: HTMLDivElement) => void;
 }) {
   if (!diffLimit) diffLimit = 200;
   if (!addLimit) addLimit = 50;
@@ -30,6 +32,7 @@ export function Diff({
             show={show[file]}
             setShow={(state: boolean) => setShow(file, state)}
             key={file}
+            containerRef={patchRef ? (e) => patchRef(p, e) : undefined}
           />
         );
       })}

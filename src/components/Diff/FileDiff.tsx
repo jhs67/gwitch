@@ -151,6 +151,7 @@ interface FileDiffProps {
   clickLine?: ((a: MouseEvent) => void) | undefined;
   actions?: LineOption[];
   lineRefs?: LineRefType[];
+  containerRef: React.Ref<HTMLDivElement>;
 }
 
 export function FileDiff({
@@ -163,6 +164,7 @@ export function FileDiff({
   clickLine,
   actions,
   lineRefs,
+  containerRef,
 }: FileDiffProps) {
   const classes = useStyles();
   const msgs: string[] = [];
@@ -198,6 +200,7 @@ export function FileDiff({
     <div
       className={classes.patch}
       onMouseDown={clickLine && ((ev) => clickLine(ev.nativeEvent))}
+      ref={containerRef}
     >
       <div className="header" onClick={() => setShow(!show)}>
         <div className="name">{patch.newFile || patch.oldFile}</div>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import moment from "moment";
 import classNames from "classnames";
 import { createUseStyles } from "react-jss";
@@ -149,10 +149,12 @@ function CommitSummary({
   commit,
   patch,
   classes,
+  onFileClick,
 }: {
   commit: Commit;
   patch: FileStatus[];
   classes: ClassesType;
+  onFileClick: (f: FileStatus) => void;
 }) {
   return (
     <div className={classes.summary}>
@@ -161,7 +163,9 @@ function CommitSummary({
       <div className="files">
         {patch.map((p) => (
           <div key={p.newFile || p.oldFile}>
-            <span className="file">{p.newFile || p.oldFile}</span>
+            <span onClick={() => onFileClick(p)} className="file">
+              {p.newFile || p.oldFile}
+            </span>
           </div>
         ))}
       </div>
@@ -178,14 +182,25 @@ export function Commit() {
   const dispatch = useDispatch();
   const classes = useStyles();
 
+  const ref = useRef<Map<string, HTMLDivElement>>(new Map<string, HTMLDivElement>());
+
   return commit ? (
     <div className={classes.commit}>
       <CommitInfo commit={commit} classes={classes} />
-      <CommitSummary commit={commit} classes={classes} patch={patch} />
+      <CommitSummary
+        commit={commit}
+        classes={classes}
+        patch={patch}
+        onFileClick={(p) => {
+          const el = ref.current.get(p.newFile || p.oldFile);
+          if (el != null) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }}
+      />
       <Diff
         patch={patch}
         show={show[focusCommit] || {}}
         setShow={(file, state) => dispatch(setPatchShow(focusCommit, file, state))}
+        patchRef={(p, e) => ref.current.set(p.newFile || p.oldFile, e)}
       />
     </div>
   ) : null;
