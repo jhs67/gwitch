@@ -31,13 +31,13 @@ export class RepoLoader {
   private refsWatch: Watcher;
 
   private loadedFocusPatch: string;
-  private focusPatchLazy = new LazyUpdater();
+  private focusPatchLazy = new LazyUpdater(100, 1000);
 
   private loadedStatusAmend = false;
   private statusLazy = new LazyUpdater(100, 1000);
   private statusWatch: Watcher;
 
-  private submoduleLazy = new LazyUpdater();
+  private submoduleLazy = new LazyUpdater(100, 1000);
 
   private batchIgnored = new IgnoreBatch(this.gwit);
 
