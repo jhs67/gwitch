@@ -166,7 +166,7 @@ function WorkingFiles({ loader }: { loader: RepoLoader }) {
   const selected_ = selectedPaths
     .map((p) => workingFiles.findIndex((s) => (s.newFile || s.oldFile) === p))
     .filter((s) => s !== -1)
-    .sort();
+    .sort((l, r) => l - r);
 
   const setSelected = (s: number[]) => {
     const f = s.map((s) => workingFiles[s].newFile || workingFiles[s].oldFile);
@@ -289,7 +289,7 @@ function IndexFiles({ loader }: { loader: RepoLoader }) {
   const selected = selectedPaths
     .map((p) => indexFiles.findIndex((s) => (s.newFile || s.oldFile) === p))
     .filter((s) => s !== -1)
-    .sort();
+    .sort((l, r) => l - r);
 
   const setSelected = (s: number[]) => {
     const f = s.map((s) => indexFiles[s].newFile || indexFiles[s].oldFile);
