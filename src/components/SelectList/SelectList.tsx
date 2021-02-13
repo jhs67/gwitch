@@ -1,4 +1,4 @@
-import React, { KeyboardEvent, FunctionComponent } from "react";
+import React, { KeyboardEvent, FunctionComponent, useRef } from "react";
 
 export interface ItemProps<T> {
   item: T;
@@ -113,12 +113,21 @@ export function SelectList<T>(props: SelectListProps<T>) {
       setFocused(index);
       setSelected([index]);
     }
+    scrollTo(index);
   }
 
   function contextItem(index: number) {
     if (isSelected(index, selected)) return;
     setFocused(index);
     setSelected([index]);
+  }
+
+  const itemRefs = useRef<(HTMLDivElement | undefined)[]>([]);
+  if (itemRefs.current.length > items.length) itemRefs.current.splice(items.length);
+
+  function scrollTo(index: number) {
+    const el = itemRefs.current[index];
+    if (el != undefined) el.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
   function onKeyDown(event: KeyboardEvent) {
@@ -128,17 +137,25 @@ export function SelectList<T>(props: SelectListProps<T>) {
           if (event.shiftKey) {
             // find the selected range around the focused item
             const [rl, rh] = selectRange(focused, selected);
-            if (rl < focused) setSelected(rmSelected(rl, [...selected]));
-            else if (rh + 1 < items.length) setSelected(addSelected(rh + 1, [...selected]));
+            if (rl < focused) {
+              setSelected(rmSelected(rl, [...selected]));
+              scrollTo(rl + 1);
+            } else if (rh + 1 < items.length) {
+              scrollTo(rh + 1);
+              setSelected(addSelected(rh + 1, [...selected]));
+            }
           } else {
             if (focused === undefined) {
               setFocused(0);
               setSelected([0]);
+              scrollTo(0);
             } else if (focused + 1 < items.length) {
               setFocused(focused + 1);
               setSelected([focused + 1]);
+              scrollTo(focused + 1);
             } else {
               setSelected([focused]);
+              scrollTo(focused);
             }
           }
           event.preventDefault();
@@ -149,17 +166,25 @@ export function SelectList<T>(props: SelectListProps<T>) {
           if (event.shiftKey) {
             // find the selected range around the focused item
             const [rl, rh] = selectRange(focused, selected);
-            if (rh > focused) setSelected(rmSelected(rh, [...selected]));
-            else if (rl > 0) setSelected(addSelected(rl - 1, [...selected]));
+            if (rh > focused) {
+              setSelected(rmSelected(rh, [...selected]));
+              scrollTo(rh - 1);
+            } else if (rl > 0) {
+              setSelected(addSelected(rl - 1, [...selected]));
+              scrollTo(rl - 1);
+            }
           } else {
             if (focused === undefined) {
               setFocused(items.length - 1);
               setSelected([items.length - 1]);
+              scrollTo(items.length - 1);
             } else if (focused - 1 >= 0) {
               setFocused(focused - 1);
               setSelected([focused - 1]);
+              scrollTo(focused - 1);
             } else {
               setSelected([focused]);
+              scrollTo(focused);
             }
           }
           event.preventDefault();
@@ -167,7 +192,10 @@ export function SelectList<T>(props: SelectListProps<T>) {
         break;
       case KeyCode.SPACE:
       case KeyCode.ENTER:
-        if (focused !== undefined) focusItem(focused, false, true);
+        if (focused !== undefined) {
+          focusItem(focused, false, true);
+          scrollTo(focused);
+        }
         event.preventDefault();
         break;
     }
@@ -192,6 +220,7 @@ export function SelectList<T>(props: SelectListProps<T>) {
         const f = focused === i;
         return (
           <div
+            ref={(e) => (itemRefs.current[i] = e)}
             className={itemClass}
             key={itemKey(t, i)}
             onClick={(event) => {
