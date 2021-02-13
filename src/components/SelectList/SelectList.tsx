@@ -125,19 +125,43 @@ export function SelectList<T>(props: SelectListProps<T>) {
     switch (event.keyCode) {
       case KeyCode.DOWN:
         {
-          // find the selected range around the focused item
-          const [rl, rh] = selectRange(focused, selected);
-          if (rl < focused) setSelected(rmSelected(rl, [...selected]));
-          else if (rh + 1 < items.length) setSelected(addSelected(rh + 1, [...selected]));
+          if (event.shiftKey) {
+            // find the selected range around the focused item
+            const [rl, rh] = selectRange(focused, selected);
+            if (rl < focused) setSelected(rmSelected(rl, [...selected]));
+            else if (rh + 1 < items.length) setSelected(addSelected(rh + 1, [...selected]));
+          } else {
+            if (focused === undefined) {
+              setFocused(0);
+              setSelected([0]);
+            } else if (focused + 1 < items.length) {
+              setFocused(focused + 1);
+              setSelected([focused + 1]);
+            } else {
+              setSelected([focused]);
+            }
+          }
           event.preventDefault();
         }
         break;
       case KeyCode.UP:
         {
-          // find the selected range around the focused item
-          const [rl, rh] = selectRange(focused, selected);
-          if (rh > focused) setSelected(rmSelected(rh, [...selected]));
-          else if (rl > 0) setSelected(addSelected(rl - 1, [...selected]));
+          if (event.shiftKey) {
+            // find the selected range around the focused item
+            const [rl, rh] = selectRange(focused, selected);
+            if (rh > focused) setSelected(rmSelected(rh, [...selected]));
+            else if (rl > 0) setSelected(addSelected(rl - 1, [...selected]));
+          } else {
+            if (focused === undefined) {
+              setFocused(items.length - 1);
+              setSelected([items.length - 1]);
+            } else if (focused - 1 >= 0) {
+              setFocused(focused - 1);
+              setSelected([focused - 1]);
+            } else {
+              setSelected([focused]);
+            }
+          }
           event.preventDefault();
         }
         break;
