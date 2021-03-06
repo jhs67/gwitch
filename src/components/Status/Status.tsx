@@ -200,7 +200,7 @@ function WorkingFiles({ loader }: { loader: RepoLoader }) {
           .workingSelected()
           .map((s) => {
             const p = s.newFile || s.oldFile;
-            if (s.status === "?") trashList.push(p);
+            if (s.status === "?") trashList.push(statusToPath(s, rootPath));
             else discardList.push(p);
             return p;
           })
