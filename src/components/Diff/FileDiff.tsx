@@ -151,7 +151,7 @@ interface FileDiffProps {
   clickLine?: ((a: MouseEvent) => void) | undefined;
   actions?: LineOption[];
   lineRefs?: LineRefType[];
-  containerRef: React.Ref<HTMLDivElement>;
+  containerRef?: React.Ref<HTMLDivElement>;
 }
 
 export function FileDiff({
