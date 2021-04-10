@@ -30,6 +30,7 @@ A multi-platform visual git client built using <a href="https://www.electronjs.o
 * Hunk and file operations
 * Log view with graph visualization
 * Status and diff for each commit
+* Easy on the eyes dark mode
 
 ## How To Use
 
