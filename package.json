@@ -43,8 +43,7 @@
               "48x48": "resources/icon48.png",
               "64x64": "resources/icon64.png",
               "128x128": "resources/icon128.png",
-              "256x256": "resources/icon256.png",
-              "scalable": "resources/icon.svg"
+              "256x256": "resources/icon256.png"
             }
           }
         },
@@ -55,8 +54,7 @@
               "48x48": "resources/icon48.png",
               "64x64": "resources/icon64.png",
               "128x128": "resources/icon128.png",
-              "256x256": "resources/icon256.png",
-              "scalable": "resources/icon.svg"
+              "256x256": "resources/icon256.png"
             }
           }
         }
