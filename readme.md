@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img width=200 src="resources/icon.svg" />
+  <img width=200 src="resources/icon256.png" />
   <br />
   gwitch
   <br />
