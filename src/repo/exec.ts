@@ -5,6 +5,7 @@ import { Cancellable, cancellableX, CancelledError } from "./cancellable";
 export interface RcResult {
   code: number;
   out: string;
+  err: string;
 }
 
 export function execRc(
@@ -23,11 +24,14 @@ export function execRc(
 
   const child = spawn(cmd, args, options);
   const out = getStream(child.stdout);
+  const err = getStream(child.stderr);
   child.on("error", (err) => reject(err));
   child.on("close", async (code) => {
     try {
-      accept({ code, out: await out });
+      accept({ code, out: await out, err: await err });
     } catch (err) {
+      err.stdout = await out;
+      err.stderr = await err;
       reject(err);
     }
   });
@@ -51,7 +55,7 @@ export function exec(
   return cancellableX(execRc(cmd, args, opts, input), (res) => {
     if (res.code != 0)
       throw new Error(
-        `command '${cmd} ${args.join(" ")}' failed with exit code ${res.code}`,
+        `command '${cmd} ${args.join(" ")}' failed with exit code ${res.code}: ${res.err}`,
       );
     return res.out;
   });
