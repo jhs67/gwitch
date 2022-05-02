@@ -220,7 +220,7 @@ function WorkingFiles({ loader }: { loader: RepoLoader }) {
 
         if (!r) return;
 
-        trashList.forEach((s) => shell.moveItemToTrash(s));
+        trashList.forEach((s) => shell.trashItem(s));
         loader.discardChanges(discardList);
       },
     },

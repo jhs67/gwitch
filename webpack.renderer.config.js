@@ -17,6 +17,16 @@ module.exports = {
     rules,
   },
   plugins: plugins,
+  externals: {
+    "fs": "commonjs fs",
+    "fsevents": "commonjs fsevents",
+    "path": "commonjs path",
+    "os": "commonjs os",
+    "util": "commonjs util",
+    "stream": "commonjs stream",
+    "child_process": "commonjs child_process",
+    "electron": "commonjs electron",
+  },
   resolve: {
     extensions: [".js", ".ts", ".jsx", ".tsx", ".css", ".svg"],
   },
