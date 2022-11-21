@@ -5,8 +5,8 @@ import DeleteIcon from "../../assets/delete.svg";
 import { createUseStyles } from "react-jss";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store";
-import { OPEN_PATH, OPEN_OTHER } from "../../main/ipc";
-import { resetRecentRepos } from "../../store/recent/actions";
+import { OPEN_PATH, OPEN_OTHER, REMOVE_RECENT } from "../../main/ipc";
+import { removeRecentRepo, resetRecentRepos } from "../../store/recent/actions";
 import { GwitchTheme } from "../../theme/theme";
 
 const useStyles = createUseStyles((theme: GwitchTheme) => ({
@@ -115,6 +115,11 @@ export function RecentRepos() {
     ipcRenderer.send(OPEN_PATH, path);
   }
 
+  function itemRemove(path: string) {
+    dispatch(removeRecentRepo(path));
+    ipcRenderer.send(REMOVE_RECENT, path);
+  }
+
   return (
     <div className={classes.recentRepos}>
       <div className={classes.repoList}>
@@ -123,7 +128,7 @@ export function RecentRepos() {
         ) : (
           repos.map((l) => (
             <div key={l} className={classes.repoItem} onClick={() => itemClick(l)}>
-              <DeleteIcon className={classes.repoRm} />
+              <DeleteIcon className={classes.repoRm} onClick={(e) => {itemRemove(l); e.stopPropagation(); }} />
               <div className={classes.repoName}>{basename(l, ".git")}</div>
               <div className={classes.repoPath}>{l}</div>
             </div>

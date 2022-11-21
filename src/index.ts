@@ -9,6 +9,7 @@ import {
   SET_LAYOUT_STATE,
   GO_BACK,
   OPEN_SUBMODULE,
+  REMOVE_RECENT,
 } from "./main/ipc";
 import { RepoPath } from "./store/repo/types";
 
@@ -67,4 +68,8 @@ ipcMain.on(GO_BACK, (event, path: RepoPath) => {
 
 ipcMain.on(OPEN_SUBMODULE, (event, path: RepoPath, newWindow: boolean) => {
   gwitch.openSubmodule(BrowserWindow.fromWebContents(event.sender), path, newWindow);
+});
+
+ipcMain.on(REMOVE_RECENT, (event, path: string) => {
+  gwitch.removeRecent(path);
 });

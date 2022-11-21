@@ -1,4 +1,4 @@
-import { recentReposReducer } from "./recent/recucers";
+import { recentReposReducer } from "./recent/reducers";
 import { combineReducers } from "redux";
 import { repoStateReducer } from "./repo/reducers";
 import { layoutStateReducer } from "./layout/reducers";

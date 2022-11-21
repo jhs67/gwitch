@@ -108,4 +108,8 @@ export default class Gwitch {
       this.sendOpenPath(window, path);
     }
   }
+
+  async removeRecent(path: string) {
+    await this.recent.remove(path);
+  }
 }
