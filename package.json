@@ -1,7 +1,7 @@
 {
   "name": "gwitch",
   "productName": "gwitch",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "electron git client",
   "main": ".webpack/main",
   "scripts": {
