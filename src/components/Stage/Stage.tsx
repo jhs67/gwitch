@@ -1,51 +1,31 @@
 import React from "react";
-import SplitPane from "react-split-pane";
-import { createUseStyles } from "react-jss";
+import { Allotment } from "allotment";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { setStageSplit } from "../../store/layout/actions";
 import { Patch } from "../Patch";
 import { Status } from "../Status";
-import { GwitchTheme } from "../../theme/theme";
-
-const useStyles = createUseStyles((theme: GwitchTheme) => ({
-  history: {
-    "&>.Resizer": {
-      zIndex: 1,
-      background: theme.sizer.vertical,
-      height: "5px",
-      cursor: "row-resize",
-      "&:hover": {
-        background: theme.sizer.verticalHover,
-      },
-    },
-  },
-}));
+import deepEqual from "deep-equal";
 
 export function Stage() {
-  const classes = useStyles();
   const dispatch = useDispatch();
   const split = useSelector((state: RootState) => state.layout.stageSplit);
 
   return (
-    <SplitPane
-      className={classes.history}
-      split="horizontal"
-      minSize={100}
-      maxSize={-100}
-      defaultSize={split}
-      onChange={(nsplit) => {
-        if (nsplit !== split) dispatch(setStageSplit(nsplit));
+    <Allotment
+      vertical={true}
+      defaultSizes={split}
+      onChange={(newSplit) => {
+        if (!deepEqual(newSplit, split))
+          dispatch(setStageSplit(newSplit));
       }}
-      primary="second"
-      allowResize={true}
     >
-      <div>
+      <Allotment.Pane>
         <Patch />
-      </div>
-      <div>
+      </Allotment.Pane>
+      <Allotment.Pane>
         <Status />
-      </div>
-    </SplitPane>
+      </Allotment.Pane>
+    </Allotment>
   );
 }

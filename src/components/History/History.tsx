@@ -1,51 +1,32 @@
 import React from "react";
-import SplitPane from "react-split-pane";
-import { createUseStyles } from "react-jss";
+import { Allotment } from "allotment";
+import "allotment/dist/style.css";
 import { Log } from "../Log";
 import { Commit } from "../Commit";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../store";
 import { setHistorySplit } from "../../store/layout/actions";
-import { GwitchTheme } from "../../theme/theme";
-
-const useStyles = createUseStyles((theme: GwitchTheme) => ({
-  history: {
-    "& .Resizer": {
-      zIndex: 1,
-      background: theme.sizer.vertical,
-      height: "5px",
-      cursor: "row-resize",
-      "&:hover": {
-        background: theme.sizer.verticalHover,
-      },
-    },
-  },
-}));
+import deepEqual from "deep-equal";
 
 export function History() {
-  const classes = useStyles();
   const dispatch = useDispatch();
   const split = useSelector((state: RootState) => state.layout.historySplit);
 
   return (
-    <SplitPane
-      className={classes.history}
-      split="horizontal"
-      minSize={50}
-      maxSize={-50}
-      defaultSize={split}
-      onChange={(nsplit) => {
-        if (nsplit !== split) dispatch(setHistorySplit(nsplit));
+    <Allotment
+      vertical={true}
+      defaultSizes={split}
+      onChange={(newSplit) => {
+        if (!deepEqual(newSplit, split))
+          dispatch(setHistorySplit(newSplit));
       }}
-      primary="second"
-      allowResize={true}
     >
-      <div>
+      <Allotment.Pane>
         <Log />
-      </div>
-      <div>
+      </Allotment.Pane>
+      <Allotment.Pane>
         <Commit />
-      </div>
-    </SplitPane>
+      </Allotment.Pane>
+    </Allotment>
   );
 }

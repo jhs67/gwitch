@@ -7,10 +7,9 @@ export interface PatchShow {
 export type ClientMode = "history" | "stage";
 
 export interface LayoutState {
-  historySplit: number;
-  stageSplit: number;
-  workingSplit: number;
-  indexSplit: number;
+  historySplit: number[];
+  stageSplit: number[];
+  statusSplit: number[];
   originClosed: { [key: string]: boolean };
   tagsClosed: boolean;
   submodulesClosed: boolean;
@@ -19,10 +18,9 @@ export interface LayoutState {
 }
 
 export const initialLayoutState: LayoutState = {
-  historySplit: 200,
-  stageSplit: 200,
-  workingSplit: 200,
-  indexSplit: 200,
+  historySplit: [200,200],
+  stageSplit: [200,200],
+  statusSplit: [200,200,200],
   originClosed: {},
   tagsClosed: true,
   submodulesClosed: false,
@@ -32,8 +30,7 @@ export const initialLayoutState: LayoutState = {
 
 export const SET_HISTORY_SPLIT = "SET_HISTORY_SPLIT";
 export const SET_STAGE_SPLIT = "SET_STAGE_SPLIT";
-export const SET_WORKING_SPLIT = "SET_WORKING_SPLIT";
-export const SET_INDEX_SPLIT = "SET_INDEX_SPLIT";
+export const SET_STATUS_SPLIT = "SET_WORKING_SPLIT";
 export const SET_LAYOUT = "SET_LAYOUT";
 export const SET_ORIGIN_CLOSED = "SET_ORIGIN_CLOSED";
 export const SET_TAGS_CLOSED = "SET_TAGS_CLOSED";
@@ -43,22 +40,17 @@ export const SET_CLIENT_MODE = "SET_CLIENT_MODE";
 
 interface SetHistorySplitAction {
   type: typeof SET_HISTORY_SPLIT;
-  split: number;
+  split: number[];
 }
 
 interface SetStageSplitAction {
   type: typeof SET_STAGE_SPLIT;
-  split: number;
+  split: number[];
 }
 
-interface SetWorkingSplitAction {
-  type: typeof SET_WORKING_SPLIT;
-  split: number;
-}
-
-interface SetIndexSplitAction {
-  type: typeof SET_INDEX_SPLIT;
-  split: number;
+interface SetStatusSplitAction {
+  type: typeof SET_STATUS_SPLIT;
+  split: number[];
 }
 
 interface SetLayoutAction {
@@ -97,8 +89,7 @@ interface SetClientMode {
 export type LayoutStateActions =
   | SetHistorySplitAction
   | SetStageSplitAction
-  | SetWorkingSplitAction
-  | SetIndexSplitAction
+  | SetStatusSplitAction
   | SetLayoutAction
   | SetOriginClosedAction
   | SetTagsClosedAction

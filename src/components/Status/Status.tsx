@@ -1,33 +1,23 @@
 import React, { ChangeEvent } from "react";
-import SplitPane from "react-split-pane";
+import { Allotment } from "allotment";
 import { createUseStyles } from "react-jss";
 import { useSelector, useDispatch } from "react-redux";
 import { resolve } from "path";
 import { shell, remote } from "electron";
 import { RootState } from "../../store";
 import { FileStatus, RepoPath } from "../../store/repo/types";
-import { setWorkingSplit, setIndexSplit } from "../../store/layout/actions";
+import { setStatusSplit } from "../../store/layout/actions";
 import { setCommitMessage, setRepoAmend, setStageSelected } from "../../store/repo/actions";
 import { RepoLoader } from "../../repo/loader";
 import { LoaderContext } from "../../renderer";
 import { FilesView } from "./FilesView";
 import { GwitchTheme } from "../../theme/theme";
 import classNames from "classnames";
+import deepEqual from "deep-equal";
 
 const useStyles = createUseStyles((theme: GwitchTheme) => ({
   working: {
     backgroundColor: theme.colors.frame,
-    "& .Resizer": {
-      zIndex: 1,
-      width: "5px",
-      height: "100%",
-      padding: "1px",
-      cursor: "col-resize",
-      border: `solid 1px ${theme.colors.frame}`,
-      "&:hover": {
-        background: theme.sizer.horizontalHover,
-      },
-    },
     "& .fileView": {
       display: "flex",
       flexFlow: "column nowrap",
@@ -333,38 +323,30 @@ function IndexFiles({ loader }: { loader: RepoLoader }) {
 export function Status() {
   const classes = useStyles();
   const dispatch = useDispatch();
-  const workingSplit = useSelector((state: RootState) => state.layout.workingSplit);
-  const indexSplit = useSelector((state: RootState) => state.layout.indexSplit);
+  const statusSplit = useSelector((state: RootState) => state.layout.statusSplit);
 
   return (
     <LoaderContext.Consumer>
       {(loader: RepoLoader) => (
-        <SplitPane
+        <Allotment
           className={classes.working}
-          maxSize={-300}
-          minSize={100}
-          defaultSize={workingSplit}
-          onChange={(nsplit) => {
-            if (nsplit !== workingSplit) dispatch(setWorkingSplit(nsplit));
+          defaultSizes={statusSplit}
+          onChange={(newSplit) => {
+            if (!deepEqual(newSplit, statusSplit))
+               dispatch(setStatusSplit(newSplit));
           }}
         >
-          <WorkingFiles loader={loader} />
-          <SplitPane
-            className={classes.working}
-            primary="second"
-            maxSize={-200}
-            minSize={100}
-            defaultSize={indexSplit}
-            onChange={(nsplit) => {
-              if (nsplit !== indexSplit) dispatch(setIndexSplit(nsplit));
-            }}
-          >
+          <Allotment.Pane>
+            <WorkingFiles loader={loader} />
+          </Allotment.Pane>
+          <Allotment.Pane minSize={200}>
             <CommitCompose loader={loader} />
+          </Allotment.Pane>
+          <Allotment.Pane>
             <IndexFiles loader={loader} />
-          </SplitPane>
-        </SplitPane>
+          </Allotment.Pane>
+        </Allotment>
       )}
     </LoaderContext.Consumer>
   );
-  return <div>status</div>;
 }
