@@ -4,7 +4,7 @@ import { RootState } from "../../store";
 import { SelectDiff } from "../Diff";
 import { LoaderContext } from "../../renderer";
 import { RepoLoader } from "../../repo/loader";
-import { remote } from "electron";
+import { dialog, getCurrentWindow } from "@electron/remote";
 
 export function Patch() {
   const workingStatus = useSelector((state: RootState) => state.repo.workingStatus);
@@ -37,8 +37,7 @@ export function Patch() {
                   {
                     label: "discard",
                     act: (range) => {
-                      const r = remote.dialog.showMessageBoxSync(
-                        remote.getCurrentWindow(),
+                      const r = dialog.showMessageBoxSync(getCurrentWindow(),
                         {
                           type: "warning",
                           buttons: ["Cancel", "Continue"],

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { remote, MenuItemConstructorOptions } from "electron";
+import { MenuItemConstructorOptions } from "electron";
+import { getCurrentWindow, Menu } from "@electron/remote";
 import classNames from "classnames";
 import { SelectList, ItemProps } from "../SelectList";
 import { FileStatus } from "../../store/repo/types";
@@ -43,7 +44,7 @@ export function FilesView({
 
   function onContext() {
     if (menu)
-      remote.Menu.buildFromTemplate(menu).popup({ window: remote.getCurrentWindow() });
+      Menu.buildFromTemplate(menu).popup({ window: getCurrentWindow() });
   }
 
   return (

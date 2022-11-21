@@ -96,7 +96,7 @@
     "@typescript-eslint/eslint-plugin": "^5.44.0",
     "@typescript-eslint/parser": "^5.44.0",
     "css-loader": "^6.7.2",
-    "electron": "^13.6.9",
+    "electron": "^21.3.0",
     "electron-installer-debian": "^3.1.0",
     "eslint": "^8.28.0",
     "eslint-plugin-import": "^2.22.1",
@@ -110,6 +110,7 @@
     "typescript": "^4.2.4"
   },
   "dependencies": {
+    "@electron/remote": "^2.0.8",
     "allotment": "^1.17.0",
     "chokidar": "^3.5.1",
     "classnames": "^2.3.1",

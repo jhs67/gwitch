@@ -3,7 +3,8 @@ import { Allotment } from "allotment";
 import { createUseStyles } from "react-jss";
 import { useSelector, useDispatch } from "react-redux";
 import { resolve } from "path";
-import { shell, remote } from "electron";
+import { shell } from "electron";
+import { dialog, getCurrentWindow } from "@electron/remote";
 import { RootState } from "../../store";
 import { FileStatus, RepoPath } from "../../store/repo/types";
 import { setStatusSplit } from "../../store/layout/actions";
@@ -198,7 +199,7 @@ function WorkingFiles({ loader }: { loader: RepoLoader }) {
         const trash = trashList.length && !discardList.length;
         if (detail.length > 80) detail = detail.substr(0, 77) + "...";
 
-        const r = remote.dialog.showMessageBoxSync(remote.getCurrentWindow(), {
+        const r = dialog.showMessageBoxSync(getCurrentWindow(), {
           type: "warning",
           buttons: ["Cancel", "Continue"],
           title: trash ? "Move to Trash" : "Discard Changes",

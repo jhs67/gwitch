@@ -4,6 +4,7 @@ import { WindowManager } from "./window-manager";
 import { setAppMenu } from "./appmenu";
 import { RepoPath } from "../store/repo/types";
 import { basename } from "path";
+import { enable as remote_enable } from "@electron/remote/main";
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 
 export type ThemeType = "light" | "dark" | "system";
@@ -37,7 +38,6 @@ export default class Gwitch {
     const windowOpts = this.windows.opts({
       webPreferences: {
         nodeIntegration: true,
-        enableRemoteModule: true,
         contextIsolation: false,
       },
       backgroundColor: this.activeTheme === "dark" ? "#1e1e1e" : "#fff",
@@ -46,6 +46,9 @@ export default class Gwitch {
     // Create the browser window.
     const window = new BrowserWindow(windowOpts);
     this.windows.track(window);
+
+    // set up remote
+    remote_enable(window.webContents);
 
     // and load the index.html of the app.
     window.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
