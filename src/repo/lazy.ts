@@ -85,8 +85,7 @@ export class LazyUpdater {
       this.run = this.task();
       this.run.result
         .catch((e) => {
-          if (!(e instanceof CancelledError))
-            console.error(`lazy task ended with error`, e);
+          if (!(e instanceof CancelledError)) console.error(`lazy task ended with error`, e);
         })
         .finally(() => {
           this.run = undefined;

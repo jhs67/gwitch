@@ -41,11 +41,7 @@ export function setSubmodulesClosed(closed: boolean): LayoutStateActions {
   return { type: SET_SUBMODULES_CLOSED, closed };
 }
 
-export function setPatchShow(
-  source: string,
-  file: string,
-  state: boolean,
-): LayoutStateActions {
+export function setPatchShow(source: string, file: string, state: boolean): LayoutStateActions {
   return { type: SET_PATCH_SHOW, source, file, state };
 }
 

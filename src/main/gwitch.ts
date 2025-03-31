@@ -65,9 +65,7 @@ export default class Gwitch {
   }
 
   sendOpenPath(window: BrowserWindow, path: RepoPath) {
-    window.setTitle(
-      `gwitch - ${[basename(path.path, ".git"), ...path.submodules].join("/")}`,
-    );
+    window.setTitle(`gwitch - ${[basename(path.path, ".git"), ...path.submodules].join("/")}`);
     window.webContents.send("open", path);
   }
 

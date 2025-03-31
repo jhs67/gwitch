@@ -12,10 +12,10 @@ import {
   REMOVE_RECENT,
 } from "./main/ipc";
 import { RepoPath } from "./store/repo/types";
-import { initialize as remote_initialize } from '@electron/remote/main'
+import { initialize as remote_initialize } from "@electron/remote/main";
 
 // initialize remote
-remote_initialize()
+remote_initialize();
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {

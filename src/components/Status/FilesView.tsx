@@ -43,8 +43,7 @@ export function FilesView({
   const [focused, setFocused] = useState<number | undefined>();
 
   function onContext() {
-    if (menu)
-      Menu.buildFromTemplate(menu).popup({ window: getCurrentWindow() });
+    if (menu) Menu.buildFromTemplate(menu).popup({ window: getCurrentWindow() });
   }
 
   return (

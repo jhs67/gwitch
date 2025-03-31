@@ -95,9 +95,7 @@ function CommitInfo({ commit, classes }: { commit: Commit; classes: ClassesType 
           </tr>
           <tr>
             <td className={classes.infoLabel}>Author:</td>
-            <td
-              className={classes.metaData}
-            >{`${commit.authorName} <${commit.authorEmail}>`}</td>
+            <td className={classes.metaData}>{`${commit.authorName} <${commit.authorEmail}>`}</td>
           </tr>
           <tr>
             <td className={classes.infoLabel}>Date:</td>

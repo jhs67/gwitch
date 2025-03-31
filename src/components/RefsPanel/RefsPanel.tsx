@@ -251,9 +251,7 @@ export function RefsPanel() {
               >
                 <BranchIcon className={classes.refIcon} />
                 <div className={classes.localBranch}>{r.name}</div>
-                {r.refName === head ? (
-                  <ActiveBadge className={classes.activeBadge} />
-                ) : null}
+                {r.refName === head ? <ActiveBadge className={classes.activeBadge} /> : null}
               </div>
             ))}
         </div>
@@ -291,9 +289,7 @@ export function RefsPanel() {
                       onClick={() => clickBranch(ref.hash)}
                     >
                       <BranchIcon className={classes.remoteRefIcon} />
-                      <div className={classes.remoteBranch}>
-                        {ref.name.replace(/^[^/]+\//, "")}
-                      </div>
+                      <div className={classes.remoteBranch}>{ref.name.replace(/^[^/]+\//, "")}</div>
                     </div>
                   ))}
             </div>

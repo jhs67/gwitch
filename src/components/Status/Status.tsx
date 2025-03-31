@@ -167,8 +167,7 @@ function WorkingFiles({ loader }: { loader: RepoLoader }) {
   const menu = [
     {
       label: "Stage",
-      click: () =>
-        loader.stageFiles(loader.workingSelected().map((s) => s.newFile || s.oldFile)),
+      click: () => loader.stageFiles(loader.workingSelected().map((s) => s.newFile || s.oldFile)),
     },
     {
       label: "Open",
@@ -178,9 +177,7 @@ function WorkingFiles({ loader }: { loader: RepoLoader }) {
     {
       label: "Show",
       click: () =>
-        loader
-          .workingSelected()
-          .forEach((s) => shell.showItemInFolder(statusToPath(s, rootPath))),
+        loader.workingSelected().forEach((s) => shell.showItemInFolder(statusToPath(s, rootPath))),
     },
     {
       label: "Discard",
@@ -203,9 +200,7 @@ function WorkingFiles({ loader }: { loader: RepoLoader }) {
           type: "warning",
           buttons: ["Cancel", "Continue"],
           title: trash ? "Move to Trash" : "Discard Changes",
-          message: trash
-            ? "Move to the Trash?"
-            : "Discard Changes? This can not be undone.",
+          message: trash ? "Move to the Trash?" : "Discard Changes? This can not be undone.",
           detail,
         });
 
@@ -290,20 +285,16 @@ function IndexFiles({ loader }: { loader: RepoLoader }) {
   const menu = [
     {
       label: "Unstage",
-      click: () =>
-        loader.unstageFiles(loader.indexSelected().map((s) => s.newFile || s.oldFile)),
+      click: () => loader.unstageFiles(loader.indexSelected().map((s) => s.newFile || s.oldFile)),
     },
     {
       label: "Open",
-      click: () =>
-        loader.indexSelected().forEach((s) => shell.openPath(statusToPath(s, rootPath))),
+      click: () => loader.indexSelected().forEach((s) => shell.openPath(statusToPath(s, rootPath))),
     },
     {
       label: "Show",
       click: () =>
-        loader
-          .indexSelected()
-          .forEach((s) => shell.showItemInFolder(statusToPath(s, rootPath))),
+        loader.indexSelected().forEach((s) => shell.showItemInFolder(statusToPath(s, rootPath))),
     },
   ];
 
@@ -333,8 +324,7 @@ export function Status() {
           className={classes.working}
           defaultSizes={statusSplit}
           onChange={(newSplit) => {
-            if (!deepEqual(newSplit, statusSplit))
-               dispatch(setStatusSplit(newSplit));
+            if (!deepEqual(newSplit, statusSplit)) dispatch(setStatusSplit(newSplit));
           }}
         >
           <Allotment.Pane>

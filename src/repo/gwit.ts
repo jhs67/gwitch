@@ -67,12 +67,8 @@ function isDiffLine(c: string) {
   return c === " " || c === "-" || c === "+" || c === "\\";
 }
 
-function parseDiff(
-  diff: string,
-  defaults?: Partial<FileStatus>,
-): { patches: FileStatus[] } {
-  if (diff === "")
-    return { patches: [] };
+function parseDiff(diff: string, defaults?: Partial<FileStatus>): { patches: FileStatus[] } {
+  if (diff === "") return { patches: [] };
   defaults = defaults || {};
   const ret = { patches: [] as FileStatus[] };
   const lines = diff.trim().split("\n");
@@ -183,10 +179,7 @@ function parseDiff(
         if (m[1]) {
           oldMode = newMode = m[1];
         }
-      } else if (
-        !diffEHeader(w, "similarity index ") &&
-        !diffEHeader(w, "similarity index ")
-      ) {
+      } else if (!diffEHeader(w, "similarity index ") && !diffEHeader(w, "similarity index ")) {
         throw new Error("unrecognized git extended header line: " + w);
       }
       i += 1;
@@ -542,10 +535,7 @@ export class Gwit {
   }
 
   addIntent(files: string[]) {
-    return cancellableX(
-      this.git("add", "--intent-to-add", "--", ...files),
-      () => undefined,
-    );
+    return cancellableX(this.git("add", "--intent-to-add", "--", ...files), () => undefined);
   }
 
   stagePatch(patch: string) {
@@ -553,10 +543,7 @@ export class Gwit {
   }
 
   unstagePatch(patch: string) {
-    return cancellableX(
-      this.gitInput(patch, "apply", "--cached", "--reverse"),
-      () => undefined,
-    );
+    return cancellableX(this.gitInput(patch, "apply", "--cached", "--reverse"), () => undefined);
   }
 
   unapplyPatch(patch: string) {
@@ -565,9 +552,7 @@ export class Gwit {
 
   commit(amend: boolean, message: string) {
     return cancellableX(
-      amend
-        ? this.git("commit", "--amend", "-m", message)
-        : this.git("commit", "-m", message),
+      amend ? this.git("commit", "--amend", "-m", message) : this.git("commit", "-m", message),
       () => {
         return;
       },

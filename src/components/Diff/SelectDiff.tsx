@@ -126,10 +126,7 @@ export function SelectDiff({
     else scrollRef.current.classList.remove("selected");
   };
 
-  const startAction = async (
-    act: (r: SelectRange) => Promise<void>,
-    range: SelectRange,
-  ) => {
+  const startAction = async (act: (r: SelectRange) => Promise<void>, range: SelectRange) => {
     buttonsRef.current.classList.add("pending");
     scrollRef.current.classList.add("pending");
     setSelectRange(undefined);
@@ -196,16 +193,10 @@ export function SelectDiff({
     if (!lines || !buttonsRef.current || !selectRef.current) return;
     const sel = lineRefs.current[selectRef.current.start];
     const top =
-      sel.offsetTop +
-      sel.parentElement.offsetTop +
-      sel.parentElement.parentElement.offsetTop +
-      1;
+      sel.offsetTop + sel.parentElement.offsetTop + sel.parentElement.parentElement.offsetTop + 1;
     const eel = lineRefs.current[selectRef.current.end];
     const bot =
-      eel.offsetTop +
-      eel.parentElement.offsetTop +
-      eel.parentElement.parentElement.offsetTop +
-      3;
+      eel.offsetTop + eel.parentElement.offsetTop + eel.parentElement.parentElement.offsetTop + 3;
     const ceil = scrollRef.current.scrollTop;
     const set = Math.max(top, Math.min(ceil, bot));
     buttonsRef.current.style.top = `${set}px`;
@@ -214,8 +205,7 @@ export function SelectDiff({
   useEffect(() => {
     if (selectRef.current) {
       for (let i = 0; i < selectRef.current.start; ++i) setLineUnselected(i);
-      for (let i = selectRef.current.start; i <= selectRef.current.end; ++i)
-        setLineSelected(i);
+      for (let i = selectRef.current.start; i <= selectRef.current.end; ++i) setLineSelected(i);
       for (let i = selectRef.current.end + 1; i < lineRefs.current.length; ++i)
         setLineUnselected(i);
     } else {
@@ -227,19 +217,12 @@ export function SelectDiff({
   let cursor = 0;
   lineRefs.current.length = 0;
   return (
-    <div
-      ref={scrollRef}
-      className={classes.selectScroll}
-      onScroll={() => positionButtons()}
-    >
+    <div ref={scrollRef} className={classes.selectScroll} onScroll={() => positionButtons()}>
       <div>
         {lines ? (
           <div className={classes.buttons} ref={buttonsRef}>
             {lines.map((l) => (
-              <div
-                key={l.label}
-                onClick={async () => startAction(l.act, selectRef.current)}
-              >
+              <div key={l.label} onClick={async () => startAction(l.act, selectRef.current)}>
                 {l.label}
               </div>
             ))}

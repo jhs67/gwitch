@@ -52,10 +52,7 @@ export function setFocusPatchDiff(patch: FileStatus): RepoStateActions {
   return { type: SET_FOCUS_PATCH_DIFF, patch };
 }
 
-export function setStageStatus(
-  working: FileStatus[],
-  index: FileStatus[],
-): RepoStateActions {
+export function setStageStatus(working: FileStatus[], index: FileStatus[]): RepoStateActions {
   return { type: SET_STAGE_STATUS, working, index };
 }
 

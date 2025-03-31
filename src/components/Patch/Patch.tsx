@@ -37,14 +37,12 @@ export function Patch() {
                   {
                     label: "discard",
                     act: (range) => {
-                      const r = dialog.showMessageBoxSync(getCurrentWindow(),
-                        {
-                          type: "warning",
-                          buttons: ["Cancel", "Continue"],
-                          title: "Discard Changes",
-                          message: "Discard Changes? This can not be undone.",
-                        },
-                      );
+                      const r = dialog.showMessageBoxSync(getCurrentWindow(), {
+                        type: "warning",
+                        buttons: ["Cancel", "Continue"],
+                        title: "Discard Changes",
+                        message: "Discard Changes? This can not be undone.",
+                      });
 
                       if (!r) return;
                       return loader.discardRange(patch, range.start, range.end);

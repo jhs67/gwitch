@@ -245,7 +245,6 @@ export function SelectList<T>(props: SelectListProps<T>) {
 }
 
 SelectList.defaultProps = {
-  itemComponent: ({ item }: ItemProps<unknown>) =>
-    React.isValidElement(item) ? item : "" + item,
+  itemComponent: ({ item }: ItemProps<unknown>) => (React.isValidElement(item) ? item : "" + item),
   itemKey: (_: unknown, n: number) => n.toString(),
 };

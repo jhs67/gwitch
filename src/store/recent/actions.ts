@@ -1,4 +1,9 @@
-import { SET_RECENT_REPOS, RecentReposAction, RESET_RECENT_REPOS, REMOVE_RECENT_REPO } from "./types";
+import {
+  SET_RECENT_REPOS,
+  RecentReposAction,
+  RESET_RECENT_REPOS,
+  REMOVE_RECENT_REPO,
+} from "./types";
 
 export function setRecentRepos(repos: string[]): RecentReposAction {
   return { type: SET_RECENT_REPOS, repos: repos };

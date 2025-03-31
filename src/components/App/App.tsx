@@ -13,10 +13,7 @@ function svgUrl(body: string) {
     "data:image/svg+xml," +
     body
       .replace(/\s+/g, " ")
-      .replace(
-        /[{}|\\^~[\]`"<>#%]/g,
-        (m) => `%${m[0].charCodeAt(0).toString(16).toLowerCase()}`,
-      )
+      .replace(/[{}|\\^~[\]`"<>#%]/g, (m) => `%${m[0].charCodeAt(0).toString(16).toLowerCase()}`)
   );
 }
 

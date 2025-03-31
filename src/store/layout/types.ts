@@ -18,9 +18,9 @@ export interface LayoutState {
 }
 
 export const initialLayoutState: LayoutState = {
-  historySplit: [200,200],
-  stageSplit: [200,200],
-  statusSplit: [200,200,200],
+  historySplit: [200, 200],
+  stageSplit: [200, 200],
+  statusSplit: [200, 200, 200],
   originClosed: {},
   tagsClosed: true,
   submodulesClosed: false,

@@ -55,11 +55,7 @@ export function setAppMenu(theme: ThemeType) {
         { type: "separator" },
         {
           label: "Debug",
-          submenu: [
-            { role: "reload" },
-            { role: "forceReload" },
-            { role: "toggleDevTools" },
-          ],
+          submenu: [{ role: "reload" }, { role: "forceReload" }, { role: "toggleDevTools" }],
         },
         { type: "separator" },
         { role: "resetZoom" },

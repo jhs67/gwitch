@@ -128,7 +128,13 @@ export function RecentRepos() {
         ) : (
           repos.map((l) => (
             <div key={l} className={classes.repoItem} onClick={() => itemClick(l)}>
-              <DeleteIcon className={classes.repoRm} onClick={(e) => {itemRemove(l); e.stopPropagation(); }} />
+              <DeleteIcon
+                className={classes.repoRm}
+                onClick={(e) => {
+                  itemRemove(l);
+                  e.stopPropagation();
+                }}
+              />
               <div className={classes.repoName}>{basename(l, ".git")}</div>
               <div className={classes.repoPath}>{l}</div>
             </div>

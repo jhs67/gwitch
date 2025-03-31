@@ -1,10 +1,4 @@
-import {
-  screen,
-  BrowserWindow,
-  Rectangle,
-  app,
-  BrowserWindowConstructorOptions,
-} from "electron";
+import { screen, BrowserWindow, Rectangle, app, BrowserWindowConstructorOptions } from "electron";
 import { promises as fs } from "fs";
 import { join } from "path";
 import deepEqual from "deep-equal";

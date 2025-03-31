@@ -20,7 +20,7 @@ export function recentReposReducer(
     case RESET_RECENT_REPOS:
       return { ...state, repos: null };
     case REMOVE_RECENT_REPO:
-      return { ...state, repos: state.repos && state.repos.filter(r => r != action.repo)};
+      return { ...state, repos: state.repos && state.repos.filter((r) => r != action.repo) };
     default:
       return state;
   }

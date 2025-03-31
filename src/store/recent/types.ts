@@ -20,4 +20,7 @@ interface RemoveRecentRepoAction {
   repo: string;
 }
 
-export type RecentReposAction = SetRecentReposAction | ResetRecentReposAction | RemoveRecentRepoAction;
+export type RecentReposAction =
+  | SetRecentReposAction
+  | ResetRecentReposAction
+  | RemoveRecentRepoAction;

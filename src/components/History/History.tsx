@@ -17,8 +17,7 @@ export function History() {
       vertical={true}
       defaultSizes={split}
       onChange={(newSplit) => {
-        if (!deepEqual(newSplit, split))
-          dispatch(setHistorySplit(newSplit));
+        if (!deepEqual(newSplit, split)) dispatch(setHistorySplit(newSplit));
       }}
     >
       <Allotment.Pane>

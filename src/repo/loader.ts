@@ -48,14 +48,7 @@ export class RepoLoader {
     this.loadedStatusAmend = this.store.getState().repo.amend;
 
     this.store.subscribe(() => {
-      const {
-        focusCommit,
-        amend,
-        commitMessage,
-        head,
-        refs,
-        commits,
-      } = this.store.getState().repo;
+      const { focusCommit, amend, commitMessage, head, refs, commits } = this.store.getState().repo;
       if (this.loadedFocusPatch != focusCommit) {
         this.focusPatchLazy.stop();
         this.loadedFocusPatch = focusCommit;
@@ -87,11 +80,7 @@ export class RepoLoader {
       [""],
       (paths) => {
         const i = paths.filter((p) => p === "index").length;
-        if (
-          i != 0 ||
-          paths.includes("HEAD") ||
-          paths.includes(this.store.getState().repo.head)
-        )
+        if (i != 0 || paths.includes("HEAD") || paths.includes(this.store.getState().repo.head))
           this.statusLazy.poke();
         if (i === 0 || i !== paths.length) this.refsLazy.poke();
       },
@@ -108,8 +97,7 @@ export class RepoLoader {
       [""],
       (paths: string[]) => {
         // If a .gitignore file changes, check the ignores again
-        if (paths.some((p) => basename(p) == ".gitignore"))
-          this.statusWatch.invalidateIgnores();
+        if (paths.some((p) => basename(p) == ".gitignore")) this.statusWatch.invalidateIgnores();
         this.statusLazy.poke();
         if (paths.indexOf(".gitmodules") != -1) this.submoduleLazy.poke();
       },
@@ -152,9 +140,7 @@ export class RepoLoader {
 
   workingSelected() {
     const { workingSelected, workingStatus } = this.store.getState().repo;
-    return workingStatus.filter(
-      (s) => workingSelected.indexOf(s.newFile || s.oldFile) !== -1,
-    );
+    return workingStatus.filter((s) => workingSelected.indexOf(s.newFile || s.oldFile) !== -1);
   }
 
   indexSelected() {
@@ -282,9 +268,7 @@ export class RepoLoader {
 
       await Promise.all(
         status.map(async (s) => {
-          const patches = await run(() =>
-            this.gwit.diffCommitFile(commit.parents[0], hash, s),
-          );
+          const patches = await run(() => this.gwit.diffCommitFile(commit.parents[0], hash, s));
           this.dispatch(setFocusPatchDiff(patches.patches[0]));
         }),
       );

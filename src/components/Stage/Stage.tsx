@@ -16,8 +16,7 @@ export function Stage() {
       vertical={true}
       defaultSizes={split}
       onChange={(newSplit) => {
-        if (!deepEqual(newSplit, split))
-          dispatch(setStageSplit(newSplit));
+        if (!deepEqual(newSplit, split)) dispatch(setStageSplit(newSplit));
       }}
     >
       <Allotment.Pane>
