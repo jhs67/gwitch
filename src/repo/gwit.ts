@@ -71,6 +71,8 @@ function parseDiff(
   diff: string,
   defaults?: Partial<FileStatus>,
 ): { patches: FileStatus[] } {
+  if (diff === "")
+    return { patches: [] };
   defaults = defaults || {};
   const ret = { patches: [] as FileStatus[] };
   const lines = diff.trim().split("\n");
