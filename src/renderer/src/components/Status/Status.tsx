@@ -136,7 +136,6 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
         },
       },
       "& .amend": {
-        "-webkit-appearance": "none",
         width: "10px",
         height: "10px",
       },
