@@ -9,7 +9,10 @@ export class LazyUpdater {
   quietStart?: number;
   timer?: Cancellable<void>;
 
-  constructor(public quiescent: number = 0, public timeout: number = 0) {}
+  constructor(
+    public quiescent: number = 0,
+    public timeout: number = 0,
+  ) {}
 
   start(t: () => Cancellable<void>, clean = false) {
     if (this.task) throw new Error("can't double start");

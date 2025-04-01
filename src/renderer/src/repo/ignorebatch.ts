@@ -17,7 +17,10 @@ export class IgnoreBatch {
   private defered = false;
   private batch?: Batch;
 
-  constructor(private gwit: Gwit, private maxBatchSize = 256) {}
+  constructor(
+    private gwit: Gwit,
+    private maxBatchSize = 256,
+  ) {}
 
   ignore(path: string): Cancellable<boolean> {
     let accept: (a: boolean) => void;

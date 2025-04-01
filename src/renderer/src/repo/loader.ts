@@ -321,8 +321,8 @@ export class RepoLoader {
             status === "?"
               ? this.gwit.diffFileUntracked(file)
               : r.unmerged
-              ? this.gwit.diffFileWorkingToHead(file)
-              : this.gwit.diffFileWorkingToIndex(file),
+                ? this.gwit.diffFileWorkingToHead(file)
+                : this.gwit.diffFileWorkingToIndex(file),
           );
 
           if (status === "?" && patch.status === "A") patch.status = status;
