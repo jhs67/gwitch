@@ -223,7 +223,9 @@ export function RefsPanel() {
     <div className={classes.refsPanel}>
       <div className={classes.refsSect}>
         <div className={classes.stageSection}>
-          <div className={classes.title}>{basename(path.path, ".git")}</div>
+          <div className={classes.title}>
+            {[basename(path.path, ".git"), ...path.submodules].join("/")}
+          </div>
           <div
             className={classNames(classes.stageLine, {
               [classes.focusRef]: mode === "stage",
