@@ -190,15 +190,15 @@ export function Commit() {
         classes={classes}
         patch={patch}
         onFileClick={(p) => {
-          const el = ref.current.get(p.newFile || p.oldFile);
+          const el = ref.current.get(p.fileName);
           if (el != null) el.scrollIntoView({ behavior: "smooth", block: "start" });
         }}
       />
       <Diff
         patch={patch}
-        show={show[focusCommit] || {}}
-        setShow={(file, state) => dispatch(setPatchShow(focusCommit, file, state))}
-        patchRef={(p, e) => ref.current.set(p.newFile || p.oldFile, e)}
+        show={show[focusCommit!] || {}}
+        setShow={(file, state) => dispatch(setPatchShow(focusCommit!, file, state))}
+        patchRef={(p, e) => ref.current.set(p.fileName, e)}
       />
     </div>
   ) : null;

@@ -115,7 +115,7 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
 }));
 
 function makePaths() {
-  const pathSegs = [
+  const pathSegments = [
     "M 0,12 a 8,8 0 0 1 8,8 l 0,4",
     "M 0,12 l 16,0",
     "M 0,12 a 8,8 0 0 0 8,-8 l 0,-4",
@@ -124,13 +124,13 @@ function makePaths() {
     "M 16,12 a 8 8 0 0 0 -8,8 l 0,4",
   ];
 
-  const nodeSegs = ["M 8,0 l 0,6", "M 0,12 l 2,0", "M 16,12 l -2,0", "M 8,24 l 0,-6"];
+  const nodeSegments = ["M 8,0 l 0,6", "M 0,12 l 2,0", "M 16,12 l -2,0", "M 8,24 l 0,-6"];
 
-  const r = [];
+  const r: string[] = [];
   for (let i = 0; i < 64; i += 1) {
     let p = "";
     for (let j = 0; j < 6; ++j) {
-      if (i & (1 << j)) p += pathSegs[j];
+      if (i & (1 << j)) p += pathSegments[j];
     }
     r.push(p);
   }
@@ -138,7 +138,7 @@ function makePaths() {
   for (let i = 0; i < 16; ++i) {
     let p = "";
     for (let j = 0; j < 4; ++j) {
-      if (i & (1 << j)) p += nodeSegs[j];
+      if (i & (1 << j)) p += nodeSegments[j];
     }
     r.push(p);
   }
@@ -165,27 +165,28 @@ export function Log() {
   const dispatch = useDispatch();
 
   // create refs to the commit rows
-  const elrefsMap = useRef(new Map<string, RefObject<HTMLTableRowElement>>());
-  const elrefs = useMemo(() => {
+  const el_refs_map = useRef(new Map<string, RefObject<HTMLTableRowElement>>());
+  const el_refs = useMemo(() => {
     commits.forEach((r) => {
-      if (!elrefsMap.current.has(r.hash)) elrefsMap.current.set(r.hash, React.createRef());
+      if (!el_refs_map.current.has(r.hash)) el_refs_map.current.set(r.hash, React.createRef());
     });
-    return elrefsMap.current;
+    return el_refs_map.current;
   }, [commits]);
 
   // scroll to the focus commit when the focus changes
-  const scrollTarget = useRef<string>(focusCommit);
+  const scrollTarget = useRef<string>(focusCommit!);
   useEffect(() => {
+    if (!focusCommit) return;
     if (focusCommit === scrollTarget.current) return;
     scrollTarget.current = focusCommit;
-    const el = elrefs.get(focusCommit).current;
+    const el = el_refs.get(focusCommit)?.current;
     if (!el) return;
 
-    const scroll = el.parentElement.parentElement.parentElement; // tbody.table.div
+    const scroll = el.parentElement!.parentElement!.parentElement!; // tbody.table.div
     const rect = el.getBoundingClientRect();
-    const srect = scroll.getBoundingClientRect();
-    const top = Math.min(rect.top - rect.height - srect.top, 0);
-    const bot = Math.max(rect.bottom - srect.bottom, 0);
+    const scroll_rect = scroll.getBoundingClientRect();
+    const top = Math.min(rect.top - rect.height - scroll_rect.top, 0);
+    const bot = Math.max(rect.bottom - scroll_rect.bottom, 0);
     const off = top || bot;
     if (off != 0) {
       scroll.scrollTo({
@@ -211,7 +212,7 @@ export function Log() {
           {commits.map((commit) => (
             <tr
               key={commit.hash}
-              ref={elrefs.get(commit.hash)}
+              ref={el_refs.get(commit.hash)}
               onClick={() => dispatch(setFocusCommit(commit.hash))}
               className={classNames({
                 [classes.focusRef]: commit.hash === focusCommit,

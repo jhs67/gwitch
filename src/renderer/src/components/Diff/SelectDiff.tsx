@@ -76,25 +76,25 @@ export function SelectDiff({
   const classes = useStyles();
   const lastPatch = useRef<FileStatus[]>();
   const anchorRef = useRef<number | undefined>();
-  const buttonsRef = useRef<HTMLDivElement>();
-  const scrollRef = useRef<HTMLDivElement>();
+  const buttonsRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const lineRefs = useRef<(HTMLTableRowElement | null)[]>([]);
   const selectRef = useRef<SelectRange | undefined>();
 
   const setLineUnselected = (n: number) => {
-    if (lineRefs.current[n]) lineRefs.current[n].classList.remove("selected");
+    lineRefs.current[n]?.classList.remove("selected");
   };
 
   const setLineSelected = (n: number) => {
-    if (lineRefs.current[n]) lineRefs.current[n].classList.add("selected");
+    lineRefs.current[n]?.classList.add("selected");
   };
 
   const showButtons = () => {
-    buttonsRef.current && buttonsRef.current.classList.add("show");
+    buttonsRef.current?.classList.add("show");
   };
 
   const hideButtons = () => {
-    buttonsRef.current && buttonsRef.current.classList.remove("show");
+    buttonsRef.current?.classList.remove("show");
   };
 
   const setSelectRange = (r: SelectRange | undefined) => {
@@ -122,13 +122,13 @@ export function SelectDiff({
       for (let i = ms; i <= me; ++i) setLineUnselected(i);
     }
     selectRef.current = r;
-    if (selectRef.current) scrollRef.current.classList.add("selected");
-    else scrollRef.current.classList.remove("selected");
+    if (selectRef.current) scrollRef.current?.classList.add("selected");
+    else scrollRef.current?.classList.remove("selected");
   };
 
   const startAction = async (act: (r: SelectRange) => Promise<void>, range: SelectRange) => {
-    buttonsRef.current.classList.add("pending");
-    scrollRef.current.classList.add("pending");
+    buttonsRef.current?.classList.add("pending");
+    scrollRef.current?.classList.add("pending");
     setSelectRange(undefined);
     hideButtons();
     try {
@@ -139,8 +139,8 @@ export function SelectDiff({
   };
 
   const finishAction = () => {
-    scrollRef.current.classList.remove("pending");
-    buttonsRef.current.classList.remove("pending");
+    scrollRef.current?.classList.remove("pending");
+    buttonsRef.current?.classList.remove("pending");
   };
 
   if (!diffLimit) diffLimit = 200;
@@ -153,8 +153,8 @@ export function SelectDiff({
 
   const getLine = function (e: HTMLElement): number | undefined {
     if (e === scrollRef.current) return;
-    if (e.nodeName !== "TR") return getLine(e.parentElement);
-    const r = parseInt(e.dataset.line);
+    if (e.nodeName !== "TR") return getLine(e.parentElement!);
+    const r = parseInt(e.dataset.line!);
     return isNaN(r) ? undefined : r;
   };
 
@@ -162,8 +162,8 @@ export function SelectDiff({
     const line = getLine(ev.target as HTMLElement);
     if (line == null) return;
     setSelectRange({
-      start: Math.min(line, anchorRef.current),
-      end: Math.max(line, anchorRef.current),
+      start: Math.min(line, anchorRef.current!),
+      end: Math.max(line, anchorRef.current!),
     });
   };
 
@@ -193,11 +193,17 @@ export function SelectDiff({
     if (!lines || !buttonsRef.current || !selectRef.current) return;
     const sel = lineRefs.current[selectRef.current.start];
     const top =
-      sel.offsetTop + sel.parentElement.offsetTop + sel.parentElement.parentElement.offsetTop + 1;
+      sel!.offsetTop +
+      sel!.parentElement!.offsetTop +
+      sel!.parentElement!.parentElement!.offsetTop +
+      1;
     const eel = lineRefs.current[selectRef.current.end];
     const bot =
-      eel.offsetTop + eel.parentElement.offsetTop + eel.parentElement.parentElement.offsetTop + 3;
-    const ceil = scrollRef.current.scrollTop;
+      eel!.offsetTop +
+      eel!.parentElement!.offsetTop +
+      eel!.parentElement!.parentElement!.offsetTop +
+      3;
+    const ceil = scrollRef.current!.scrollTop;
     const set = Math.max(top, Math.min(ceil, bot));
     buttonsRef.current.style.top = `${set}px`;
   };
@@ -209,7 +215,7 @@ export function SelectDiff({
       for (let i = selectRef.current.end + 1; i < lineRefs.current.length; ++i)
         setLineUnselected(i);
     } else {
-      buttonsRef.current.classList.remove("show");
+      buttonsRef.current?.classList.remove("show");
       for (let i = 0; i < lineRefs.current.length; ++i) setLineUnselected(i);
     }
   });
@@ -222,14 +228,14 @@ export function SelectDiff({
         {lines ? (
           <div className={classes.buttons} ref={buttonsRef}>
             {lines.map((l) => (
-              <div key={l.label} onClick={async () => startAction(l.act, selectRef.current)}>
+              <div key={l.label} onClick={async () => startAction(l.act, selectRef.current!)}>
                 {l.label}
               </div>
             ))}
           </div>
         ) : null}
         {patch.map((p) => {
-          const file = p.newFile || p.oldFile;
+          const file = p.fileName;
 
           const origin = cursor;
           cursor += (p.hunks || []).reduce((p, h) => p + h.lines.length, 0);
@@ -244,10 +250,13 @@ export function SelectDiff({
               key={file}
               origin={origin}
               clickLine={clickStart}
-              actions={lines.map((l) => ({
-                ...l,
-                act: async (range) => startAction(l.act, range),
-              }))}
+              actions={
+                lines &&
+                lines.map((l) => ({
+                  ...l,
+                  act: async (range) => startAction(l.act, range),
+                }))
+              }
               lineRefs={lineRefs.current}
             />
           );

@@ -23,19 +23,23 @@ export function execRc(
   });
 
   const child = spawn(cmd, args, options);
-  const out = getStream(child.stdout);
-  const err = getStream(child.stderr);
+  const out = getStream(child.stdout!);
+  const err = getStream(child.stderr!);
   child.on("error", (err) => reject(err));
   child.on("close", async (code) => {
     try {
-      accept({ code, out: await out, err: await err });
-    } catch (err) {
-      err.stdout = await out;
-      err.stderr = await err;
-      reject(err);
+      accept({ code: code || 0, out: await out, err: await err });
+    } catch (error) {
+      if (error instanceof Error) {
+        error["stdout"] = await out;
+        error["stderr"] = await err;
+        reject(error);
+      } else {
+        throw error;
+      }
     }
   });
-  if (input) process.nextTick(() => child.stdin.end(input));
+  if (input) process.nextTick(() => child.stdin!.end(input));
 
   return {
     cancel: () => {

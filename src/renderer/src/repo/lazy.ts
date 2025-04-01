@@ -1,8 +1,8 @@
 import { Cancellable, CancelledError, cancelTimeout } from "./cancellable";
 
 export class LazyUpdater {
-  task: () => Cancellable<void>;
-  run: Cancellable<void>;
+  task: (() => Cancellable<void>) | undefined;
+  run: Cancellable<void> | undefined;
   frozen = false;
 
   dirtyStart?: number;
@@ -24,8 +24,8 @@ export class LazyUpdater {
 
   stop() {
     this.task = undefined;
-    if (this.run) this.run.cancel();
-    if (this.timer) this.timer.cancel();
+    if (this.run?.cancel) this.run.cancel();
+    if (this.timer?.cancel) this.timer.cancel();
     this.dirtyStart = undefined;
     this.quietStart = undefined;
     this.frozen = false;
@@ -35,18 +35,18 @@ export class LazyUpdater {
     if (!this.task) return;
     this.quietStart = Date.now();
     if (this.clean) this.dirtyStart = this.quietStart;
-    if (this.timer) this.timer.cancel();
+    if (this.timer?.cancel) this.timer.cancel();
     this.kick();
   }
 
   cancel() {
-    if (this.run) this.run.cancel();
+    if (this.run?.cancel) this.run.cancel();
   }
 
   freeze() {
     if (this.frozen) throw new Error("can't double freeze");
     this.frozen = true;
-    if (this.timer) this.timer.cancel();
+    if (this.timer?.cancel) this.timer.cancel();
   }
 
   unfreeze() {
@@ -68,8 +68,8 @@ export class LazyUpdater {
 
     const n = Date.now();
     const timeout = Math.min(
-      this.dirtyStart + this.timeout - n,
-      this.quietStart + this.quiescent - n,
+      (this.dirtyStart || n) + this.timeout - n,
+      (this.dirtyStart || n) + this.quiescent - n,
     );
 
     if (timeout > 0) {

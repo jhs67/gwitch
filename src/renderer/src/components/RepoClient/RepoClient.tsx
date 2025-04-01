@@ -1,4 +1,3 @@
-import React from "react";
 import { History } from "../History";
 import { RefsPanel } from "../RefsPanel";
 import { createUseStyles } from "react-jss";

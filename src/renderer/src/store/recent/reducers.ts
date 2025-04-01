@@ -7,7 +7,7 @@ import {
 } from "./types";
 
 const initialState: RecentRepos = {
-  repos: null,
+  repos: undefined,
 };
 
 export function recentReposReducer(
@@ -18,7 +18,7 @@ export function recentReposReducer(
     case SET_RECENT_REPOS:
       return { ...state, repos: action.repos };
     case RESET_RECENT_REPOS:
-      return { ...state, repos: null };
+      return { ...state, repos: undefined };
     case REMOVE_RECENT_REPO:
       return { ...state, repos: state.repos && state.repos.filter((r) => r != action.repo) };
     default:

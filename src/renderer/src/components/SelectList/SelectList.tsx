@@ -1,11 +1,11 @@
 import React, { KeyboardEvent, FunctionComponent, useRef } from "react";
 
-export interface ItemProps<T> {
+export type ItemProps<T> = {
   item: T;
   index: number;
   selected: boolean;
   focused: boolean;
-}
+};
 
 export type ItemComponent<T> = FunctionComponent<ItemProps<T>>;
 
@@ -122,7 +122,7 @@ export function SelectList<T>(props: SelectListProps<T>) {
     setSelected([index]);
   }
 
-  const itemRefs = useRef<(HTMLDivElement | undefined)[]>([]);
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   if (itemRefs.current.length > items.length) itemRefs.current.splice(items.length);
 
   function scrollTo(index: number) {
@@ -136,8 +136,8 @@ export function SelectList<T>(props: SelectListProps<T>) {
         {
           if (event.shiftKey) {
             // find the selected range around the focused item
-            const [rl, rh] = selectRange(focused, selected);
-            if (rl < focused) {
+            const [rl, rh] = selectRange(focused || 0, selected);
+            if (rl < (focused || 0)) {
               setSelected(rmSelected(rl, [...selected]));
               scrollTo(rl + 1);
             } else if (rh + 1 < items.length) {
@@ -165,8 +165,8 @@ export function SelectList<T>(props: SelectListProps<T>) {
         {
           if (event.shiftKey) {
             // find the selected range around the focused item
-            const [rl, rh] = selectRange(focused, selected);
-            if (rh > focused) {
+            const [rl, rh] = selectRange(focused || 0, selected);
+            if (rh > (focused || 0)) {
               setSelected(rmSelected(rh, [...selected]));
               scrollTo(rh - 1);
             } else if (rl > 0) {
@@ -222,21 +222,21 @@ export function SelectList<T>(props: SelectListProps<T>) {
           <div
             ref={(e) => (itemRefs.current[i] = e)}
             className={itemClass}
-            key={itemKey(t, i)}
+            key={itemKey ? itemKey(t, i) : i}
             onClick={(event) => {
               focusItem(i, event.shiftKey, event.ctrlKey);
               event.stopPropagation();
             }}
             onContextMenu={(ev) => {
               contextItem(i);
-              onContext && onContext(ev.nativeEvent);
+              if (onContext) onContext(ev.nativeEvent);
             }}
             onDoubleClick={(ev) => {
               contextItem(i);
-              onDoubleClick && onDoubleClick(ev.nativeEvent);
+              if (onDoubleClick) onDoubleClick(ev.nativeEvent);
             }}
           >
-            {itemComponent({ item: t, index: i, selected: s, focused: f })}
+            {itemComponent && itemComponent({ item: t, index: i, selected: s, focused: f })}
           </div>
         );
       })}

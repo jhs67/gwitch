@@ -1,4 +1,4 @@
-import { Menu, MenuItemConstructorOptions } from "electron";
+import { BrowserWindow, Menu, MenuItemConstructorOptions } from "electron";
 import { gwitch } from "./index";
 import { ThemeType } from "./gwitch";
 
@@ -13,7 +13,7 @@ export function setAppMenu(theme: ThemeType) {
         {
           label: "Open Repository",
           accelerator: "CmdOrCtrl+O",
-          click: (menu, window) => gwitch.openOther(window),
+          click: (_menu, window) => window && gwitch.openOther(window as BrowserWindow),
         },
         {
           type: "separator",

@@ -1,5 +1,7 @@
+function isObj(t: object): true;
+function isObj(t: unknown): boolean;
 function isObj(t: unknown) {
-  return {}.toString.call(t).match(/([a-z]+)(:?\])/i)[1] === "Object";
+  return typeof t === "object" && !Array.isArray(t) && t !== null;
 }
 
 type RecursivePartial<T> = {
@@ -13,7 +15,7 @@ export function themeCopy<R>(target: R, ...sources: RecursivePartial<R>[]): R {
     if (!isObj(source)) return;
     const s = source as Record<string, unknown>;
     Object.keys(s).forEach((k) => {
-      if (isObj(t[k]) && isObj(s[k])) t[k] = themeCopy(t[k], s[k]);
+      if (isObj(t[k]) && isObj(s[k])) t[k] = themeCopy(t[k], s[k] as object);
       else t[k] = s[k];
     });
   });

@@ -27,8 +27,8 @@ class ExPromise<R> {
   }
 
   promise: Promise<R>;
-  accept: (r: R) => void;
-  reject: (err: Error) => void;
+  accept!: (r: R) => void;
+  reject!: (err: Error) => void;
 }
 
 function AwaitCallback<R>(
@@ -41,7 +41,8 @@ function AwaitCallback<R>(
     try {
       accept(await p);
     } catch (err) {
-      reject(err);
+      if (err instanceof Error) reject(err);
+      else throw err;
     } finally {
       final();
     }

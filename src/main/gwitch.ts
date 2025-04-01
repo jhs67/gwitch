@@ -2,7 +2,7 @@ import { RecentStore } from "./recent-store";
 import { BrowserWindow, dialog, nativeTheme, app } from "electron";
 import { WindowManager } from "./window-manager";
 import { setAppMenu } from "./appmenu";
-import { RepoPath } from "@store/repo/types";
+import { RepoPath } from "@ipc/repo";
 import { basename, join } from "node:path";
 import { enable as remote_enable } from "@electron/remote/main";
 

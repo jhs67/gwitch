@@ -23,11 +23,11 @@ export function useMouseTrack(
   };
 
   const stopTrack = () => {
-    if (!mouseTrack.current.mover) return;
+    if (!mouseTrack.current.mover || !mouseTrack.current.upper) return;
     window.removeEventListener("mouseup", mouseTrack.current.upper);
     window.removeEventListener("mousemove", mouseTrack.current.mover);
-    mouseTrack.current.upper = null;
-    mouseTrack.current.mover = null;
+    mouseTrack.current.upper = void 0;
+    mouseTrack.current.mover = void 0;
   };
 
   return [startTrack];

@@ -17,14 +17,18 @@ class GitPath {
       const r = await promisify(exec)("which git");
       this.cmd = r.stdout.trim();
     } catch (err) {
-      const w = this.waits;
-      this.waits = [];
-      w.forEach((w) => w.r(err));
+      if (err instanceof Error) {
+        const w = this.waits;
+        this.waits = [];
+        w.forEach((w) => w.r(err));
+      } else {
+        throw err;
+      }
     }
 
     const w = this.waits;
     this.waits = [];
-    w.forEach((w) => w.a(this.cmd));
+    w.forEach((w) => w.a(this.cmd!));
   }
 }
 

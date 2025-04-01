@@ -146,11 +146,11 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
 }));
 
 function statusToPath(s: FileStatus, r: RepoPath) {
-  return resolve(r.path, ...r.submodules, s.newFile || s.oldFile);
+  return resolve(r.path, ...r.submodules, s.fileName);
 }
 
 function WorkingFiles({ loader }: { loader: RepoLoader }) {
-  const rootPath = useSelector((state: RootState) => state.repo.path);
+  const rootPath = useSelector((state: RootState) => state.repo.path)!;
   const selectedPaths = useSelector((state: RootState) => state.repo.workingSelected) || [];
   const workingFiles = useSelector((state: RootState) => state.repo.workingStatus) || [];
   const dispatch = useDispatch();
@@ -161,14 +161,14 @@ function WorkingFiles({ loader }: { loader: RepoLoader }) {
     .sort((l, r) => l - r);
 
   const setSelected = (s: number[]) => {
-    const f = s.map((s) => workingFiles[s].newFile || workingFiles[s].oldFile);
+    const f = s.map((s) => workingFiles[s].fileName);
     dispatch(setStageSelected(f, undefined));
   };
 
   const menu = [
     {
       label: "Stage",
-      click: () => loader.stageFiles(loader.workingSelected().map((s) => s.newFile || s.oldFile)),
+      click: () => loader.stageFiles(loader.workingSelected().map((s) => s.fileName)),
     },
     {
       label: "Open",
@@ -188,7 +188,7 @@ function WorkingFiles({ loader }: { loader: RepoLoader }) {
         let detail = loader
           .workingSelected()
           .map((s) => {
-            const p = s.newFile || s.oldFile;
+            const p = s.fileName;
             if (s.status === "?") trashList.push(statusToPath(s, rootPath));
             else discardList.push(p);
             return p;
@@ -219,9 +219,7 @@ function WorkingFiles({ loader }: { loader: RepoLoader }) {
       files={workingFiles || []}
       selected={selected_}
       setSelected={setSelected}
-      onDoubleClick={() =>
-        loader.stageFiles(loader.workingSelected().map((s) => s.newFile || s.oldFile))
-      }
+      onDoubleClick={() => loader.stageFiles(loader.workingSelected().map((s) => s.fileName))}
       menu={menu}
     />
   );
@@ -245,7 +243,7 @@ function CommitCompose({ loader }: { loader: RepoLoader }) {
     loader.commit(amend, message);
   };
 
-  const disabled = message === "" || status.length === 0;
+  const disabled = message === "" || !status || status.length === 0;
 
   return (
     <div className="commitMessage">
@@ -258,7 +256,7 @@ function CommitCompose({ loader }: { loader: RepoLoader }) {
         </label>
         <div
           className={classNames("commitButton", { disabled })}
-          onClick={!disabled ? commitClick : null}
+          onClick={!disabled ? commitClick : void 0}
         >
           Commit
         </div>
@@ -268,7 +266,7 @@ function CommitCompose({ loader }: { loader: RepoLoader }) {
 }
 
 function IndexFiles({ loader }: { loader: RepoLoader }) {
-  const rootPath = useSelector((state: RootState) => state.repo.path);
+  const rootPath = useSelector((state: RootState) => state.repo.path)!;
   const selectedPaths = useSelector((state: RootState) => state.repo.indexSelected) || [];
   const indexFiles = useSelector((state: RootState) => state.repo.indexStatus) || [];
   const dispatch = useDispatch();
@@ -279,14 +277,14 @@ function IndexFiles({ loader }: { loader: RepoLoader }) {
     .sort((l, r) => l - r);
 
   const setSelected = (s: number[]) => {
-    const f = s.map((s) => indexFiles[s].newFile || indexFiles[s].oldFile);
+    const f = s.map((s) => indexFiles[s].fileName);
     dispatch(setStageSelected(undefined, f));
   };
 
   const menu = [
     {
       label: "Unstage",
-      click: () => loader.unstageFiles(loader.indexSelected().map((s) => s.newFile || s.oldFile)),
+      click: () => loader.unstageFiles(loader.indexSelected().map((s) => s.fileName)),
     },
     {
       label: "Open",
@@ -306,9 +304,7 @@ function IndexFiles({ loader }: { loader: RepoLoader }) {
       selected={selected}
       setSelected={setSelected}
       menu={menu}
-      onDoubleClick={() =>
-        loader.unstageFiles(loader.indexSelected().map((s) => s.newFile || s.oldFile))
-      }
+      onDoubleClick={() => loader.unstageFiles(loader.indexSelected().map((s) => s.fileName))}
     />
   );
 }

@@ -14,7 +14,7 @@ interface Batch {
 
 export class IgnoreBatch {
   private pending: BatchJob[] = [];
-  private defered = false;
+  private deferred = false;
   private batch?: Batch;
 
   constructor(
@@ -32,15 +32,17 @@ export class IgnoreBatch {
 
     const job: BatchJob = {
       path: path,
+      // @ts-ignore: use before define
       accept,
+      // @ts-ignore: use before define
       reject,
     };
 
     this.pending.push(job);
-    if (!this.batch && !this.defered) {
-      this.defered = true;
+    if (!this.batch && !this.deferred) {
+      this.deferred = true;
       setTimeout(() => {
-        this.defered = false;
+        this.deferred = false;
         if (!this.batch) this.start();
       }, 1);
     }
@@ -51,8 +53,8 @@ export class IgnoreBatch {
         // check if this job is in the current batch
         const ji = this.batch?.jobs.indexOf(job);
         if (ji != null && ji != -1) {
-          this.batch.jobs.splice(ji, 1);
-          if (this.batch.jobs.length === 0) this.batch.cancel();
+          this.batch?.jobs.splice(ji, 1);
+          if (this.batch?.jobs.length === 0 && this.batch.cancel) this.batch.cancel();
         } else {
           // remove it from the pending list
           this.pending.splice(this.pending.indexOf(job), 1);
@@ -66,16 +68,16 @@ export class IgnoreBatch {
     if (this.pending.length === 0) return;
     const jobs = this.pending.splice(0, this.maxBatchSize);
     const r = this.gwit.getIgnored(jobs.map((j) => j.path));
-    this.batch = { jobs, cancel: r.cancel };
+    this.batch = { jobs, cancel: r.cancel! };
     r.result
       .then((ignored) => {
-        for (const j of jobs) j.accept(ignored.indexOf(j.path) !== -1);
+        for (const j of jobs) if (j.accept) j.accept(ignored.indexOf(j.path) !== -1);
       })
       .catch((err) => {
-        for (const j of jobs) j.reject(err);
+        for (const j of jobs) if (j.reject) j.reject(err);
       })
       .finally(() => {
-        this.batch = null;
+        this.batch = undefined;
         this.start();
       });
   }

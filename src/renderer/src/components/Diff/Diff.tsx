@@ -22,16 +22,15 @@ export function Diff({
   return (
     <div>
       {patch.map((p) => {
-        const file = p.newFile || p.oldFile;
         return (
           <FileDiff
             patch={p}
             diffLimit={diffLimit}
             addLimit={addLimit}
-            show={show[file]}
-            setShow={(state: boolean) => setShow(file, state)}
-            key={file}
-            containerRef={patchRef ? (e) => patchRef(p, e) : undefined}
+            show={show[p.fileName]}
+            setShow={(state: boolean) => setShow(p.fileName, state)}
+            key={p.fileName}
+            containerRef={patchRef ? (e) => e && patchRef(p, e) : undefined}
           />
         );
       })}

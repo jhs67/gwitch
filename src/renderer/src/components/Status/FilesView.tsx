@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { MenuItemConstructorOptions } from "electron";
 import { getCurrentWindow, Menu } from "@electron/remote";
 import classNames from "classnames";
@@ -54,7 +54,7 @@ export function FilesView({
         selected={selected}
         focused={focused}
         itemComponent={FileItem}
-        itemKey={(i) => i.newFile || i.oldFile}
+        itemKey={(i) => i.fileName}
         setSelected={setSelected}
         setFocused={setFocused}
         onContext={onContext}

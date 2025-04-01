@@ -1,4 +1,4 @@
-import chokidar, { FSWatcher } from "chokidar";
+import { ChokidarOptions, FSWatcher } from "chokidar";
 import { Cancellable, CancelledError } from "./cancellable";
 import { relative } from "path";
 
@@ -24,9 +24,8 @@ export class Watcher {
     hook: (path: string[]) => void,
     ignore?: (path: string) => Cancellable<boolean>,
   ) {
-    const opts: chokidar.WatchOptions = {
+    const opts: ChokidarOptions = {
       followSymlinks: false,
-      disableGlobbing: true,
       ignoreInitial: true,
       cwd,
     };
@@ -64,7 +63,7 @@ export class Watcher {
         // start a check if there is no current
         if (i.pending == null) {
           // start the ignore query
-          this.ignore(p, i);
+          if (this.ignore) this.ignore(p, i);
           // keep the watcher from being ready until the ignore result completes
           (this.watcher as WatcherInternal)._incrReadyCount();
         }
@@ -110,12 +109,12 @@ export class Watcher {
     for (const [path, i] of this.ignoresMap.entries()) {
       if (i.pending != null) {
         // restart any in-progress queries
-        i.pending.cancel();
-        this.ignore(path, i);
+        if (i.pending.cancel) i.pending.cancel();
+        if (this.ignore) this.ignore(path, i);
       } else if (i.ignored === true) {
         // if it was ignored, clear and try again
         i.ignored = undefined;
-        this.ignore(path, i);
+        if (this.ignore) this.ignore(path, i);
         // keep the watcher from being ready until the ignore result completes
         (this.watcher as WatcherInternal)._incrReadyCount();
       } else {
@@ -127,7 +126,7 @@ export class Watcher {
 
   async close() {
     for (const [, i] of this.ignoresMap.entries()) {
-      if (i.pending != null) i.pending.cancel();
+      if (i.pending?.cancel) i.pending.cancel();
     }
     await this.watcher.close();
     this.ignoresMap.clear();

@@ -28,14 +28,14 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   </React.StrictMode>,
 );
 
-ipcRenderer.on("recent", (event, repos: string[]) => {
+ipcRenderer.on("recent", (_event, repos: string[]) => {
   eventQueue.add(async () => {
     store.dispatch(setRecentRepos(repos));
     await Promise.all([loader.close(), layout.teardown()]);
   });
 });
 
-ipcRenderer.on("open", (event, path: RepoPath) => {
+ipcRenderer.on("open", (_event, path: RepoPath) => {
   eventQueue.add(async () => {
     store.dispatch(resetRecentRepos());
     await layout.setup(path);
@@ -52,7 +52,7 @@ export function goBack() {
 }
 
 export function openSubmodule(sub: string, newWindow: boolean) {
-  const path = store.getState().repo.path;
+  const path = store.getState().repo.path!;
   const newPath = { ...path, submodules: [...path.submodules, sub] };
   ipcRenderer.send(OPEN_SUBMODULE, newPath, newWindow);
   if (!newWindow) {

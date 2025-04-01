@@ -56,7 +56,10 @@ export function setStageStatus(working: FileStatus[], index: FileStatus[]): Repo
   return { type: SET_STAGE_STATUS, working, index };
 }
 
-export function setStageSelected(working: string[], index: string[]): RepoStateActions {
+export function setStageSelected(
+  working: string[] | undefined,
+  index: string[] | undefined,
+): RepoStateActions {
   return { type: SET_STAGE_SELECTED, working, index };
 }
 

@@ -44,11 +44,13 @@ app.on("activate", () => {
 });
 
 ipcMain.on(OPEN_OTHER, (event) => {
-  gwitch.openOther(BrowserWindow.fromWebContents(event.sender));
+  const window = BrowserWindow.fromWebContents(event.sender);
+  if (window) gwitch.openOther(window);
 });
 
 ipcMain.on(OPEN_PATH, (event, path: string) => {
-  gwitch.openPath(BrowserWindow.fromWebContents(event.sender), path);
+  const window = BrowserWindow.fromWebContents(event.sender);
+  if (window) gwitch.openPath(window, path);
 });
 
 const layoutStore = new LayoutStore();
@@ -62,11 +64,13 @@ ipcMain.handle(SET_LAYOUT_STATE, async (_event, path: string, state: LayoutState
 });
 
 ipcMain.on(GO_BACK, (event, path: RepoPath) => {
-  gwitch.goBack(BrowserWindow.fromWebContents(event.sender), path);
+  const window = BrowserWindow.fromWebContents(event.sender);
+  if (window) gwitch.goBack(window, path);
 });
 
 ipcMain.on(OPEN_SUBMODULE, (event, path: RepoPath, newWindow: boolean) => {
-  gwitch.openSubmodule(BrowserWindow.fromWebContents(event.sender), path, newWindow);
+  const window = BrowserWindow.fromWebContents(event.sender);
+  if (window) gwitch.openSubmodule(window, path, newWindow);
 });
 
 ipcMain.on(REMOVE_RECENT, (_event, path: string) => {

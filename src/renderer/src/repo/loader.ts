@@ -29,14 +29,14 @@ export class RepoLoader {
   private gwit = new Gwit();
 
   private refsLazy = new LazyUpdater(100, 1000);
-  private refsWatch: Watcher;
+  private refsWatch: Watcher | null = null;
 
-  private loadedFocusPatch: string;
+  private loadedFocusPatch: string | null = null;
   private focusPatchLazy = new LazyUpdater(100, 1000);
 
   private loadedStatusAmend = false;
   private statusLazy = new LazyUpdater(100, 1000);
-  private statusWatch: Watcher;
+  private statusWatch: Watcher | null = null;
 
   private submoduleLazy = new LazyUpdater(100, 1000);
 
@@ -50,10 +50,10 @@ export class RepoLoader {
 
     this.store.subscribe(() => {
       const { focusCommit, amend, commitMessage, head, refs, commits } = this.store.getState().repo;
-      if (this.loadedFocusPatch != focusCommit) {
+      if (focusCommit && this.loadedFocusPatch != focusCommit) {
         this.focusPatchLazy.stop();
         this.loadedFocusPatch = focusCommit;
-        this.focusPatchLazy.start(() => this.loadFocusPatch(focusCommit));
+        if (focusCommit) this.focusPatchLazy.start(() => this.loadFocusPatch(focusCommit));
       }
       if (this.loadedStatusAmend !== amend) {
         this.loadedStatusAmend = amend;
@@ -63,7 +63,7 @@ export class RepoLoader {
         const r = refs.find((r) => r.refName === head);
         const h = r?.hash || head;
         const c = commits.find((c) => c.hash === h);
-        const m = `${c.subject}${c.body && "\n\n"}${c.body}`;
+        const m = `${c?.subject}${c?.body && "\n\n"}${c?.body}`;
         if (amend && commitMessage === "") this.dispatch(setCommitMessage(m));
         if (!amend && commitMessage === m) this.dispatch(setCommitMessage(""));
       }
@@ -73,15 +73,16 @@ export class RepoLoader {
   async open(path: RepoPath) {
     this.dispatch(setRepoPath(path));
     const top = await this.gwit.open(path);
-    const gitdir = await this.gwit.gitDir().result;
+    const git_dir = await this.gwit.gitDir().result;
 
     this.refsLazy.start(() => this.loadCommits());
     this.refsWatch = new Watcher(
-      gitdir,
+      git_dir,
       [""],
       (paths) => {
         const i = paths.filter((p) => p === "index").length;
-        if (i != 0 || paths.includes("HEAD") || paths.includes(this.store.getState().repo.head))
+        const head = this.store.getState().repo.head;
+        if (i != 0 || paths.includes("HEAD") || (head && paths.includes(head)))
           this.statusLazy.poke();
         if (i === 0 || i !== paths.length) this.refsLazy.poke();
       },
@@ -98,7 +99,7 @@ export class RepoLoader {
       [""],
       (paths: string[]) => {
         // If a .gitignore file changes, check the ignores again
-        if (paths.some((p) => basename(p) == ".gitignore")) this.statusWatch.invalidateIgnores();
+        if (paths.some((p) => basename(p) == ".gitignore")) this.statusWatch?.invalidateIgnores();
         this.statusLazy.poke();
         if (paths.indexOf(".gitmodules") != -1) this.submoduleLazy.poke();
       },
@@ -108,7 +109,7 @@ export class RepoLoader {
           const r = relative(top, f);
 
           // always ignore the git dir
-          if (f === gitdir) return true;
+          if (f === git_dir) return true;
           // never ignore the root file
           if (r === "") return false;
           // never ignore gitignore files
@@ -141,12 +142,12 @@ export class RepoLoader {
 
   workingSelected() {
     const { workingSelected, workingStatus } = this.store.getState().repo;
-    return workingStatus.filter((s) => workingSelected.indexOf(s.newFile || s.oldFile) !== -1);
+    return workingStatus?.filter((s) => workingSelected?.indexOf(s.fileName) !== -1) || [];
   }
 
   indexSelected() {
     const { indexSelected, indexStatus } = this.store.getState().repo;
-    return indexStatus.filter((s) => indexSelected.indexOf(s.newFile || s.oldFile) !== -1);
+    return indexStatus?.filter((s) => indexSelected?.indexOf(s.fileName) !== -1) || [];
   }
 
   async discardChanges(files: string[]) {
@@ -181,10 +182,10 @@ export class RepoLoader {
       this.statusLazy.freeze();
 
       // parse into a patch
-      const [patch, toadd] = rangePatch(files, { start, end }, true);
+      const [patch, to_add] = rangePatch(files, { start, end }, true);
 
       // intent to add unstaged files
-      if (toadd.length) await this.gwit.addIntent(toadd).result;
+      if (to_add.length) await this.gwit.addIntent(to_add).result;
 
       await this.gwit.stagePatch(patch).result;
     } finally {
@@ -229,7 +230,7 @@ export class RepoLoader {
       const state = this.store.getState();
       const refs = std.concat(stash);
       this.dispatch(setRepoRefs(refs));
-      if (head !== state.repo.head) {
+      if (head && head !== state.repo.head) {
         this.dispatch(setRepoHead(head));
         this.statusLazy.poke();
       }
@@ -238,7 +239,7 @@ export class RepoLoader {
       const log = await run(this.gwit.log(refs.map((r) => r.hash)));
 
       // sort and connect the logs with a graph
-      const graphlog = createGraph(
+      const graph_log = createGraph(
         log,
         refs.map((r) => r.hash),
       );
@@ -246,24 +247,24 @@ export class RepoLoader {
       // make sure the focus commit points to a valid commit
       const oldFocusCommit = this.store.getState().repo.focusCommit;
       let focusCommit = oldFocusCommit;
-      if (focusCommit && graphlog.findIndex((c) => c.hash === focusCommit) === -1)
+      if (focusCommit && graph_log.findIndex((c) => c.hash === focusCommit) === -1)
         focusCommit = undefined;
 
-      if (focusCommit == null && graphlog.length > 0) {
+      if (focusCommit == null && graph_log.length > 0) {
         const ref = refs.find((r) => r.refName === "HEAD");
-        focusCommit = ref?.hash || graphlog[0].hash;
+        focusCommit = ref?.hash || graph_log[0].hash;
       }
 
       // update the state
-      this.dispatch(setCommits(graphlog));
-      if (oldFocusCommit != focusCommit) this.dispatch(setFocusCommit(focusCommit));
+      this.dispatch(setCommits(graph_log));
+      if (oldFocusCommit != focusCommit && focusCommit) this.dispatch(setFocusCommit(focusCommit));
     });
   }
 
   private loadFocusPatch(hash: string) {
     return cancellableQueue(2, async (run) => {
       const commit = this.store.getState().repo.commits.find((c) => c.hash == hash);
-      if (hash == null) return;
+      if (commit == null) return;
       const status = await run(() => this.gwit.commitStatus(hash));
       this.dispatch(setFocusPatch(status));
 
@@ -280,7 +281,7 @@ export class RepoLoader {
     return cancellableQueue(2, async (run) => {
       const [files, amend] = await Promise.all([
         run(() => this.gwit.stageStatus()),
-        amending ? run(() => this.gwit.amendStatus()) : [],
+        amending ? run(() => this.gwit.amendStatus()) : ([] as FileStatus[]),
       ]);
 
       // sort the files into working and index changes
@@ -289,15 +290,17 @@ export class RepoLoader {
       for (const f of files) {
         if (f.workingStatus !== " ") {
           const status = f.workingStatus;
-          const newFile = status === "D" ? null : f.file;
+          const newFile = status === "D" ? void 0 : f.file;
           const oldFile = status === "D" ? f.file : f.oldFile || f.file;
-          working.push({ status, newFile, oldFile, unmerged: f.unmerged });
+          const fileName = newFile || oldFile;
+          working.push({ status, fileName, newFile, oldFile, unmerged: f.unmerged });
         }
         if (!amending && f.indexStatus !== " " && f.indexStatus !== "?") {
           const status = f.indexStatus;
           const newFile = f.file;
           const oldFile = f.oldFile;
-          index.push({ status, newFile, oldFile, unmerged: f.unmerged });
+          const fileName = (newFile || oldFile) as string;
+          index.push({ status, fileName, newFile, oldFile, unmerged: f.unmerged });
         }
       }
 
@@ -305,6 +308,7 @@ export class RepoLoader {
         amend.forEach((f) =>
           index.push({
             status: f.status,
+            fileName: f.fileName,
             newFile: f.newFile,
             oldFile: f.oldFile,
             unmerged: f.unmerged,
@@ -315,7 +319,7 @@ export class RepoLoader {
       // load the diffs
       await Promise.all([
         ...working.map(async (r) => {
-          const file = r.newFile || r.oldFile;
+          const file = r.fileName;
           const status = r.status;
           const patch = await run(() =>
             status === "?"
@@ -334,7 +338,7 @@ export class RepoLoader {
             return;
           }
 
-          const file = r.newFile || r.oldFile;
+          const file = r.fileName;
           const patch = await run(() =>
             amending
               ? this.gwit.diffFileIndexToAmend(file, r.oldFile)

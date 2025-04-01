@@ -19,7 +19,7 @@ export function Patch() {
     : [workingStatus || [], workingSelected];
 
   const patch = status.filter((s) =>
-    selected?.length ? selected.indexOf(s.newFile || s.oldFile) !== -1 : true,
+    selected?.length ? selected.indexOf(s.fileName) !== -1 : true,
   );
 
   return (
@@ -44,7 +44,7 @@ export function Patch() {
                         message: "Discard Changes? This can not be undone.",
                       });
 
-                      if (!r) return;
+                      if (!r) return Promise.resolve();
                       return loader.discardRange(patch, range.start, range.end);
                     },
                   },

@@ -194,7 +194,7 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
 export function RefsPanel() {
   const classes = useStyles();
   const refs = useSelector((state: RootState) => state.repo.refs);
-  const path = useSelector((state: RootState) => state.repo.path);
+  const path = useSelector((state: RootState) => state.repo.path)!;
   const head = useSelector((state: RootState) => state.repo.head);
   const submodules = useSelector((state: RootState) => state.repo.submodules);
   const focusCommit = useSelector((state: RootState) => state.repo.focusCommit);
@@ -209,7 +209,7 @@ export function RefsPanel() {
     .filter((r) => r.type === "remotes")
     .forEach((r) => {
       const s = r.name.split("/");
-      const o = s.shift();
+      const o = s.shift()!;
       const n = s.join("/");
       if (n !== "HEAD") origins.set(o, (origins.get(o) || []).concat(r));
     });

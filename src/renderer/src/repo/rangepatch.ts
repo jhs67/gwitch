@@ -8,74 +8,75 @@ export function rangePatch(
 ): [string, string[]] {
   let cursor = 0;
   let patch = "";
-  const toadd = [];
+  const to_add: string[] = [];
   for (const file of files) {
     if (cursor > select.end) break;
+    if (!file.hunks) continue;
 
-    let newoff = 0;
-    let oldoff = 0;
-    let filepatch = "";
+    let new_off = 0;
+    let old_off = 0;
+    let file_patch = "";
     for (const hunk of file.hunks) {
       if (cursor > select.end) break;
       let origin = cursor;
       cursor += hunk.lines.length;
       if (cursor <= select.start) continue;
 
-      const newstart = hunk.newStart + newoff;
-      const oldstart = hunk.oldStart + oldoff;
-      let newcount = 0;
-      let oldcount = 0;
+      const new_start = hunk.newStart + new_off;
+      const old_start = hunk.oldStart + old_off;
+      let new_count = 0;
+      let old_count = 0;
       let changes = false;
-      let hunkpatch = "";
+      let hunk_patch = "";
       for (const line of hunk.lines) {
         const on = origin >= select.start && origin <= select.end;
         origin += 1;
 
         if (line.origin === " ") {
-          hunkpatch += " " + line.content + "\n";
-          newcount += 1;
-          oldcount += 1;
+          hunk_patch += " " + line.content + "\n";
+          new_count += 1;
+          old_count += 1;
         } else if (line.origin === "-") {
           if (on) {
-            hunkpatch += "-" + line.content + "\n";
+            hunk_patch += "-" + line.content + "\n";
             changes = true;
-            oldcount += 1;
+            old_count += 1;
           } else if (forward) {
-            hunkpatch += " " + line.content + "\n";
-            oldcount += 1;
-            newcount += 1;
-            newoff += 1;
+            hunk_patch += " " + line.content + "\n";
+            old_count += 1;
+            new_count += 1;
+            new_off += 1;
           } else {
-            oldoff -= 1;
+            old_off -= 1;
           }
         } else if (line.origin === "+") {
           if (on) {
-            hunkpatch += "+" + line.content + "\n";
+            hunk_patch += "+" + line.content + "\n";
             changes = true;
-            newcount += 1;
+            new_count += 1;
           } else if (!forward) {
-            hunkpatch += " " + line.content + "\n";
-            oldcount += 1;
-            newcount += 1;
-            oldoff += 1;
+            hunk_patch += " " + line.content + "\n";
+            old_count += 1;
+            new_count += 1;
+            old_off += 1;
           } else {
-            newoff -= 1;
+            new_off -= 1;
           }
         }
       }
 
       if (changes)
-        filepatch += `@@ -${oldstart},${oldcount} +${newstart},${newcount} @@\n${hunkpatch}`;
+        file_patch += `@@ -${old_start},${old_count} +${new_start},${new_count} @@\n${hunk_patch}`;
     }
 
-    if (filepatch) {
+    if (file_patch) {
       let oldFile = file.oldFile;
       if (!oldFile) {
-        oldFile = file.newFile;
-        toadd.push(file.newFile);
+        oldFile = file.newFile as string;
+        to_add.push(oldFile);
       }
-      patch += `--- a/${oldFile}\n+++ b/${file.newFile}\n${filepatch}`;
+      patch += `--- a/${oldFile}\n+++ b/${file.newFile}\n${file_patch}`;
     }
   }
-  return [patch, toadd];
+  return [patch, to_add];
 }

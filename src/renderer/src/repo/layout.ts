@@ -1,5 +1,5 @@
 import { ipcRenderer } from "electron";
-import { LayoutState, initialLayoutState } from "@renderer/store/layout/types";
+import { initialLayoutState } from "@renderer/store/layout/types";
 import { cancellableRun } from "./cancellable";
 import { LazyUpdater } from "./lazy";
 import { Store } from "redux";
@@ -7,6 +7,7 @@ import { RepoPath } from "@ipc/repo";
 import { setLayout } from "@renderer/store/layout/actions";
 import { RootState } from "@renderer/store";
 import { GET_LAYOUT_STATE, SET_LAYOUT_STATE } from "@ipc/ipc";
+import { LayoutState } from "@ipc/layout";
 
 export class LayoutProxy {
   private saver = new LazyUpdater();

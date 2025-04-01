@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-use-before-define */
 import { Commit } from "@renderer/store/repo/types";
 
 export interface GraphCommit {
@@ -26,9 +25,9 @@ export function createGraph(log: Commit[], heads: string[]): Commit[] {
     }),
   );
   log.forEach((commit) => {
-    const c = byHash.get(commit.hash);
+    const c = byHash.get(commit.hash)!;
     commit.parents.forEach((hash) => {
-      const d = byHash.get(hash);
+      const d = byHash.get(hash)!;
       d.children.push(c);
       d.commit.children.push(commit.hash);
     });
@@ -50,7 +49,7 @@ export function createGraph(log: Commit[], heads: string[]): Commit[] {
   }
 
   function getTips(o: GraphCommit[]): GraphCommit[] {
-    return [].concat(...o.map(getTip));
+    return [...o.map(getTip)].flat();
   }
 
   function ordering(l: GraphCommit, r: GraphCommit) {
@@ -61,10 +60,10 @@ export function createGraph(log: Commit[], heads: string[]): Commit[] {
     return -ordering(l, r);
   }
 
-  const headCommits = heads.map((r) => byHash.get(r)).sort(ordering);
+  const headCommits = heads.map((r) => byHash.get(r)!).sort(ordering);
   headCommits.sort(ordering);
   while (headCommits.length > 0) {
-    const c = headCommits.shift();
+    const c = headCommits.shift()!;
     if (c.index !== -1) continue;
 
     search += 1;
@@ -75,15 +74,15 @@ export function createGraph(log: Commit[], heads: string[]): Commit[] {
     } else {
       c.index = byOrder.length;
       byOrder.push(c);
-      c.parents = c.commit.parents.map((hash) => byHash.get(hash)).sort(reverseOrdering);
+      c.parents = c.commit.parents.map((hash) => byHash.get(hash)!).sort(reverseOrdering);
       c.parents.forEach((c) => headCommits.unshift(c));
     }
   }
 
   function chooseStrandParent(c: GraphCommit) {
-    return c.parents.reduce((p, k) => {
+    return c.parents?.reduce((p: GraphCommit | undefined, k) => {
       return p || graphDepth(k.commit.graph) !== -1 ? p : k;
-    }, null);
+    }, undefined);
   }
 
   function isPassable(g: number) {
@@ -135,9 +134,10 @@ export function createGraph(log: Commit[], heads: string[]): Commit[] {
   }
 
   function getStrandDepth(c: GraphCommit, strand: GraphCommit[]) {
-    while (c) {
-      strand.push(c);
-      c = chooseStrandParent(c);
+    let l: GraphCommit | undefined = c;
+    while (l) {
+      strand.push(l);
+      l = chooseStrandParent(l);
     }
 
     for (let depth = 0; ; depth += 1) {

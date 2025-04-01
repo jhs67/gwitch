@@ -1,7 +1,7 @@
+import { LayoutState } from "@ipc/layout";
 import {
   initialLayoutState,
   LayoutStateActions,
-  LayoutState,
   SET_HISTORY_SPLIT,
   SET_LAYOUT,
   SET_ORIGIN_CLOSED,

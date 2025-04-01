@@ -39,7 +39,11 @@ export interface DiffHunk {
   lines: DiffLine[];
 }
 
-type FileStatusExtensions = {
+export type FileStatus = {
+  fileName: string;
+  oldFile?: string;
+  newFile?: string;
+  status: StatusLetter;
   similarity?: number;
   oldMode?: string;
   newMode?: string;
@@ -47,27 +51,6 @@ type FileStatusExtensions = {
   unmerged?: boolean;
   hunks?: DiffHunk[];
 };
-
-type DeleteFileStatus = {
-  oldFile: string;
-  newFile: undefined;
-  status: StatusLetter;
-};
-
-type NewFileStatus = {
-  oldFile: undefined;
-  newFile: string;
-  status: StatusLetter;
-};
-
-type ChangedFileStatus = {
-  oldFile: undefined;
-  newFile: string;
-  status: StatusLetter;
-};
-
-export type FileStatus = (DeleteFileStatus | NewFileStatus | ChangedFileStatus) &
-  FileStatusExtensions;
 
 export interface Submodule {
   path: string;

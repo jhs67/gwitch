@@ -1,4 +1,3 @@
-import React from "react";
 import { Allotment } from "allotment";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@renderer/store";

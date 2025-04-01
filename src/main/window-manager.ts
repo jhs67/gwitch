@@ -37,7 +37,7 @@ function isValidWindowState(body: WindowState) {
 export class WindowManager {
   private windows = new Map();
   private state?: WindowState;
-  private theme_: ThemeType;
+  private theme_: ThemeType = "system";
 
   async load() {
     this.theme_ = "system";

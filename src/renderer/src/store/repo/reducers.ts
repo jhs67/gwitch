@@ -52,7 +52,7 @@ export function repoStateReducer(
     case SET_FOCUS_PATCH_DIFF:
       return {
         ...state,
-        focusPatch: state.focusPatch.map((s) => {
+        focusPatch: (state.focusPatch || []).map((s) => {
           if ((s.newFile || s.oldFile) !== (action.patch.newFile || action.patch.oldFile)) return s;
           return { ...s, ...action.patch };
         }),
@@ -65,14 +65,14 @@ export function repoStateReducer(
             .map((p) => action.index.findIndex((s) => (s.newFile || s.oldFile) === p))
             .filter((s) => s !== -1)
             .sort()
-            .map((i) => action.index[i].newFile || action.index[i].oldFile)
+            .map((i) => action.index[i].fileName)
         : indexSelected;
       let w = workingSelected
         ? workingSelected
             .map((p) => action.working.findIndex((s) => (s.newFile || s.oldFile) === p))
             .filter((s) => s !== -1)
             .sort()
-            .map((i) => action.working[i].newFile || action.working[i].oldFile)
+            .map((i) => action.working[i].fileName)
         : workingSelected;
 
       // don't change if nothing changed

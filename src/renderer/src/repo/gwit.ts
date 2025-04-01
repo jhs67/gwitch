@@ -14,7 +14,7 @@ import { Cancellable, cancellableX } from "./cancellable";
 import { gitPath } from "./gitpath";
 
 function parseNameStatus(out: string): FileStatus[] {
-  const z = [];
+  const z: FileStatus[] = [];
   const records = out.trim().split("\x00");
   for (let i = 0; i < records.length - 1; ) {
     const r = records[i++];
@@ -31,13 +31,15 @@ function parseNameStatus(out: string): FileStatus[] {
     } else {
       oldFile = a;
     }
-    z.push({ newFile, oldFile, status, similarity });
+    const fileName = (newFile || oldFile) as string;
+    z.push({ fileName, newFile, oldFile, status, similarity });
   }
   return z;
 }
 
 function diffEHeader(l: string, m: string) {
   if (l.startsWith(m)) return l.substr(m.length);
+  return;
 }
 
 function unEscapePath(v: string) {
@@ -191,12 +193,14 @@ function parseDiff(diff: string, defaults?: Partial<FileStatus>): { patches: Fil
         newFile = m[1];
       } else {
         m = d.match(/diff --git a\/(.*) b\/(.*)/);
+        if (!m) throw new Error("invalid git diff header");
         oldFile = m[1];
         newFile = m[2];
       }
     }
 
-    const patch: FileStatus = { status, oldMode, newMode, oldFile, newFile };
+    const fileName = (newFile || oldFile) as string;
+    const patch: FileStatus = { status, oldMode, newMode, fileName, oldFile, newFile };
 
     if (binary) {
       patch.binary = true;
@@ -288,31 +292,31 @@ export class Gwit {
   }
 
   close() {
-    this.repoPath = null;
+    this.repoPath = undefined;
   }
 
   git(...args: (string | string[])[]): Cancellable<string> {
-    const a = [].concat(...args);
+    const a = args.flat();
     const opts = { cwd: this.repoPath, maxBuffer: 200 * 1024 * 1024 };
-    return exec(this.cmd, a, opts);
+    return exec(this.cmd!, a, opts);
   }
 
   gitDir(): Cancellable<string> {
     return cancellableX(this.git("rev-parse", "--git-dir"), (dir) =>
-      resolve(this.repoPath, dir.trim()),
+      resolve(this.repoPath!, dir.trim()),
     );
   }
 
   gitRc(...args: (string | string[])[]): Cancellable<RcResult> {
-    const a = [].concat(...args);
+    const a = args.flat();
     const opts = { cwd: this.repoPath, maxBuffer: 200 * 1024 * 1024 };
-    return execRc(this.cmd, a, opts);
+    return execRc(this.cmd!, a, opts);
   }
 
   gitInput(input: string, ...args: (string | string[])[]) {
-    const a = [].concat(...args);
+    const a = args.flat();
     const opts = { cwd: this.repoPath, maxBuffer: 200 * 1024 * 1024 };
-    return exec(this.cmd, a, opts, input);
+    return exec(this.cmd!, a, opts, input);
   }
 
   getRefs(): Cancellable<RepoRef[]> {
@@ -337,7 +341,7 @@ export class Gwit {
           }
 
           const names = refName.split("/");
-          const type = (names.shift(), names.shift());
+          const type = (names.shift(), names.shift()) as string;
           let name = names.join("/");
           if (!name) name = type;
           return {
@@ -422,7 +426,7 @@ export class Gwit {
 
   diffCommitFile(from: string | undefined, to: string, record: Partial<FileStatus>) {
     if (!from) from = "4b825dc642cb6eb9a060e54bf8d69288fbee4904";
-    const file = record.newFile || record.oldFile;
+    const file = record.fileName as string;
     const old = record.oldFile;
     return cancellableX(
       old && old !== file
@@ -446,10 +450,10 @@ export class Gwit {
 
   stageStatus() {
     return cancellableX(this.git("status", "-z", "-uall"), (out) => {
-      const r = [];
+      const r: StageFileStatus[] = [];
       const lines = out.split("\x00");
       while (lines.length > 1) {
-        const line = lines.shift();
+        const line = lines.shift() as string;
         const e = statusLine(line, lines[0]);
         if (e.indexStatus === "R") lines.shift();
         r.push(e);
@@ -512,7 +516,7 @@ export class Gwit {
           const match = line.match(/([ +-U])([a-fA-F0-9]*) ([^ ]*) \(([^)]*)\)/);
           return match && { path: match[3], hash: match[2], status: match[1] };
         })
-        .filter((sub) => sub);
+        .filter((sub) => sub !== null);
     });
   }
 

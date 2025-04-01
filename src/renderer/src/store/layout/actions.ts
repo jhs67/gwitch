@@ -1,13 +1,12 @@
+import { LayoutState, ClientMode } from "@ipc/layout";
 import {
   LayoutStateActions,
   SET_HISTORY_SPLIT,
   SET_STAGE_SPLIT,
-  LayoutState,
   SET_LAYOUT,
   SET_ORIGIN_CLOSED,
   SET_TAGS_CLOSED,
   SET_PATCH_SHOW,
-  ClientMode,
   SET_CLIENT_MODE,
   SET_SUBMODULES_CLOSED,
   SET_STATUS_SPLIT,
