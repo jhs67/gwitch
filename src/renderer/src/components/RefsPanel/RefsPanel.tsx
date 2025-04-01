@@ -17,7 +17,7 @@ import {
 } from "@renderer/store/layout/actions";
 import { RepoRef } from "@renderer/store/repo/types";
 import { setFocusCommit } from "@renderer/store/repo/actions";
-import { goBack, openSubmodule } from "@renderer/main";
+import { goBack, openSubmodule } from "@renderer/repo_loader";
 import { GwitchTheme } from "@renderer/theme/theme";
 
 const useStyles = createUseStyles((theme: GwitchTheme) => ({

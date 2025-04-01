@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@renderer/store";
 import { SelectDiff } from "../Diff";
-import { LoaderContext } from "@renderer/main";
+import { LoaderContext } from "@renderer/repo_loader";
 import { RepoLoader } from "@renderer/repo/loader";
 import { dialog, getCurrentWindow } from "@electron/remote";
 

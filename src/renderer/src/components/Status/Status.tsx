@@ -11,7 +11,7 @@ import { FileStatus } from "@renderer/store/repo/types";
 import { setStatusSplit } from "@renderer/store/layout/actions";
 import { setCommitMessage, setRepoAmend, setStageSelected } from "@renderer/store/repo/actions";
 import { RepoLoader } from "@renderer/repo/loader";
-import { LoaderContext } from "@renderer/main";
+import { LoaderContext } from "@renderer/repo_loader";
 import { FilesView } from "./FilesView";
 import { GwitchTheme } from "@renderer/theme/theme";
 import classNames from "classnames";
