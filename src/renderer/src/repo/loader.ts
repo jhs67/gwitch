@@ -271,7 +271,7 @@ export class RepoLoader {
       await Promise.all(
         status.map(async (s) => {
           const patches = await run(() => this.gwit.diffCommitFile(commit.parents[0], hash, s));
-          this.dispatch(setFocusPatchDiff(patches.patches[0]));
+          if (patches.patches.length !== 0) this.dispatch(setFocusPatchDiff(patches.patches[0]));
         }),
       );
     });
