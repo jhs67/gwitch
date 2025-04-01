@@ -53,7 +53,7 @@ export function repoStateReducer(
       return {
         ...state,
         focusPatch: (state.focusPatch || []).map((s) => {
-          if ((s.newFile || s.oldFile) !== (action.patch.newFile || action.patch.oldFile)) return s;
+          if (s.fileName !== action.patch.fileName) return s;
           return { ...s, ...action.patch };
         }),
       };
