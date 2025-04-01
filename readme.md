@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img width=200 src="resources/icon.svg" />
+  <img width=200 src="author/icon.svg" />
   <br />
   gwitch
   <br />
@@ -22,15 +22,15 @@ A multi-platform visual git client built using <a href="https://www.electronjs.o
   <a href="#license">License</a>
 </p>
 
-<img src="resources/gwitch-demo.gif" />
+<img src="author/gwitch-demo.gif" />
 
 ## Key Features
 
-* Line-by-line staging, unstaging, and discarding
-* Hunk and file operations
-* Log view with graph visualization
-* Status and diff for each commit
-* Easy on the eyes dark mode
+- Line-by-line staging, unstaging, and discarding
+- Hunk and file operations
+- Log view with graph visualization
+- Status and diff for each commit
+- Easy on the eyes dark mode
 
 ## How To Use
 
@@ -45,11 +45,11 @@ $ cd gwitch
 $ npm install
 
 # Run the app
-$ npm start
+$ npm run dev
 ```
 
-The app is developed using electron-forge and there is support for creating various
-installer packages. Try `npm run make` to create the packages for your platform.
+The app is developed using electron-vite and there is support for creating various
+installer packages. Try `npm run build` to create the packages for your platform.
 
 ## Download
 
@@ -63,7 +63,7 @@ Sadly that software is only for MacOS and was abandoned long ago.
 This software uses these open source packages:
 
 - [Electron](http://electron.atom.io/)
-- [Electron Forge](https://www.electronforge.io/)
+- [Electron Vite](https://electron-vite.org/)
 - [React](https://reactjs.org/)
 - [TypeScript](https://www.typescriptlang.org/)
 - [Node.js](https://nodejs.org/)

@@ -1,11 +1,20 @@
 {
-    "editor.tabSize": 2,
-    "cSpell.words": [
-        "appmenu",
-        "Gwitch",
-        "marshallofsound",
-        "relocator",
-        "Resizer",
-        "unstage"
-    ]
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "cSpell.words": [
+    "appmenu",
+    "gwit",
+    "Gwitch",
+    "marshallofsound",
+    "relocator",
+    "Resizer",
+    "unstage"
+  ]
 }

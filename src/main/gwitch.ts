@@ -1,11 +1,10 @@
 import { RecentStore } from "./recent-store";
-import { BrowserWindow, dialog, nativeTheme } from "electron";
+import { BrowserWindow, dialog, nativeTheme, app } from "electron";
 import { WindowManager } from "./window-manager";
 import { setAppMenu } from "./appmenu";
-import { RepoPath } from "../store/repo/types";
-import { basename } from "path";
+import { RepoPath } from "@store/repo/types";
+import { basename, join } from "node:path";
 import { enable as remote_enable } from "@electron/remote/main";
-declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 
 export type ThemeType = "light" | "dark" | "system";
 
@@ -51,7 +50,11 @@ export default class Gwitch {
     remote_enable(window.webContents);
 
     // and load the index.html of the app.
-    window.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
+    if (!app.isPackaged && process.env["ELECTRON_RENDERER_URL"]) {
+      window.loadURL(process.env["ELECTRON_RENDERER_URL"]);
+    } else {
+      window.loadFile(join(__dirname, "../renderer/index.html"));
+    }
     window.webContents.on("did-finish-load", () => {
       this.sendTheme(window);
       if (path == null) this.sendOpenRecent(window);

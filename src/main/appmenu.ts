@@ -1,5 +1,5 @@
 import { Menu, MenuItemConstructorOptions } from "electron";
-import { gwitch } from "../index";
+import { gwitch } from "./index";
 import { ThemeType } from "./gwitch";
 
 const isMac = process.platform === "darwin";

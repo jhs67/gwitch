@@ -2,7 +2,7 @@ import { promises as fs } from "fs";
 import punycode from "punycode";
 import { app } from "electron";
 import { join } from "path";
-import { LayoutState } from "../store/layout/types";
+import { LayoutState } from "@ipc/layout";
 
 const Prefix = "lt-";
 
@@ -24,6 +24,7 @@ export class LayoutStore {
       return JSON.parse(await fs.readFile(pathToPath(path), "utf8"));
     } catch (err) {
       console.info("error loading layout state", err);
+      return;
     }
   }
 
