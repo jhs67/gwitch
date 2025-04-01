@@ -13,8 +13,8 @@ export interface SelectListProps<T> {
   items: T[];
   selected: number[];
   focused: number | undefined;
-  itemComponent?: ItemComponent<T>;
-  itemKey?: (t: T, i: number) => string;
+  itemComponent: ItemComponent<T>;
+  itemKey: (t: T, i: number) => string;
   setSelected: (s: number[]) => void;
   setFocused: (f: number | undefined) => void;
   onContext?: (ev: MouseEvent) => void;
@@ -30,21 +30,19 @@ const KeyCode = {
   SPACE: 32,
 };
 
-export function SelectList<T>(props: SelectListProps<T>) {
-  const {
-    items,
-    selected,
-    focused,
-    rootClass,
-    itemClass,
-    setSelected,
-    setFocused,
-    onContext,
-    onDoubleClick,
-    itemComponent,
-    itemKey,
-  } = props;
-
+export function SelectList<T>({
+  items,
+  selected,
+  focused,
+  rootClass,
+  itemClass,
+  setSelected,
+  setFocused,
+  onContext,
+  onDoubleClick,
+  itemComponent = ({ item }: ItemProps<unknown>) => (React.isValidElement(item) ? item : "" + item),
+  itemKey = (_: unknown, n: number) => n.toString(),
+}: SelectListProps<T>) {
   function lowerBound(i: number, c: number[]) {
     let n = 0;
     let count = c.length;
@@ -222,7 +220,7 @@ export function SelectList<T>(props: SelectListProps<T>) {
           <div
             ref={(e) => (itemRefs.current[i] = e)}
             className={itemClass}
-            key={itemKey ? itemKey(t, i) : i}
+            key={itemKey(t, i)}
             onClick={(event) => {
               focusItem(i, event.shiftKey, event.ctrlKey);
               event.stopPropagation();
@@ -236,15 +234,10 @@ export function SelectList<T>(props: SelectListProps<T>) {
               if (onDoubleClick) onDoubleClick(ev.nativeEvent);
             }}
           >
-            {itemComponent && itemComponent({ item: t, index: i, selected: s, focused: f })}
+            {itemComponent({ item: t, index: i, selected: s, focused: f })}
           </div>
         );
       })}
     </div>
   );
 }
-
-SelectList.defaultProps = {
-  itemComponent: ({ item }: ItemProps<unknown>) => (React.isValidElement(item) ? item : "" + item),
-  itemKey: (_: unknown, n: number) => n.toString(),
-};
