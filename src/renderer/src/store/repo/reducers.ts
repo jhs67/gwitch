@@ -14,6 +14,7 @@ import {
   SET_REPO_AMEND,
   SET_COMMIT_MESSAGE,
   SET_SUBMODULES,
+  SET_FIXUP,
 } from "./types";
 
 const initialState: RepoState = {
@@ -22,6 +23,7 @@ const initialState: RepoState = {
   amend: false,
   commitMessage: "",
   submodules: [],
+  fixup: undefined,
 };
 
 function same(a: string[] | undefined, b: string[] | undefined) {
@@ -95,6 +97,8 @@ export function repoStateReducer(
       return { ...state, commitMessage: action.message };
     case SET_SUBMODULES:
       return { ...state, submodules: action.submodules };
+    case SET_FIXUP:
+      return { ...state, fixup: action.fixup };
     default:
       return state;
   }

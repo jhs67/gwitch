@@ -1,4 +1,4 @@
-import { ChangeEvent } from "react";
+import { ChangeEvent, useMemo } from "react";
 import { Allotment } from "allotment";
 import { createUseStyles } from "react-jss";
 import { useSelector, useDispatch } from "react-redux";
@@ -7,9 +7,14 @@ import { shell } from "electron";
 import { dialog, getCurrentWindow } from "@electron/remote";
 import { RootState } from "@renderer/store";
 import { RepoPath } from "@ipc/repo";
-import { FileStatus } from "@renderer/store/repo/types";
+import { Commit, FileStatus } from "@renderer/store/repo/types";
 import { setStatusSplit } from "@renderer/store/layout/actions";
-import { setCommitMessage, setRepoAmend, setStageSelected } from "@renderer/store/repo/actions";
+import {
+  setCommitMessage,
+  setRepoAmend,
+  setRepoFixup,
+  setStageSelected,
+} from "@renderer/store/repo/actions";
 import { RepoLoader } from "@renderer/repo/loader";
 import { LoaderContext } from "@renderer/repo_loader";
 import { FilesView } from "./FilesView";
@@ -109,9 +114,21 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
         },
       },
       "& .commitButtons": {
-        flex: "0 0 auto",
         paddingTop: "9px",
         paddingBottom: "9px",
+        display: "flex",
+
+        "& .box": {
+          display: "flex",
+          justifyContent: "center",
+        },
+        "& .fixup": {
+          flexGrow: 1,
+          flexShrink: 1,
+        },
+        "& .fixupLabel": {
+          marginRight: "3px",
+        },
       },
       "& .commitButton": {
         userSelect: "none",
@@ -224,14 +241,59 @@ function WorkingFiles({ loader }: { loader: RepoLoader }) {
   );
 }
 
+type FixupCommit = {
+  hash: string;
+  subject: string;
+  shortSubject: string;
+};
+
+function shorten(str: string) {
+  const n = 32;
+  return str.length > n ? str.slice(0, n - 1) + "…" : str;
+}
+
+function getFixupCommits(commits: Commit[], headHash: string, upstreamHashes: string[]) {
+  const r: FixupCommit[] = [];
+  const p: string[] = [headHash];
+
+  while (p.length !== 0 && r.length < 24) {
+    const h = p.shift() as string;
+    if (upstreamHashes.includes(h)) continue;
+    const c = commits.find((c) => c.hash === h);
+    if (!c) continue;
+    r.push({ hash: c.hash, subject: c.subject, shortSubject: shorten(c.subject) });
+    p.push(...c.parents);
+  }
+
+  return r;
+}
+
 function CommitCompose({ loader }: { loader: RepoLoader }) {
   const amend = useSelector((state: RootState) => state.repo.amend);
   const message = useSelector((state: RootState) => state.repo.commitMessage);
   const status = useSelector((state: RootState) => state.repo.indexStatus);
+  const fixup = useSelector((state: RootState) => state.repo.fixup);
+  const head = useSelector((state: RootState) => state.repo.head);
+  const refs = useSelector((state: RootState) => state.repo.refs);
+  const commits = useSelector((state: RootState) => state.repo.commits);
   const dispatch = useDispatch();
+
+  const fixups = useMemo(() => {
+    if (!head) return [];
+    const r = refs.find((r) => r.refName === head);
+    const upstreams = (r && r.type === "heads" ? r.upstreams : []).map((r) => {
+      const s = refs.find((s) => s.refName === r);
+      return s ? s.hash : r;
+    });
+    return getFixupCommits(commits, r ? r.hash : head, upstreams);
+  }, [commits, refs, head]);
 
   const toggleAmend = () => {
     dispatch(setRepoAmend(!amend));
+  };
+
+  const setFixup = (f: string | undefined) => {
+    dispatch(setRepoFixup(f));
   };
 
   const messageChange = (ev: ChangeEvent<HTMLTextAreaElement>) => {
@@ -239,25 +301,62 @@ function CommitCompose({ loader }: { loader: RepoLoader }) {
   };
 
   const commitClick = () => {
-    loader.commit(amend, message);
+    loader.commit(amend, fixup, message);
   };
 
   const disabled = message === "" || !status || status.length === 0;
+  const amendDisabled = !!fixup;
+  const fixupDisabled = amend;
 
   return (
     <div className="commitMessage">
       <div className="indexHeader">Commit Message</div>
       <textarea className="message" value={message} onChange={messageChange} />
       <div className="commitButtons">
-        <label>
-          <input className="amend" type="checkbox" checked={amend} onChange={toggleAmend} />
-          Amend
-        </label>
-        <div
-          className={classNames("commitButton", { disabled })}
-          onClick={!disabled ? commitClick : void 0}
-        >
-          Commit
+        <div className="box">
+          <div>
+            <label>
+              <input
+                className="amend"
+                disabled={amendDisabled}
+                type="checkbox"
+                checked={amend}
+                onChange={toggleAmend}
+              />
+              Amend
+            </label>
+          </div>
+        </div>
+        <div className="box fixup">
+          <div>
+            <label className="fixupLabel">
+              Fixup{" "}
+              <select
+                value={fixup}
+                disabled={fixupDisabled}
+                onChange={(e) => {
+                  setFixup(e.target.value === "-" ? undefined : e.target.value);
+                }}
+              >
+                <option value="-">-</option>
+                {fixups.map((f) => (
+                  <option value={f.hash} key={f.hash}>
+                    {f.shortSubject}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </div>
+        <div className="box">
+          <div>
+            <div
+              className={classNames("commitButton", { disabled })}
+              onClick={!disabled ? commitClick : void 0}
+            >
+              Commit
+            </div>
+          </div>
         </div>
       </div>
     </div>

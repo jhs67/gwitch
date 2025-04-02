@@ -18,6 +18,7 @@ import {
   SET_COMMIT_MESSAGE,
   Submodule,
   SET_SUBMODULES,
+  SET_FIXUP,
 } from "./types";
 
 export function setRepoPath(path: RepoPath): RepoStateActions {
@@ -73,4 +74,8 @@ export function setCommitMessage(message: string): RepoStateActions {
 
 export function setSubmodules(submodules: Submodule[]): RepoStateActions {
   return { type: SET_SUBMODULES, submodules };
+}
+
+export function setRepoFixup(fixup: string | undefined): RepoStateActions {
+  return { type: SET_FIXUP, fixup };
 }

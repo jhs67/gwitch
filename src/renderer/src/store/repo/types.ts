@@ -1,11 +1,21 @@
 import { RepoPath } from "@ipc/repo";
 
-export interface RepoRef {
+export type OtherRepoRef = {
   hash: string;
   refName: string;
   name: string;
-  type: "HEAD" | "stash" | "heads" | "remotes" | "tags";
-}
+  type: "HEAD" | "stash" | "remotes" | "tags";
+};
+
+export type BranchRepoRef = {
+  hash: string;
+  refName: string;
+  name: string;
+  upstreams: string[];
+  type: "heads";
+};
+
+export type RepoRef = OtherRepoRef | BranchRepoRef;
 
 export interface Commit {
   hash: string;
@@ -70,6 +80,7 @@ export interface RepoState {
   submodules: Submodule[];
   amend: boolean;
   commitMessage: string;
+  fixup: string | undefined;
 }
 
 export const SET_REPO_PATH = "SET_REPO_PATH";
@@ -85,6 +96,7 @@ export const SET_STAGE_SELECTED = "SET_STAGE_SELECTED";
 export const SET_REPO_AMEND = "SET_REPO_AMEND";
 export const SET_COMMIT_MESSAGE = "SET_COMMIT_MESSAGE";
 export const SET_SUBMODULES = "SET_SUBMODULES";
+export const SET_FIXUP = "SET_FIXUP";
 
 type SetRepoPathAction = {
   type: typeof SET_REPO_PATH;
@@ -152,6 +164,11 @@ type SetSubmodules = {
   submodules: Submodule[];
 };
 
+type SetFixup = {
+  type: typeof SET_FIXUP;
+  fixup: string | undefined;
+};
+
 export type RepoStateActions =
   | SetRepoPathAction
   | ResetRepoPathAction
@@ -165,4 +182,5 @@ export type RepoStateActions =
   | SetStageSelected
   | SetRepoAmend
   | SetCommitMessage
-  | SetSubmodules;
+  | SetSubmodules
+  | SetFixup;

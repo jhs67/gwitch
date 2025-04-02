@@ -14,6 +14,7 @@ import {
   setCommitMessage,
   setRepoAmend,
   setSubmodules,
+  setRepoFixup,
 } from "@renderer/store/repo/actions";
 import { Gwit } from "./gwit";
 import { cancellableRun, cancellableQueue } from "./cancellable";
@@ -35,6 +36,7 @@ export class RepoLoader {
   private focusPatchLazy = new LazyUpdater(100, 1000);
 
   private loadedStatusAmend = false;
+  private loadedStatusFixup: string | undefined;
   private statusLazy = new LazyUpdater(100, 1000);
   private statusWatch: Watcher | null = null;
 
@@ -49,7 +51,8 @@ export class RepoLoader {
     this.loadedStatusAmend = this.store.getState().repo.amend;
 
     this.store.subscribe(() => {
-      const { focusCommit, amend, commitMessage, head, refs, commits } = this.store.getState().repo;
+      const { focusCommit, amend, fixup, commitMessage, head, refs, commits } =
+        this.store.getState().repo;
       if (focusCommit && this.loadedFocusPatch != focusCommit) {
         this.focusPatchLazy.stop();
         this.loadedFocusPatch = focusCommit;
@@ -66,6 +69,15 @@ export class RepoLoader {
         const m = `${c?.subject}${c?.body && "\n\n"}${c?.body}`;
         if (amend && commitMessage === "") this.dispatch(setCommitMessage(m));
         if (!amend && commitMessage === m) this.dispatch(setCommitMessage(""));
+      }
+      if (this.loadedStatusFixup !== fixup) {
+        this.loadedStatusFixup = fixup;
+        if (fixup) {
+          const c = commits.find((c) => c.hash === fixup);
+          this.dispatch(setCommitMessage(c ? `fixup! ${c.subject}` : ""));
+        } else {
+          this.dispatch(setCommitMessage(""));
+        }
       }
     });
   }
@@ -162,15 +174,17 @@ export class RepoLoader {
     await this.gwit.unstageFiles(files).result;
   }
 
-  async commit(amend: boolean, message: string) {
+  async commit(amend: boolean, fixup: string | undefined, message: string) {
     try {
       // freeze the status update during the operation
       this.statusLazy.freeze();
 
       this.dispatch(setCommitMessage(""));
       this.dispatch(setRepoAmend(false));
+      this.dispatch(setRepoFixup(undefined));
 
-      await this.gwit.commit(amend, message).result;
+      if (fixup) await this.gwit.commitFixup(fixup).result;
+      else await this.gwit.commit(amend, message).result;
     } finally {
       this.statusLazy.unfreeze();
     }

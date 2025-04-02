@@ -10,7 +10,7 @@ import {
 } from "@renderer/store/repo/types";
 import { RepoPath } from "@ipc/repo";
 import { exec, execRc, RcResult } from "./exec";
-import { Cancellable, cancellableX } from "./cancellable";
+import { Cancellable, cancellableRun, cancellableX } from "./cancellable";
 import { gitPath } from "./gitpath";
 
 function parseNameStatus(out: string): FileStatus[] {
@@ -320,14 +320,15 @@ export class Gwit {
   }
 
   getRefs(): Cancellable<RepoRef[]> {
-    return cancellableX(this.gitRc("show-ref", "--head", "-d"), (result) => {
+    return cancellableRun(async (run) => {
+      const result = await run(this.gitRc("show-ref", "--head", "-d"));
       if (result.code === 1) return [];
       if (result.code !== 0) throw new Error(`show-ref returned error code ${result.code}`);
 
-      let refs: RepoRef[] = result.out
+      let refs = result.out
         .trim()
         .split("\n")
-        .map(function (line): RepoRef {
+        .map((line): RepoRef => {
           const split = line.indexOf(" ");
           const hash = line.substr(0, split);
           const refName = line.substr(split + 1);
@@ -344,10 +345,19 @@ export class Gwit {
           const type = (names.shift(), names.shift()) as string;
           let name = names.join("/");
           if (!name) name = type;
+          if (type === "heads") {
+            return {
+              hash: hash,
+              refName: refName,
+              type: type,
+              name: name,
+              upstreams: [],
+            };
+          }
           return {
             hash: hash,
             refName: refName,
-            type: type as "heads" | "remotes" | "tags" | "stash",
+            type: type as "remotes" | "tags" | "stash",
             name: name,
           };
         });
@@ -363,7 +373,21 @@ export class Gwit {
           r.name = r.name.substr(0, r.name.length - 3);
       });
 
+      await Promise.all(
+        refs.map(async (r) => {
+          if (r.type !== "heads") return;
+          r.upstreams.push(...(await run(this.getUpstreams(r.name))));
+        }),
+      );
+
       return refs;
+    });
+  }
+
+  getUpstreams(name: string): Cancellable<string[]> {
+    return cancellableX(this.gitRc("rev-parse", "--abbrev-ref", name + "@{upstream}"), (result) => {
+      if (result.code !== 0) return [];
+      return result.out.trim().split("\n");
     });
   }
 
@@ -561,5 +585,11 @@ export class Gwit {
         return;
       },
     );
+  }
+
+  commitFixup(fixup: string) {
+    return cancellableX(this.git("commit", "--fixup", fixup), () => {
+      return;
+    });
   }
 }
