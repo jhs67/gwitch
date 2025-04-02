@@ -1,8 +1,8 @@
 import { promises as fs } from "fs";
-import punycode from "punycode";
 import { app } from "electron";
 import { join } from "path";
 import { LayoutState } from "@ipc/layout";
+import { domainToASCII } from "url";
 
 const Prefix = "lt-";
 
@@ -10,11 +10,12 @@ function pathToPath(path: string) {
   return join(
     app.getPath("userData"),
     Prefix +
-      punycode.encode(
+      domainToASCII(
         path.replace(/[^\w\-x.]/g, function (a) {
           return a === "x" ? "xx" : "x" + a.charCodeAt(0).toString(16) + "-";
         }),
-      ),
+      ) +
+      "-",
   );
 }
 
