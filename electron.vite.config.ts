@@ -23,5 +23,8 @@ export default defineConfig({
       },
     },
     plugins: [renderer(), react()],
+    define: {
+      GWITCH_VERSION: JSON.stringify(process.env.npm_package_version),
+    },
   },
 });

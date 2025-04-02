@@ -75,7 +75,7 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
     },
   },
   repoButton: {
-    height: "10vh",
+    height: "8vh",
     textAlign: "center",
     "& .button": {
       display: "inline-block",
@@ -98,6 +98,10 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
       },
     },
   },
+  versionTag: {
+    color: theme.colors.lessprimary,
+    textAlign: "center",
+  },
 }));
 
 export function RecentRepos() {
@@ -118,6 +122,8 @@ export function RecentRepos() {
     dispatch(removeRecentRepo(path));
     ipcRenderer.send(REMOVE_RECENT, path);
   }
+
+  const gwitchVersion = GWITCH_VERSION;
 
   return (
     <div className={classes.recentRepos}>
@@ -146,6 +152,7 @@ export function RecentRepos() {
           Open Repository
         </div>
       </div>
+      <div className={classes.versionTag}>{`gwitch ${gwitchVersion}`}</div>
     </div>
   );
 }
