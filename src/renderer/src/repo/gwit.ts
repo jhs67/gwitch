@@ -456,7 +456,7 @@ export class Gwit {
       old && old !== file
         ? this.git("diff", from + ":" + old, to + ":" + file)
         : this.git("diff", from, to, "--", file),
-      (output) => parseDiff(output),
+      (output) => parseDiff(output, record),
     );
   }
 
