@@ -1,12 +1,13 @@
 {
   "name": "gwitch",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "electron git client",
   "main": "./out/main/index.js",
   "author": {
     "name": "Jon Spencer",
     "email": "jon@jonspencer.ca"
   },
+  "repository": "github:jhs67/gwitch",
   "license": "ISC",
   "homepage": "https://github.com/jhs67/gwitch",
   "scripts": {
