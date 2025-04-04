@@ -22,20 +22,40 @@ import { GwitchTheme } from "@renderer/theme/theme";
 
 const useStyles = createUseStyles((theme: GwitchTheme) => ({
   refsPanel: {
-    flex: "0 0 auto",
     padding: "5px",
-    maxWidth: "20vw",
-    minWidth: "12rem",
+    width: "14rem",
     backgroundColor: theme.colors.panel.background,
     borderRight: `1px solid ${theme.colors.softBorder}`,
     display: "flex",
     flexFlow: "column nowrap",
-    overflow: "hidden",
+    height: "100%",
   },
   refsSect: {
-    flex: "1 1 auto",
+    flex: "1 1",
     flexFlow: "column nowrap",
     fill: theme.colors.primary,
+    overflowY: "auto",
+    "&::-webkit-scrollbar": {
+      width: "6px",
+    },
+    "&::-webkit-scrollbar-button": {
+      backgroundImage: "none",
+      width: 0,
+      height: 0,
+    },
+    "&::-webkit-scrollbar-thumb": {
+      borderRadius: "4px",
+      border: 0,
+    },
+    "&::-webkit-scrollbar-track": {
+      borderRadius: "4px",
+    },
+    "&:hover::-webkit-scrollbar-thumb": {
+      background: "#666",
+    },
+    "&:hover::-webkit-scrollbar-thumb:hover": {
+      background: "#888",
+    },
   },
   stageSection: {
     marginBottom: "0.5rem",
@@ -221,23 +241,23 @@ export function RefsPanel() {
 
   return (
     <div className={classes.refsPanel}>
-      <div className={classes.refsSect}>
-        <div className={classes.stageSection}>
-          <div className={classes.title}>
-            {[basename(path.path, ".git"), ...path.submodules].join("/")}
-          </div>
-          <div
-            className={classNames(classes.stageLine, {
-              [classes.focusRef]: mode === "stage",
-            })}
-            onClick={() => {
-              dispatch(setClientMode(mode === "history" ? "stage" : "history"));
-            }}
-          >
-            <img src={StageUrl} className={classes.refIcon} />
-            <div className={classes.stage}>Stage</div>
-          </div>
+      <div className={classes.stageSection}>
+        <div className={classes.title}>
+          {[basename(path.path, ".git"), ...path.submodules].join("/")}
         </div>
+        <div
+          className={classNames(classes.stageLine, {
+            [classes.focusRef]: mode === "stage",
+          })}
+          onClick={() => {
+            dispatch(setClientMode(mode === "history" ? "stage" : "history"));
+          }}
+        >
+          <img src={StageUrl} className={classes.refIcon} />
+          <div className={classes.stage}>Stage</div>
+        </div>
+      </div>
+      <div className={classes.refsSect}>
         <div className={classes.branches}>
           <div className={classes.title}>Branches</div>
           {refs
