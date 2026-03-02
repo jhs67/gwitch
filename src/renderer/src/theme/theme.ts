@@ -1,20 +1,21 @@
-import { themeCopy } from "./themecopy";
+import { themeCopy } from "./theme_copy";
 import Color from "color";
 
 const baseTheme = {
   typography: {
     bodySize: "12px",
+    // cSpell:ignore freesans nimbussansl liberationsans Lucida
     bodyFace: "freesans, Helvetica, arial, nimbussansl, liberationsans, clean, sans-serif",
     monospaceFace: 'Hack, "Lucida Console", Monaco, monospace',
   },
   colors: {
     primary: "#000",
     secondary: "#888",
-    lessprimary: "#666",
+    lessPrimary: "#666",
     background: "#fff",
-    backalt: "#f4f4f4",
+    backAlt: "#f4f4f4",
     softBorder: "#dedede",
-    softHilight: "#cdcdcd",
+    softHighlight: "#cdcdcd",
     hardBorder: "#bbb",
     recentTop: "#fcfcfc",
     recentBot: "#e0e0e0",
@@ -133,12 +134,12 @@ export const darkTheme = themeCopy(baseTheme, {
   colors: {
     primary: "#ddd",
     secondary: "#aaa",
-    lessprimary: "#aaa",
+    lessPrimary: "#aaa",
     background: "#1e1e1e",
-    backalt: "#282828",
+    backAlt: "#282828",
     softBorder: "#3e3e3e",
     hardBorder: "#555",
-    softHilight: "#888",
+    softHighlight: "#888",
     recentTop: "#555",
     recentBot: "#333",
     buttonBack: "rgb(59,59,59)",

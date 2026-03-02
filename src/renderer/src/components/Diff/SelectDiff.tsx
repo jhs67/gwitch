@@ -1,6 +1,6 @@
 import { createUseStyles } from "react-jss";
 import { FileStatus } from "@renderer/store/repo/types";
-import { useMouseTrack } from "@renderer/hooks/mousetrack";
+import { useMouseTrack } from "@renderer/hooks/mouse_track";
 import { FileDiff } from "./FileDiff";
 import { GwitchTheme } from "@renderer/theme/theme";
 import { useEffect, useRef } from "react";

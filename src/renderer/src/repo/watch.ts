@@ -39,7 +39,7 @@ export class Watcher {
             i.ignored = r;
             if (!i.ignored) {
               this.watcher.add(path);
-              // check for defered change result pending ignore update
+              // check for deferred change result pending ignore update
               if (i.changed) hook([path]);
             }
             i.changed = undefined;

@@ -184,25 +184,25 @@ export function createGraph(log: Commit[], heads: string[]): Commit[] {
       // Draw a connection to each child.
       for (const j in p.children) {
         const k = p.children[j];
-        const kdepth = graphDepth(k.commit.graph);
-        if (kdepth === -1) continue;
+        const kDepth = graphDepth(k.commit.graph);
+        if (kDepth === -1) continue;
 
-        const ldepth = findPassableLane(k, p, depth);
-        branchDown(k.commit.graph, kdepth, ldepth);
-        branchUp(p.commit.graph, depth, ldepth);
-        for (let i = k.index + 1; i < p.index; i += 1) byOrder[i].commit.graph[ldepth] |= 8;
+        const lDepth = findPassableLane(k, p, depth);
+        branchDown(k.commit.graph, kDepth, lDepth);
+        branchUp(p.commit.graph, depth, lDepth);
+        for (let i = k.index + 1; i < p.index; i += 1) byOrder[i].commit.graph[lDepth] |= 8;
       }
 
       // Draw a connection to each parent.
       for (const j in p.parents) {
         const k = p.parents[j];
-        const kdepth = graphDepth(k.commit.graph);
-        if (kdepth === -1) continue;
+        const kDepth = graphDepth(k.commit.graph);
+        if (kDepth === -1) continue;
 
-        const ldepth = findPassableLane(p, k, depth);
-        branchDown(p.commit.graph, depth, ldepth);
-        branchUp(k.commit.graph, kdepth, ldepth);
-        for (let i = p.index + 1; i < k.index; i += 1) byOrder[i].commit.graph[ldepth] |= 8;
+        const lDepth = findPassableLane(p, k, depth);
+        branchDown(p.commit.graph, depth, lDepth);
+        branchUp(k.commit.graph, kDepth, lDepth);
+        for (let i = p.index + 1; i < k.index; i += 1) byOrder[i].commit.graph[lDepth] |= 8;
       }
     });
   }

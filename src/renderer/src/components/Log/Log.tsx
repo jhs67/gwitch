@@ -42,7 +42,7 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
       verticalAlign: "middle",
     },
     "& tr:nth-child(2n)": {
-      backgroundColor: theme.colors.backalt,
+      backgroundColor: theme.colors.backAlt,
     },
     "& .graph-node": {
       fill: theme.colors.background,

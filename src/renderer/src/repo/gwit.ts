@@ -11,7 +11,7 @@ import {
 import { RepoPath } from "@ipc/repo";
 import { exec, execRc, RcResult } from "./exec";
 import { Cancellable, cancellableRun, cancellableX } from "./cancellable";
-import { gitPath } from "./gitpath";
+import { gitPath } from "./git_path";
 
 function parseNameStatus(out: string): FileStatus[] {
   const z: FileStatus[] = [];
@@ -176,7 +176,7 @@ function parseDiff(diff: string, defaults?: Partial<FileStatus>): { patches: Fil
       } else if ((v = diffEHeader(w, "index "))) {
         const m = v.match("[0-9a-fA-F]*...[0-9a-fA-F]*( ([0-7]*))?");
         if (!m) {
-          throw new Error("unexected index header: " + w);
+          throw new Error("unexpected index header: " + w);
         }
         if (m[1]) {
           oldMode = newMode = m[1];
@@ -473,6 +473,7 @@ export class Gwit {
   }
 
   stageStatus() {
+    // cSpell:ignore uall
     return cancellableX(this.git("status", "-z", "-uall"), (out) => {
       const r: StageFileStatus[] = [];
       const lines = out.split("\x00");
@@ -574,7 +575,7 @@ export class Gwit {
     return cancellableX(this.gitInput(patch, "apply", "--cached", "--reverse"), () => undefined);
   }
 
-  unapplyPatch(patch: string) {
+  unApplyPatch(patch: string) {
     return cancellableX(this.gitInput(patch, "apply", "--reverse"), () => undefined);
   }
 

@@ -45,7 +45,7 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
     "&:hover": {
       padding: "2px",
       borderWidth: "2px",
-      borderColor: theme.colors.softHilight,
+      borderColor: theme.colors.softHighlight,
     },
     "&:hover $repoRm": {
       display: "inline-block",
@@ -99,7 +99,7 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
     },
   },
   versionTag: {
-    color: theme.colors.lessprimary,
+    color: theme.colors.lessPrimary,
     textAlign: "center",
   },
 }));

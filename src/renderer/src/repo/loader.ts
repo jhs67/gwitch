@@ -23,8 +23,8 @@ import { LazyUpdater } from "./lazy";
 import { createGraph } from "./graph";
 import { RootState } from "@renderer/store";
 import { resolve, basename, relative } from "path";
-import { IgnoreBatch } from "./ignorebatch";
-import { rangePatch } from "./rangepatch";
+import { IgnoreBatch } from "./ignore_batch";
+import { rangePatch } from "./range_patch";
 
 export class RepoLoader {
   private gwit = new Gwit();
@@ -227,7 +227,7 @@ export class RepoLoader {
 
       const [patch] = rangePatch(files, { start, end }, false);
 
-      await this.gwit.unapplyPatch(patch).result;
+      await this.gwit.unApplyPatch(patch).result;
     } finally {
       this.statusLazy.unfreeze();
     }

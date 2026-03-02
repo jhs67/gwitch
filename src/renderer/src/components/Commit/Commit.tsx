@@ -70,7 +70,7 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
       margin: "1.1em 0 1.4em 1.0em",
     },
     "& .file": {
-      color: theme.colors.lessprimary,
+      color: theme.colors.lessPrimary,
       marginLeft: "2em",
     },
     "& .file:hover": {

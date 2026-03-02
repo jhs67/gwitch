@@ -44,12 +44,12 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
     "& .hunk": {
       backgroundColor: theme.colors.frame,
 
-      "& .hunktop": {
+      "& .hunkTop": {
         display: "flex",
         alignItems: "center",
       },
 
-      "& .hunklabel": {
+      "& .hunkLabel": {
         flex: 1,
       },
 
@@ -107,7 +107,7 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
     },
 
     "& .large": {
-      color: theme.colors.lessprimary,
+      color: theme.colors.lessPrimary,
       marginLeft: "2em",
       marginTop: "5px",
     },
@@ -231,8 +231,8 @@ export function FileDiff({
                     <td>...</td>
                     <td></td>
                     <td>
-                      <div className="hunktop">
-                        <div className="hunklabel">{h.header}</div>
+                      <div className="hunkTop">
+                        <div className="hunkLabel">{h.header}</div>
                         {actions ? (
                           <div className="buttons">
                             {actions.map((a) => (

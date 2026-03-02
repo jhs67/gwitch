@@ -62,6 +62,7 @@ export function setAppMenu(theme: ThemeType) {
         { role: "zoomIn" },
         { role: "zoomOut" },
         { type: "separator" },
+        // cSpell:ignore togglefullscreen
         { role: "togglefullscreen" },
       ],
     },
