@@ -30,7 +30,13 @@ export function Diff({
             show={show[p.fileName]}
             setShow={(state: boolean) => setShow(p.fileName, state)}
             key={p.fileName}
-            containerRef={patchRef ? (e) => e && patchRef(p, e) : undefined}
+            containerRef={
+              patchRef
+                ? (e) => {
+                    if (e) patchRef(p, e);
+                  }
+                : undefined
+            }
           />
         );
       })}

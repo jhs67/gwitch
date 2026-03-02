@@ -218,7 +218,9 @@ export function SelectList<T>({
         const f = focused === i;
         return (
           <div
-            ref={(e) => (itemRefs.current[i] = e)}
+            ref={(e) => {
+              itemRefs.current[i] = e;
+            }}
             className={itemClass}
             key={itemKey(t, i)}
             onClick={(event) => {
@@ -234,7 +236,7 @@ export function SelectList<T>({
               if (onDoubleClick) onDoubleClick(ev.nativeEvent);
             }}
           >
-            {itemComponent({ item: t, index: i, selected: s, focused: f })}
+            {React.createElement(itemComponent, { item: t, index: i, selected: s, focused: f })}
           </div>
         );
       })}

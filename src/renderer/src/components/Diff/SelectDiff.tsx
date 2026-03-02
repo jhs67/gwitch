@@ -74,12 +74,12 @@ export function SelectDiff({
   lines?: LineOption[];
 }) {
   const classes = useStyles();
-  const lastPatch = useRef<FileStatus[]>();
-  const anchorRef = useRef<number | undefined>();
+  const lastPatch = useRef<FileStatus[] | undefined>(undefined);
+  const anchorRef = useRef<number | undefined>(undefined);
   const buttonsRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const lineRefs = useRef<(HTMLTableRowElement | null)[]>([]);
-  const selectRef = useRef<SelectRange | undefined>();
+  const selectRef = useRef<SelectRange | undefined>(undefined);
 
   const setLineUnselected = (n: number) => {
     lineRefs.current[n]?.classList.remove("selected");

@@ -261,7 +261,12 @@ export function FileDiff({
                         })}
                         key={j}
                         data-line={line}
-                        ref={lineRefs && ((v) => (lineRefs[line] = v))}
+                        ref={
+                          lineRefs &&
+                          ((v) => {
+                            lineRefs[line] = v;
+                          })
+                        }
                       >
                         <td>{formatLine(l.oldLine)}</td>
                         <td>{formatLine(l.newLine)}</td>

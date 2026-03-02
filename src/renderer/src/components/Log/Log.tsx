@@ -165,7 +165,7 @@ export function Log() {
   const dispatch = useDispatch();
 
   // create refs to the commit rows
-  const el_refs_map = useRef(new Map<string, RefObject<HTMLTableRowElement>>());
+  const el_refs_map = useRef(new Map<string, RefObject<HTMLTableRowElement | null>>());
   const el_refs = useMemo(() => {
     commits.forEach((r) => {
       if (!el_refs_map.current.has(r.hash)) el_refs_map.current.set(r.hash, React.createRef());
