@@ -1,5 +1,4 @@
-import { useRef } from "react";
-import { useUnmount } from "./unmount";
+import { useCallback, useEffect, useRef } from "react";
 
 export function useMouseTrack(
   onMove: (ev: MouseEvent) => void,
@@ -12,15 +11,15 @@ export function useMouseTrack(
   }
   const mouseTrack = useRef<MouseTrack>({});
 
-  const stopTrack = () => {
+  const stopTrack = useCallback(() => {
     if (!mouseTrack.current.mover || !mouseTrack.current.upper) return;
     window.removeEventListener("mouseup", mouseTrack.current.upper);
     window.removeEventListener("mousemove", mouseTrack.current.mover);
     mouseTrack.current.upper = void 0;
     mouseTrack.current.mover = void 0;
-  };
+  }, []);
 
-  useUnmount(() => stopTrack());
+  useEffect(() => stopTrack, [stopTrack]);
 
   const startTrack = () => {
     if (mouseTrack.current.mover) return;
