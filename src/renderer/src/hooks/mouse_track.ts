@@ -12,6 +12,14 @@ export function useMouseTrack(
   }
   const mouseTrack = useRef<MouseTrack>({});
 
+  const stopTrack = () => {
+    if (!mouseTrack.current.mover || !mouseTrack.current.upper) return;
+    window.removeEventListener("mouseup", mouseTrack.current.upper);
+    window.removeEventListener("mousemove", mouseTrack.current.mover);
+    mouseTrack.current.upper = void 0;
+    mouseTrack.current.mover = void 0;
+  };
+
   useUnmount(() => stopTrack());
 
   const startTrack = () => {
@@ -20,14 +28,6 @@ export function useMouseTrack(
     mouseTrack.current.upper = (ev) => (stopTrack(), onUp && onUp(ev));
     window.addEventListener("mousemove", mouseTrack.current.mover);
     window.addEventListener("mouseup", mouseTrack.current.upper);
-  };
-
-  const stopTrack = () => {
-    if (!mouseTrack.current.mover || !mouseTrack.current.upper) return;
-    window.removeEventListener("mouseup", mouseTrack.current.upper);
-    window.removeEventListener("mousemove", mouseTrack.current.mover);
-    mouseTrack.current.upper = void 0;
-    mouseTrack.current.mover = void 0;
   };
 
   return [startTrack];

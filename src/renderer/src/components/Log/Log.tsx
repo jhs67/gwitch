@@ -165,12 +165,11 @@ export function Log() {
   const dispatch = useDispatch();
 
   // create refs to the commit rows
-  const el_refs_map = useRef(new Map<string, RefObject<HTMLTableRowElement | null>>());
   const el_refs = useMemo(() => {
-    commits.forEach((r) => {
-      if (!el_refs_map.current.has(r.hash)) el_refs_map.current.set(r.hash, React.createRef());
-    });
-    return el_refs_map.current;
+    const map = new Map<string, RefObject<HTMLTableRowElement | null>>();
+    // eslint-disable-next-line react-hooks/refs
+    commits.forEach((r) => map.set(r.hash, React.createRef()));
+    return map;
   }, [commits]);
 
   // scroll to the focus commit when the focus changes

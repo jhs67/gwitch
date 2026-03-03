@@ -8,11 +8,6 @@ class Ignored {
   changed?: undefined | true;
 }
 
-type WatcherInternal = FSWatcher & {
-  _incrReadyCount: () => number;
-  _emitReady: () => void;
-};
-
 export class Watcher {
   private watcher: FSWatcher;
   private ignoresMap = new Map<string, Ignored>();
@@ -45,7 +40,7 @@ export class Watcher {
             i.changed = undefined;
 
             // roll back the _readyCount
-            (this.watcher as WatcherInternal)._emitReady();
+            this.watcher._emitReady();
           })
           .catch((err) => {
             if (!(err instanceof CancelledError)) throw err;
@@ -65,7 +60,7 @@ export class Watcher {
           // start the ignore query
           if (this.ignore) this.ignore(p, i);
           // keep the watcher from being ready until the ignore result completes
-          (this.watcher as WatcherInternal)._incrReadyCount();
+          this.watcher._incrReadyCount();
         }
         return true;
       };
@@ -83,7 +78,7 @@ export class Watcher {
           i.changed = true;
           this.ignore(path, i);
           // keep the watcher from being ready until the ignore result completes
-          (this.watcher as WatcherInternal)._incrReadyCount();
+          this.watcher._incrReadyCount();
           return;
         }
       }
@@ -116,7 +111,7 @@ export class Watcher {
         i.ignored = undefined;
         if (this.ignore) this.ignore(path, i);
         // keep the watcher from being ready until the ignore result completes
-        (this.watcher as WatcherInternal)._incrReadyCount();
+        this.watcher._incrReadyCount();
       } else {
         // clear the result but defer the check until the file changes
         i.ignored = undefined;

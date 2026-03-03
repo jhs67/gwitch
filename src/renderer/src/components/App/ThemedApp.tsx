@@ -1,18 +1,21 @@
-import { darkTheme, GwitchTheme, lightTheme } from "@renderer/theme/theme";
+import { darkTheme, lightTheme } from "@renderer/theme/theme";
 import { ipcRenderer } from "electron";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ThemeProvider } from "react-jss";
 import { App } from "./App";
 
-let setTheme: (a: GwitchTheme) => void;
-
-ipcRenderer.on("theme", (_event, theme: "dark" | "light") => {
-  setTheme(theme === "dark" ? darkTheme : lightTheme);
-});
-
 export function ThemedApp() {
-  const [theme, _setTheme] = useState(lightTheme);
-  setTheme = _setTheme;
+  const [theme, setTheme] = useState(lightTheme);
+
+  useEffect(() => {
+    const handler = (_event: Electron.IpcRendererEvent, theme: "dark" | "light") => {
+      setTheme(theme === "dark" ? darkTheme : lightTheme);
+    };
+    ipcRenderer.on("theme", handler);
+    return () => {
+      ipcRenderer.removeListener("theme", handler);
+    };
+  }, []);
 
   return (
     <ThemeProvider theme={theme}>
