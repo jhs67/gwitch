@@ -1,4 +1,4 @@
-import React, { RefObject, useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { createUseStyles } from "react-jss";
 import classNames from "classnames";
@@ -164,21 +164,13 @@ export function Log() {
   const refs = useSelector((state: RootState) => state.repo.refs);
   const dispatch = useDispatch();
 
-  // create refs to the commit rows
-  const el_refs = useMemo(() => {
-    const map = new Map<string, RefObject<HTMLTableRowElement | null>>();
-    // eslint-disable-next-line react-hooks/refs
-    commits.forEach((r) => map.set(r.hash, React.createRef()));
-    return map;
-  }, [commits]);
+  // map from commit hash to row element, populated via callback refs
+  const el_refs = useRef<Map<string, HTMLTableRowElement>>(new Map());
 
-  // scroll to the focus commit when the focus changes
-  const scrollTarget = useRef<string>(focusCommit!);
+  // scroll to the focus commit when focus changes
   useEffect(() => {
     if (!focusCommit) return;
-    if (focusCommit === scrollTarget.current) return;
-    scrollTarget.current = focusCommit;
-    const el = el_refs.get(focusCommit)?.current;
+    const el = el_refs.current.get(focusCommit);
     if (!el) return;
 
     const scroll = el.parentElement!.parentElement!.parentElement!; // tbody.table.div
@@ -194,7 +186,7 @@ export function Log() {
         behavior: "smooth",
       });
     }
-  });
+  }, [focusCommit]);
 
   return (
     <div className={classes.logContainer}>
@@ -211,7 +203,10 @@ export function Log() {
           {commits.map((commit) => (
             <tr
               key={commit.hash}
-              ref={el_refs.get(commit.hash)}
+              ref={(el) => {
+                if (el) el_refs.current.set(commit.hash, el);
+                else el_refs.current.delete(commit.hash);
+              }}
               onClick={() => dispatch(setFocusCommit(commit.hash))}
               className={classNames({
                 [classes.focusRef]: commit.hash === focusCommit,
