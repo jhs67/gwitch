@@ -1,16 +1,18 @@
 import { RecentStore } from "./recent-store";
-import { BrowserWindow, dialog, nativeTheme, app } from "electron";
+import { BrowserWindow, dialog, nativeTheme, app, WebContents } from "electron";
 import { WindowManager } from "./window-manager";
 import { setAppMenu } from "./appmenu";
 import { RepoPath } from "@ipc/repo";
 import { basename, join } from "node:path";
 import { enable as remote_enable } from "@electron/remote/main";
+import { RepoLoaderMain } from "./repo/loader";
 
 export type ThemeType = "light" | "dark" | "system";
 
 export default class Gwitch {
   private recent = new RecentStore();
   private windows = new WindowManager();
+  private loaders = new Map<number, RepoLoaderMain>();
 
   setTheme(v: ThemeType) {
     this.windows.theme = v;
@@ -47,6 +49,14 @@ export default class Gwitch {
     const window = new BrowserWindow(windowOpts);
     this.windows.track(window);
 
+    // Create a loader for this window and clean it up when the window closes.
+    const loader = new RepoLoaderMain();
+    this.loaders.set(window.id, loader);
+    window.on("closed", () => {
+      loader.close();
+      this.loaders.delete(window.id);
+    });
+
     // set up remote
     remote_enable(window.webContents);
 
@@ -66,11 +76,18 @@ export default class Gwitch {
   sendOpenRecent(window: BrowserWindow): void {
     window.setTitle("gwitch");
     window.webContents.send("recent", this.recent.all());
+    this.loaders.get(window.id)?.close();
   }
 
   sendOpenPath(window: BrowserWindow, path: RepoPath) {
     window.setTitle(`gwitch - ${[basename(path.path, ".git"), ...path.submodules].join("/")}`);
     window.webContents.send("open", path);
+    this.loaders.get(window.id)?.open(path);
+  }
+
+  loaderFor(sender: WebContents): RepoLoaderMain | undefined {
+    const window = BrowserWindow.fromWebContents(sender);
+    return window ? this.loaders.get(window.id) : undefined;
   }
 
   sendTheme(window: BrowserWindow) {

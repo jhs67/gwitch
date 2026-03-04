@@ -6,7 +6,7 @@ import { resetRecentRepos, setRecentRepos } from "@renderer/store/recent/actions
 import { RepoPath } from "@ipc/repo";
 import { RepoLoader } from "./repo/loader";
 import { LayoutProxy } from "./repo/layout";
-import { CancellableQueue } from "./repo/cancellable";
+import { CancellableQueue } from "@ipc/cancellable";
 
 export const store = createStore(rootReducer);
 const loader = new RepoLoader(store);

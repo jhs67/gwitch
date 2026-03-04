@@ -7,10 +7,10 @@ import {
   DiffHunk,
   DiffLine,
   DiffLineOrigin,
-} from "@renderer/store/repo/types";
+} from "@ipc/repo-types";
 import { RepoPath } from "@ipc/repo";
 import { exec, execRc, RcResult } from "./exec";
-import { Cancellable, cancellableRun, cancellableX } from "./cancellable";
+import { Cancellable, cancellableRun, cancellableX } from "@ipc/cancellable";
 import { gitPath } from "./git_path";
 
 function parseNameStatus(out: string): FileStatus[] {

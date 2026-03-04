@@ -1,70 +1,29 @@
 import { RepoPath } from "@ipc/repo";
+import type {
+  OtherRepoRef,
+  BranchRepoRef,
+  RepoRef,
+  Commit,
+  StatusLetter,
+  DiffLineOrigin,
+  DiffLine,
+  DiffHunk,
+  FileStatus,
+  Submodule,
+} from "@ipc/repo-types";
 
-export type OtherRepoRef = {
-  hash: string;
-  refName: string;
-  name: string;
-  type: "HEAD" | "stash" | "remotes" | "tags";
+export type {
+  OtherRepoRef,
+  BranchRepoRef,
+  RepoRef,
+  Commit,
+  StatusLetter,
+  DiffLineOrigin,
+  DiffLine,
+  DiffHunk,
+  FileStatus,
+  Submodule,
 };
-
-export type BranchRepoRef = {
-  hash: string;
-  refName: string;
-  name: string;
-  upstreams: string[];
-  type: "heads";
-};
-
-export type RepoRef = OtherRepoRef | BranchRepoRef;
-
-export interface Commit {
-  hash: string;
-  tree: string;
-  authorName: string;
-  authorEmail: string;
-  authorStamp: number;
-  parents: string[];
-  children: string[];
-  subject: string;
-  body: string;
-  graph: number[];
-}
-
-export type StatusLetter = "A" | "C" | "D" | "M" | "R" | "T" | "U" | "X" | " " | "?";
-export type DiffLineOrigin = " " | "-" | "+" | "\\";
-
-export interface DiffLine {
-  origin: DiffLineOrigin;
-  content: string;
-  oldLine: number;
-  newLine: number;
-}
-
-export interface DiffHunk {
-  header: string;
-  oldStart: number;
-  oldCount: number;
-  newStart: number;
-  newCount: number;
-  lines: DiffLine[];
-}
-
-export type FileStatus = {
-  fileName: string;
-  oldFile?: string;
-  newFile?: string;
-  status: StatusLetter;
-  similarity?: number;
-  oldMode?: string;
-  newMode?: string;
-  binary?: boolean;
-  unmerged?: boolean;
-  hunks?: DiffHunk[];
-};
-
-export interface Submodule {
-  path: string;
-}
 
 export interface RepoState {
   path?: RepoPath;

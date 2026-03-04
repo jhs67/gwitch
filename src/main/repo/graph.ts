@@ -1,4 +1,4 @@
-import { Commit } from "@renderer/store/repo/types";
+import { Commit } from "@ipc/repo-types";
 
 export interface GraphCommit {
   commit: Commit;

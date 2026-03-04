@@ -1,6 +1,6 @@
 import { initialLayoutState } from "@renderer/store/layout/types";
-import { cancellableRun } from "./cancellable";
-import { LazyUpdater } from "./lazy";
+import { cancellableRun } from "@ipc/cancellable";
+import { LazyUpdater } from "@ipc/lazy";
 import { Store } from "redux";
 import { RepoPath } from "@ipc/repo";
 import { setLayout } from "@renderer/store/layout/actions";

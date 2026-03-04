@@ -1,7 +1,6 @@
 import { createUseStyles } from "react-jss";
 import { useSelector, useDispatch } from "react-redux";
 import classNames from "classnames";
-import { basename } from "path";
 import { RootState } from "@renderer/store";
 import StageUrl from "@renderer/assets/stage.svg";
 import BranchUrl from "@renderer/assets/branch.svg";
@@ -243,7 +242,10 @@ export function RefsPanel() {
     <div className={classes.refsPanel}>
       <div className={classes.stageSection}>
         <div className={classes.title}>
-          {[basename(path.path, ".git"), ...path.submodules].join("/")}
+          {[
+            (path.path.split("/").at(-1) ?? path.path).replace(/\.git$/, ""),
+            ...path.submodules,
+          ].join("/")}
         </div>
         <div
           className={classNames(classes.stageLine, {

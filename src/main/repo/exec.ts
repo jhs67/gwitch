@@ -1,6 +1,6 @@
 import { spawn, SpawnOptions } from "child_process";
 import getStream from "get-stream";
-import { Cancellable, cancellableX, CancelledError } from "./cancellable";
+import { Cancellable, cancellableX, CancelledError } from "@ipc/cancellable";
 
 export interface RcResult {
   code: number;

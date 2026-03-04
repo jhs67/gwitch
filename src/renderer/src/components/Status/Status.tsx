@@ -2,7 +2,6 @@ import { ChangeEvent, useMemo } from "react";
 import { Allotment } from "allotment";
 import { createUseStyles } from "react-jss";
 import { useSelector, useDispatch } from "react-redux";
-import { resolve } from "path";
 import { shell } from "electron";
 import { dialog, getCurrentWindow } from "@electron/remote";
 import { RootState } from "@renderer/store";
@@ -162,7 +161,7 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
 }));
 
 function statusToPath(s: FileStatus, r: RepoPath) {
-  return resolve(r.path, ...r.submodules, s.fileName);
+  return [r.path, ...r.submodules, s.fileName].join("/");
 }
 
 function WorkingFiles({ loader }: { loader: RepoLoader }) {

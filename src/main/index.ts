@@ -10,6 +10,19 @@ import {
   GO_BACK,
   OPEN_SUBMODULE,
   REMOVE_RECENT,
+  SUBSCRIBE_REFS,
+  SUBSCRIBE_STATUS,
+  SUBSCRIBE_FOCUS_PATCH,
+  SUBSCRIBE_SUBMODULES,
+  SET_FOCUS_COMMIT,
+  SET_AMEND,
+  DISCARD_CHANGES,
+  STAGE_FILES,
+  UNSTAGE_FILES,
+  COMMIT_REPO,
+  STAGE_PATCH,
+  UNSTAGE_PATCH,
+  DISCARD_PATCH,
 } from "@ipc/ipc";
 import { RepoPath } from "@ipc/repo";
 import { initialize as remote_initialize } from "@electron/remote/main";
@@ -75,4 +88,62 @@ ipcMain.on(OPEN_SUBMODULE, (event, path: RepoPath, newWindow: boolean) => {
 
 ipcMain.on(REMOVE_RECENT, (_event, path: string) => {
   gwitch.removeRecent(path);
+});
+
+// Subscription channels — renderer transfers a MessagePort; main registers it on the loader.
+ipcMain.on(SUBSCRIBE_REFS, (event) => {
+  gwitch.loaderFor(event.sender)?.setRefsPort(event.ports[0]);
+});
+
+ipcMain.on(SUBSCRIBE_STATUS, (event) => {
+  gwitch.loaderFor(event.sender)?.setStatusPort(event.ports[0]);
+});
+
+ipcMain.on(SUBSCRIBE_FOCUS_PATCH, (event) => {
+  gwitch.loaderFor(event.sender)?.setFocusPatchPort(event.ports[0]);
+});
+
+ipcMain.on(SUBSCRIBE_SUBMODULES, (event) => {
+  gwitch.loaderFor(event.sender)?.setSubmodulesPort(event.ports[0]);
+});
+
+// Loader control
+ipcMain.handle(SET_FOCUS_COMMIT, (_event, hash: string) => {
+  gwitch.loaderFor(_event.sender)?.setFocusCommit(hash);
+});
+
+ipcMain.handle(SET_AMEND, (_event, amend: boolean) => {
+  gwitch.loaderFor(_event.sender)?.setAmend(amend);
+});
+
+// Mutations
+ipcMain.handle(DISCARD_CHANGES, (_event, files: string[]) => {
+  return gwitch.loaderFor(_event.sender)?.discardChanges(files);
+});
+
+ipcMain.handle(STAGE_FILES, (_event, files: string[]) => {
+  return gwitch.loaderFor(_event.sender)?.stageFiles(files);
+});
+
+ipcMain.handle(UNSTAGE_FILES, (_event, files: string[]) => {
+  return gwitch.loaderFor(_event.sender)?.unstageFiles(files);
+});
+
+ipcMain.handle(
+  COMMIT_REPO,
+  (_event, amend: boolean, fixup: string | undefined, message: string) => {
+    return gwitch.loaderFor(_event.sender)?.commit(amend, fixup, message);
+  },
+);
+
+ipcMain.handle(STAGE_PATCH, (_event, patch: string, toAdd: string[]) => {
+  return gwitch.loaderFor(_event.sender)?.stagePatch(patch, toAdd);
+});
+
+ipcMain.handle(UNSTAGE_PATCH, (_event, patch: string) => {
+  return gwitch.loaderFor(_event.sender)?.unstagePatch(patch);
+});
+
+ipcMain.handle(DISCARD_PATCH, (_event, patch: string) => {
+  return gwitch.loaderFor(_event.sender)?.discardPatch(patch);
 });

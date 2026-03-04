@@ -1,4 +1,3 @@
-import { basename } from "path";
 import DeleteImage from "@renderer/assets/delete.svg";
 import { createUseStyles } from "react-jss";
 import { useDispatch, useSelector } from "react-redux";
@@ -139,7 +138,9 @@ export function RecentRepos() {
                   e.stopPropagation();
                 }}
               />
-              <div className={classes.repoName}>{basename(l, ".git")}</div>
+              <div className={classes.repoName}>
+                {(l.split("/").at(-1) ?? l).replace(/\.git$/, "")}
+              </div>
               <div className={classes.repoPath}>{l}</div>
             </div>
           ))
