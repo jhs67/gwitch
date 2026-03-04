@@ -16,6 +16,13 @@ export const SUBSCRIBE_SUBMODULES = "subscribe-submodules";
 export const SET_FOCUS_COMMIT = "set-focus-commit";
 export const SET_AMEND = "set-amend";
 
+// Shell / dialog channels — renderer invokes for native OS interactions
+export const SHELL_OPEN_PATH = "shell-open-path";
+export const SHELL_SHOW_ITEM = "shell-show-item";
+export const SHELL_TRASH_ITEM = "shell-trash-item";
+export const SHOW_MESSAGE_BOX = "show-message-box";
+export const POPUP_MENU = "popup-menu";
+
 // Mutation channels — renderer invokes to modify the repo
 export const DISCARD_CHANGES = "discard-changes";
 export const STAGE_FILES = "stage-files";

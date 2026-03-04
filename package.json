@@ -34,7 +34,6 @@
     "@electron-toolkit/eslint-config-prettier": "^3.0.0",
     "@electron-toolkit/eslint-config-ts": "^3.0.0",
     "@electron-toolkit/tsconfig": "^2.0.0",
-    "@electron/remote": "^2.1.2",
     "@types/deep-equal": "^1.0.4",
     "@types/is-valid-path": "^0.1.2",
     "@types/node": "^24.11.0",

@@ -4,7 +4,6 @@ import { WindowManager } from "./window-manager";
 import { setAppMenu } from "./appmenu";
 import { RepoPath } from "@ipc/repo";
 import { basename, join } from "node:path";
-import { enable as remote_enable } from "@electron/remote/main";
 import { RepoLoaderMain } from "./repo/loader";
 
 export type ThemeType = "light" | "dark" | "system";
@@ -38,8 +37,8 @@ export default class Gwitch {
   createWindow(path?: RepoPath): void {
     const windowOpts = this.windows.opts({
       webPreferences: {
-        nodeIntegration: true,
-        contextIsolation: false,
+        nodeIntegration: false,
+        contextIsolation: true,
         preload: join(__dirname, "../preload/index.js"),
       },
       backgroundColor: this.activeTheme === "dark" ? "#1e1e1e" : "#fff",
@@ -56,9 +55,6 @@ export default class Gwitch {
       loader.close();
       this.loaders.delete(window.id);
     });
-
-    // set up remote
-    remote_enable(window.webContents);
 
     // and load the index.html of the app.
     if (!app.isPackaged && process.env["ELECTRON_RENDERER_URL"]) {

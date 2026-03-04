@@ -4,7 +4,6 @@ import { RootState } from "@renderer/store";
 import { SelectDiff } from "../Diff";
 import { LoaderContext } from "@renderer/repo_loader";
 import { RepoLoader } from "@renderer/repo/loader";
-import { dialog, getCurrentWindow } from "@electron/remote";
 
 export function Patch() {
   const workingStatus = useSelector((state: RootState) => state.repo.workingStatus);
@@ -36,15 +35,15 @@ export function Patch() {
               ? [
                   {
                     label: "discard",
-                    act: (range) => {
-                      const r = dialog.showMessageBoxSync(getCurrentWindow(), {
+                    act: async (range) => {
+                      const r = await gwitch.showMessageBox({
                         type: "warning",
                         buttons: ["Cancel", "Continue"],
                         title: "Discard Changes",
                         message: "Discard Changes? This can not be undone.",
                       });
 
-                      if (!r) return Promise.resolve();
+                      if (!r) return;
                       return loader.discardRange(patch, range.start, range.end);
                     },
                   },

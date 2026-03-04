@@ -21,6 +21,11 @@ import {
   SUBSCRIBE_SUBMODULES,
   SET_FOCUS_COMMIT,
   SET_AMEND,
+  SHELL_OPEN_PATH,
+  SHELL_SHOW_ITEM,
+  SHELL_TRASH_ITEM,
+  SHOW_MESSAGE_BOX,
+  POPUP_MENU,
   DISCARD_CHANGES,
   STAGE_FILES,
   UNSTAGE_FILES,
@@ -97,6 +102,24 @@ const gwitchApi = {
     ipcRenderer.postMessage(SUBSCRIBE_SUBMODULES, null, [channel.port2]);
     return () => channel.port1.close();
   },
+
+  // Shell / dialog
+  shellOpenPath: (path: string): void => ipcRenderer.send(SHELL_OPEN_PATH, path),
+
+  shellShowItem: (path: string): void => ipcRenderer.send(SHELL_SHOW_ITEM, path),
+
+  shellTrashItem: (path: string): void => ipcRenderer.send(SHELL_TRASH_ITEM, path),
+
+  showMessageBox: (opts: {
+    type?: string;
+    buttons?: string[];
+    title?: string;
+    message: string;
+    detail?: string;
+  }): Promise<number> => ipcRenderer.invoke(SHOW_MESSAGE_BOX, opts),
+
+  popupMenu: (items: { label: string }[]): Promise<number | null> =>
+    ipcRenderer.invoke(POPUP_MENU, items),
 
   // Loader control
   setFocusCommit: (hash: string): Promise<void> => ipcRenderer.invoke(SET_FOCUS_COMMIT, hash),

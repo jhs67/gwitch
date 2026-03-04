@@ -1,15 +1,15 @@
 import { useState } from "react";
-import { MenuItemConstructorOptions } from "electron";
-import { getCurrentWindow, Menu } from "@electron/remote";
 import classNames from "classnames";
 import { SelectList, ItemProps } from "../SelectList";
 import { FileStatus } from "@renderer/store/repo/types";
+
+type MenuItem = { label: string; click: () => void };
 
 interface FilesViewProps {
   header: string;
   files: FileStatus[];
   selected: number[];
-  menu?: MenuItemConstructorOptions[];
+  menu?: MenuItem[];
   setSelected: (s: number[]) => void;
   onDoubleClick?: (ev: MouseEvent) => void;
 }
@@ -42,8 +42,10 @@ export function FilesView({
 }: FilesViewProps) {
   const [focused, setFocused] = useState<number | undefined>();
 
-  function onContext() {
-    if (menu) Menu.buildFromTemplate(menu).popup({ window: getCurrentWindow() });
+  async function onContext() {
+    if (!menu) return;
+    const i = await gwitch.popupMenu(menu.map((m) => ({ label: m.label })));
+    if (i !== null) menu[i].click();
   }
 
   return (

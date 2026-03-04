@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, Menu, shell } from "electron";
 import Gwitch from "./gwitch";
 import { LayoutStore } from "./layout-store";
 import { LayoutState } from "@ipc/layout";
@@ -16,6 +16,11 @@ import {
   SUBSCRIBE_SUBMODULES,
   SET_FOCUS_COMMIT,
   SET_AMEND,
+  SHELL_OPEN_PATH,
+  SHELL_SHOW_ITEM,
+  SHELL_TRASH_ITEM,
+  SHOW_MESSAGE_BOX,
+  POPUP_MENU,
   DISCARD_CHANGES,
   STAGE_FILES,
   UNSTAGE_FILES,
@@ -25,11 +30,6 @@ import {
   DISCARD_PATCH,
 } from "@ipc/ipc";
 import { RepoPath } from "@ipc/repo";
-import { initialize as remote_initialize } from "@electron/remote/main";
-
-// initialize remote
-remote_initialize();
-
 export const gwitch = new Gwitch();
 
 // This method will be called when Electron has finished
@@ -146,4 +146,36 @@ ipcMain.handle(UNSTAGE_PATCH, (_event, patch: string) => {
 
 ipcMain.handle(DISCARD_PATCH, (_event, patch: string) => {
   return gwitch.loaderFor(_event.sender)?.discardPatch(patch);
+});
+
+// Shell / dialog
+ipcMain.on(SHELL_OPEN_PATH, (_event, path: string) => {
+  shell.openPath(path);
+});
+
+ipcMain.on(SHELL_SHOW_ITEM, (_event, path: string) => {
+  shell.showItemInFolder(path);
+});
+
+ipcMain.on(SHELL_TRASH_ITEM, (_event, path: string) => {
+  shell.trashItem(path);
+});
+
+ipcMain.handle(SHOW_MESSAGE_BOX, async (event, opts: Electron.MessageBoxOptions) => {
+  const window = BrowserWindow.fromWebContents(event.sender);
+  const result = window
+    ? await dialog.showMessageBox(window, opts)
+    : await dialog.showMessageBox(opts);
+  return result.response;
+});
+
+ipcMain.handle(POPUP_MENU, (event, items: { label: string }[]) => {
+  const window = BrowserWindow.fromWebContents(event.sender);
+  if (!window) return null;
+  return new Promise<number | null>((resolve) => {
+    const menu = Menu.buildFromTemplate(
+      items.map((item, i) => ({ label: item.label, click: () => resolve(i) })),
+    );
+    menu.popup({ window, callback: () => resolve(null) });
+  });
 });

@@ -2,8 +2,6 @@ import { ChangeEvent, useMemo } from "react";
 import { Allotment } from "allotment";
 import { createUseStyles } from "react-jss";
 import { useSelector, useDispatch } from "react-redux";
-import { shell } from "electron";
-import { dialog, getCurrentWindow } from "@electron/remote";
 import { RootState } from "@renderer/store";
 import { RepoPath } from "@ipc/repo";
 import { Commit, FileStatus } from "@renderer/store/repo/types";
@@ -188,16 +186,16 @@ function WorkingFiles({ loader }: { loader: RepoLoader }) {
     {
       label: "Open",
       click: () =>
-        loader.workingSelected().forEach((s) => shell.openPath(statusToPath(s, rootPath))),
+        loader.workingSelected().forEach((s) => gwitch.shellOpenPath(statusToPath(s, rootPath))),
     },
     {
       label: "Show",
       click: () =>
-        loader.workingSelected().forEach((s) => shell.showItemInFolder(statusToPath(s, rootPath))),
+        loader.workingSelected().forEach((s) => gwitch.shellShowItem(statusToPath(s, rootPath))),
     },
     {
       label: "Discard",
-      click: () => {
+      click: async () => {
         const trashList: string[] = [];
         const discardList: string[] = [];
         let detail = loader
@@ -212,7 +210,7 @@ function WorkingFiles({ loader }: { loader: RepoLoader }) {
         const trash = trashList.length && !discardList.length;
         if (detail.length > 80) detail = detail.substr(0, 77) + "...";
 
-        const r = dialog.showMessageBoxSync(getCurrentWindow(), {
+        const r = await gwitch.showMessageBox({
           type: "warning",
           buttons: ["Cancel", "Continue"],
           title: trash ? "Move to Trash" : "Discard Changes",
@@ -222,7 +220,7 @@ function WorkingFiles({ loader }: { loader: RepoLoader }) {
 
         if (!r) return;
 
-        trashList.forEach((s) => shell.trashItem(s));
+        trashList.forEach((s) => gwitch.shellTrashItem(s));
         loader.discardChanges(discardList);
       },
     },
@@ -385,12 +383,13 @@ function IndexFiles({ loader }: { loader: RepoLoader }) {
     },
     {
       label: "Open",
-      click: () => loader.indexSelected().forEach((s) => shell.openPath(statusToPath(s, rootPath))),
+      click: () =>
+        loader.indexSelected().forEach((s) => gwitch.shellOpenPath(statusToPath(s, rootPath))),
     },
     {
       label: "Show",
       click: () =>
-        loader.indexSelected().forEach((s) => shell.showItemInFolder(statusToPath(s, rootPath))),
+        loader.indexSelected().forEach((s) => gwitch.shellShowItem(statusToPath(s, rootPath))),
     },
   ];
 
