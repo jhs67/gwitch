@@ -1,4 +1,3 @@
-import { ipcRenderer } from "electron";
 import { initialLayoutState } from "@renderer/store/layout/types";
 import { cancellableRun } from "./cancellable";
 import { LazyUpdater } from "./lazy";
@@ -6,7 +5,6 @@ import { Store } from "redux";
 import { RepoPath } from "@ipc/repo";
 import { setLayout } from "@renderer/store/layout/actions";
 import { RootState } from "@renderer/store";
-import { GET_LAYOUT_STATE, SET_LAYOUT_STATE } from "@ipc/ipc";
 import { LayoutState } from "@ipc/layout";
 
 export class LayoutProxy {
@@ -24,8 +22,7 @@ export class LayoutProxy {
 
   async setup(repo: RepoPath) {
     const path = [repo.path, ...repo.submodules].join("/");
-    const loadState: Partial<LayoutState> =
-      (await ipcRenderer.invoke(GET_LAYOUT_STATE, path)) || {};
+    const loadState: Partial<LayoutState> = (await gwitch.getLayoutState(path)) || {};
     this.lastState = { ...initialLayoutState, ...loadState };
     this.store.dispatch(setLayout(this.lastState));
 
@@ -35,7 +32,7 @@ export class LayoutProxy {
           const state = this.store.getState().layout;
           if (Object.is(this.lastState, state)) return;
           this.lastState = state;
-          await run(ipcRenderer.invoke(SET_LAYOUT_STATE, path, state));
+          await run(gwitch.setLayoutState(path, state));
         }),
       true,
     );

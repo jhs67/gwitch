@@ -15,6 +15,11 @@ export default defineConfig({
     },
   },
   preload: {
+    resolve: {
+      alias: {
+        "@ipc": resolve("src/ipc"),
+      },
+    },
     build: {
       externalizeDeps: true,
     },

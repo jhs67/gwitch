@@ -1,8 +1,1 @@
-import { ElectronAPI } from "@electron-toolkit/preload";
-
-declare global {
-  interface Window {
-    electron: ElectronAPI;
-    api: unknown;
-  }
-}
+declare const gwitch: import("./index").GwitchApi;

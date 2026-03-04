@@ -38,6 +38,7 @@ export default class Gwitch {
       webPreferences: {
         nodeIntegration: true,
         contextIsolation: false,
+        preload: join(__dirname, "../preload/index.js"),
       },
       backgroundColor: this.activeTheme === "dark" ? "#1e1e1e" : "#fff",
     });

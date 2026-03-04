@@ -1,10 +1,8 @@
-import { ipcRenderer } from "electron";
 import { basename } from "path";
 import DeleteImage from "@renderer/assets/delete.svg";
 import { createUseStyles } from "react-jss";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@renderer/store";
-import { OPEN_PATH, OPEN_OTHER, REMOVE_RECENT } from "@ipc/ipc";
 import { removeRecentRepo, resetRecentRepos } from "@renderer/store/recent/actions";
 import { GwitchTheme } from "@renderer/theme/theme";
 
@@ -110,17 +108,17 @@ export function RecentRepos() {
   const dispatch = useDispatch();
 
   function openRepo() {
-    ipcRenderer.send(OPEN_OTHER);
+    gwitch.openOther();
   }
 
   function itemClick(path: string) {
     dispatch(resetRecentRepos());
-    ipcRenderer.send(OPEN_PATH, path);
+    gwitch.openPath(path);
   }
 
   function itemRemove(path: string) {
     dispatch(removeRecentRepo(path));
-    ipcRenderer.send(REMOVE_RECENT, path);
+    gwitch.removeRecent(path);
   }
 
   const gwitchVersion = GWITCH_VERSION;
