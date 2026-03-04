@@ -1,4 +1,4 @@
-import { ClientMode, LayoutState } from "@ipc/layout";
+import { ClientMode, LayoutState } from "../../repo/layout";
 
 export const initialLayoutState: LayoutState = {
   historySplit: [200, 200],

@@ -3,7 +3,25 @@ import { Store } from "redux";
 import { RepoPath } from "@ipc/repo";
 import { setLayout } from "@renderer/store/layout/actions";
 import { RootState } from "@renderer/store";
-import { LayoutState } from "@ipc/layout";
+
+export interface PatchShow {
+  [source: string]: {
+    [file: string]: boolean;
+  };
+}
+
+export type ClientMode = "history" | "stage";
+
+export interface LayoutState {
+  historySplit: number[];
+  stageSplit: number[];
+  statusSplit: number[];
+  originClosed: { [key: string]: boolean };
+  tagsClosed: boolean;
+  submodulesClosed: boolean;
+  patchShow: PatchShow;
+  clientMode: ClientMode;
+}
 
 function layoutKey(repo: RepoPath): string {
   return "gwitch-layout:" + [repo.path, ...repo.submodules].join("/");

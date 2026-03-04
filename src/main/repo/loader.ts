@@ -11,8 +11,8 @@ import {
 } from "@ipc/repo-types";
 import { Gwit } from "./gwit";
 import { Watcher } from "./watch";
-import { LazyUpdater } from "@ipc/lazy";
-import { cancellableRun, cancellableQueue } from "@ipc/cancellable";
+import { LazyUpdater } from "./lazy";
+import { cancellableRun, cancellableQueue } from "./cancellable";
 import { createGraph } from "./graph";
 import { IgnoreBatch } from "./ignore_batch";
 
@@ -80,11 +80,10 @@ export class RepoLoaderMain {
     this.statusLazy.poke();
   }
 
-  open(path: RepoPath): void {
-    this.gwit
-      .open(path)
-      .then((top) => this.gwit.gitDir().result.then((git_dir) => this.startWatchers(top, git_dir)))
-      .catch((err) => console.error("RepoLoaderMain.open failed:", err));
+  async open(path: RepoPath): Promise<void> {
+    const top = await this.gwit.open(path);
+    const git_dir = await this.gwit.gitDir().result;
+    this.startWatchers(top, git_dir);
   }
 
   private startWatchers(top: string, git_dir: string): void {

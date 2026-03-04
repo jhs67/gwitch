@@ -1,4 +1,4 @@
-import { LayoutState } from "@ipc/layout";
+import { LayoutState } from "../../repo/layout";
 import {
   initialLayoutState,
   LayoutStateActions,

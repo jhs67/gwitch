@@ -1,4 +1,4 @@
-import { Cancellable, CancelledError } from "@ipc/cancellable";
+import { Cancellable, CancelledError } from "./cancellable";
 import { Gwit } from "./gwit";
 
 interface BatchJob {

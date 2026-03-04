@@ -1,5 +1,5 @@
 import { ChokidarOptions, FSWatcher } from "chokidar";
-import { Cancellable, CancelledError } from "@ipc/cancellable";
+import { Cancellable, CancelledError } from "./cancellable";
 import { relative } from "path";
 
 class Ignored {

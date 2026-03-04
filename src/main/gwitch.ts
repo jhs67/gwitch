@@ -12,6 +12,14 @@ export default class Gwitch {
   private recent = new RecentStore();
   private windows = new WindowManager();
   private loaders = new Map<number, RepoLoaderMain>();
+  private queues = new Map<number, Promise<void>>();
+
+  private enqueue(windowId: number, fn: () => Promise<void>): void {
+    const tail = (this.queues.get(windowId) ?? Promise.resolve())
+      .then(fn)
+      .catch((err) => console.error("transition error:", err));
+    this.queues.set(windowId, tail);
+  }
 
   setTheme(v: ThemeType) {
     this.windows.theme = v;
@@ -54,6 +62,7 @@ export default class Gwitch {
     window.on("closed", () => {
       loader.close();
       this.loaders.delete(window.id);
+      this.queues.delete(window.id);
     });
 
     // and load the index.html of the app.
@@ -70,15 +79,24 @@ export default class Gwitch {
   }
 
   sendOpenRecent(window: BrowserWindow): void {
+    const loader = this.loaders.get(window.id);
+    if (!loader) return;
     window.setTitle("gwitch");
-    window.webContents.send("recent", this.recent.all());
-    this.loaders.get(window.id)?.close();
+    this.enqueue(window.id, async () => {
+      await loader.close();
+      window.webContents.send("recent", this.recent.all());
+    });
   }
 
-  sendOpenPath(window: BrowserWindow, path: RepoPath) {
+  sendOpenPath(window: BrowserWindow, path: RepoPath): void {
+    const loader = this.loaders.get(window.id);
+    if (!loader) return;
     window.setTitle(`gwitch - ${[basename(path.path, ".git"), ...path.submodules].join("/")}`);
-    window.webContents.send("open", path);
-    this.loaders.get(window.id)?.open(path);
+    this.enqueue(window.id, async () => {
+      await loader.close();
+      await loader.open(path);
+      window.webContents.send("open", path);
+    });
   }
 
   loaderFor(sender: WebContents): RepoLoaderMain | undefined {

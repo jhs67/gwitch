@@ -1,4 +1,4 @@
-import { LayoutState, ClientMode } from "@ipc/layout";
+import { LayoutState, ClientMode } from "../../repo/layout";
 import {
   LayoutStateActions,
   SET_HISTORY_SPLIT,
