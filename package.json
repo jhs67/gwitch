@@ -28,6 +28,7 @@
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^4.0.0",
+    "@reduxjs/toolkit": "^2.11.2",
     "electron-updater": "^6.3.9"
   },
   "devDependencies": {

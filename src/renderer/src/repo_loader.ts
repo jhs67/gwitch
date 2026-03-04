@@ -1,14 +1,14 @@
 import "./assets/base.css";
 import * as React from "react";
 import { rootReducer } from "@renderer/store";
-import { createStore } from "redux";
+import { configureStore } from "@reduxjs/toolkit";
 import { resetRecentRepos, setRecentRepos } from "@renderer/store/recent/actions";
 import { RepoPath } from "@ipc/repo";
 import { RepoLoader } from "./repo/loader";
 import { LayoutProxy } from "./repo/layout";
 import { CancellableQueue } from "@ipc/cancellable";
 
-export const store = createStore(rootReducer);
+export const store = configureStore({ reducer: rootReducer });
 const loader = new RepoLoader(store);
 const layout = new LayoutProxy(store);
 const eventQueue = new CancellableQueue(1);
