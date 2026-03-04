@@ -1,5 +1,4 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
-import { LayoutState } from "@ipc/layout";
 import { RepoPath } from "@ipc/repo";
 import type {
   RefsMessage,
@@ -8,8 +7,6 @@ import type {
   SubmodulesMessage,
 } from "@ipc/repo-types";
 import {
-  GET_LAYOUT_STATE,
-  SET_LAYOUT_STATE,
   OPEN_OTHER,
   OPEN_PATH,
   GO_BACK,
@@ -36,13 +33,6 @@ import {
 } from "@ipc/ipc";
 
 const gwitchApi = {
-  // Layout
-  getLayoutState: (path: string): Promise<Partial<LayoutState> | null> =>
-    ipcRenderer.invoke(GET_LAYOUT_STATE, path),
-
-  setLayoutState: (path: string, state: LayoutState): Promise<void> =>
-    ipcRenderer.invoke(SET_LAYOUT_STATE, path, state),
-
   // Window navigation
   openOther: (): void => ipcRenderer.send(OPEN_OTHER),
 

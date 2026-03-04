@@ -1,45 +1,37 @@
 import { initialLayoutState } from "@renderer/store/layout/types";
-import { cancellableRun } from "@ipc/cancellable";
-import { LazyUpdater } from "@ipc/lazy";
 import { Store } from "redux";
 import { RepoPath } from "@ipc/repo";
 import { setLayout } from "@renderer/store/layout/actions";
 import { RootState } from "@renderer/store";
 import { LayoutState } from "@ipc/layout";
 
-export class LayoutProxy {
-  private saver = new LazyUpdater();
-  private lastState = initialLayoutState;
+function layoutKey(repo: RepoPath): string {
+  return "gwitch-layout:" + [repo.path, ...repo.submodules].join("/");
+}
 
-  constructor(private store: Store<RootState>) {
-    let layoutState: LayoutState;
-    this.store.subscribe(() => {
-      if (layoutState === this.store.getState().layout) return;
-      layoutState = this.store.getState().layout;
-      this.saver.poke();
+export class LayoutProxy {
+  private unsubscribe: (() => void) | null = null;
+
+  constructor(private store: Store<RootState>) {}
+
+  setup(repo: RepoPath) {
+    const key = layoutKey(repo);
+    const saved = localStorage.getItem(key);
+    const loadState: Partial<LayoutState> = saved ? JSON.parse(saved) : {};
+    this.store.dispatch(setLayout({ ...initialLayoutState, ...loadState }));
+
+    let currentLayout = this.store.getState().layout;
+    this.unsubscribe = this.store.subscribe(() => {
+      const layout = this.store.getState().layout;
+      if (layout === currentLayout) return;
+      currentLayout = layout;
+      localStorage.setItem(key, JSON.stringify(layout));
     });
   }
 
-  async setup(repo: RepoPath) {
-    const path = [repo.path, ...repo.submodules].join("/");
-    const loadState: Partial<LayoutState> = (await gwitch.getLayoutState(path)) || {};
-    this.lastState = { ...initialLayoutState, ...loadState };
-    this.store.dispatch(setLayout(this.lastState));
-
-    this.saver.start(
-      () =>
-        cancellableRun(async (run) => {
-          const state = this.store.getState().layout;
-          if (Object.is(this.lastState, state)) return;
-          this.lastState = state;
-          await run(gwitch.setLayoutState(path, state));
-        }),
-      true,
-    );
-  }
-
   teardown() {
-    this.saver.stop();
+    this.unsubscribe?.();
+    this.unsubscribe = null;
     this.store.dispatch(setLayout(initialLayoutState));
   }
 }

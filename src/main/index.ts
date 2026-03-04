@@ -1,12 +1,9 @@
 import { app, BrowserWindow, dialog, ipcMain, Menu, shell } from "electron";
 import Gwitch from "./gwitch";
-import { LayoutStore } from "./layout-store";
-import { LayoutState } from "@ipc/layout";
+import { RepoPath } from "@ipc/repo";
 import {
   OPEN_OTHER,
   OPEN_PATH,
-  GET_LAYOUT_STATE,
-  SET_LAYOUT_STATE,
   GO_BACK,
   OPEN_SUBMODULE,
   REMOVE_RECENT,
@@ -29,7 +26,6 @@ import {
   UNSTAGE_PATCH,
   DISCARD_PATCH,
 } from "@ipc/ipc";
-import { RepoPath } from "@ipc/repo";
 export const gwitch = new Gwitch();
 
 // This method will be called when Electron has finished
@@ -64,16 +60,6 @@ ipcMain.on(OPEN_OTHER, (event) => {
 ipcMain.on(OPEN_PATH, (event, path: string) => {
   const window = BrowserWindow.fromWebContents(event.sender);
   if (window) gwitch.openPath(window, path);
-});
-
-const layoutStore = new LayoutStore();
-
-ipcMain.handle(GET_LAYOUT_STATE, async (_event, path: string) => {
-  return await layoutStore.load(path);
-});
-
-ipcMain.handle(SET_LAYOUT_STATE, async (_event, path: string, state: LayoutState) => {
-  return await layoutStore.save(path, state);
 });
 
 ipcMain.on(GO_BACK, (event, path: RepoPath) => {
