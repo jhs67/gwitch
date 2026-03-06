@@ -11,6 +11,7 @@ export interface PatchShow {
 }
 
 export type ClientMode = "history" | "stage";
+export type HistoryMode = "diff" | "files";
 
 export interface LayoutState {
   historySplit: number[];
@@ -21,6 +22,7 @@ export interface LayoutState {
   submodulesClosed: boolean;
   patchShow: PatchShow;
   clientMode: ClientMode;
+  historyMode: HistoryMode;
 }
 
 function layoutKey(repo: RepoPath): string {

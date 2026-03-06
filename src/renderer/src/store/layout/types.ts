@@ -1,4 +1,4 @@
-import { ClientMode, LayoutState } from "../../repo/layout";
+import { ClientMode, HistoryMode, LayoutState } from "../../repo/layout";
 
 export const initialLayoutState: LayoutState = {
   historySplit: [200, 200],
@@ -9,6 +9,7 @@ export const initialLayoutState: LayoutState = {
   submodulesClosed: false,
   patchShow: {},
   clientMode: "stage",
+  historyMode: "diff",
 };
 
 export const SET_HISTORY_SPLIT = "SET_HISTORY_SPLIT";
@@ -20,6 +21,7 @@ export const SET_TAGS_CLOSED = "SET_TAGS_CLOSED";
 export const SET_SUBMODULES_CLOSED = "SET_SUBMODULES_CLOSED";
 export const SET_PATCH_SHOW = "SET_PATCH_SHOW";
 export const SET_CLIENT_MODE = "SET_CLIENT_MODE";
+export const SET_HISTORY_MODE = "SET_HISTORY_MODE";
 
 type SetHistorySplitAction = {
   type: typeof SET_HISTORY_SPLIT;
@@ -69,6 +71,11 @@ type SetClientMode = {
   mode: ClientMode;
 };
 
+type SetHistoryMode = {
+  type: typeof SET_HISTORY_MODE;
+  mode: HistoryMode;
+};
+
 export type LayoutStateActions =
   | SetHistorySplitAction
   | SetStageSplitAction
@@ -78,4 +85,5 @@ export type LayoutStateActions =
   | SetTagsClosedAction
   | SetSubmodulesClosedAction
   | SetPatchShow
-  | SetClientMode;
+  | SetClientMode
+  | SetHistoryMode;

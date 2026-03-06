@@ -148,6 +148,14 @@ export class RepoLoaderMain {
     this.amend = false;
   }
 
+  async listTree(hash: string): Promise<string[]> {
+    return this.gwit.listTree(hash).result;
+  }
+
+  async catFile(hash: string, path: string): Promise<string> {
+    return this.gwit.catFile(hash, path).result;
+  }
+
   async discardChanges(files: string[]): Promise<void> {
     await this.gwit.checkoutFiles(files).result;
   }

@@ -1,4 +1,4 @@
-import { LayoutState, ClientMode } from "../../repo/layout";
+import { LayoutState, ClientMode, HistoryMode } from "../../repo/layout";
 import {
   LayoutStateActions,
   SET_HISTORY_SPLIT,
@@ -8,6 +8,7 @@ import {
   SET_TAGS_CLOSED,
   SET_PATCH_SHOW,
   SET_CLIENT_MODE,
+  SET_HISTORY_MODE,
   SET_SUBMODULES_CLOSED,
   SET_STATUS_SPLIT,
 } from "./types";
@@ -46,4 +47,8 @@ export function setPatchShow(source: string, file: string, state: boolean): Layo
 
 export function setClientMode(mode: ClientMode): LayoutStateActions {
   return { type: SET_CLIENT_MODE, mode };
+}
+
+export function setHistoryMode(mode: HistoryMode): LayoutStateActions {
+  return { type: SET_HISTORY_MODE, mode };
 }

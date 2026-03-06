@@ -21,6 +21,10 @@ export const SHELL_TRASH_ITEM = "shell-trash-item";
 export const SHOW_MESSAGE_BOX = "show-message-box";
 export const POPUP_MENU = "popup-menu";
 
+// File tree / content — renderer invokes to browse commit contents
+export const GET_COMMIT_TREE = "get-commit-tree";
+export const GET_FILE_CONTENT = "get-file-content";
+
 // Mutation channels — renderer invokes to modify the repo
 export const DISCARD_CHANGES = "discard-changes";
 export const STAGE_FILES = "stage-files";

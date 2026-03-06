@@ -8,6 +8,7 @@ import {
   SET_TAGS_CLOSED,
   SET_PATCH_SHOW,
   SET_CLIENT_MODE,
+  SET_HISTORY_MODE,
   SET_STAGE_SPLIT,
   SET_STATUS_SPLIT,
   SET_SUBMODULES_CLOSED,
@@ -48,6 +49,8 @@ export function layoutStateReducer(
       };
     case SET_CLIENT_MODE:
       return { ...state, clientMode: action.mode };
+    case SET_HISTORY_MODE:
+      return { ...state, historyMode: action.mode };
     default:
       return state;
   }

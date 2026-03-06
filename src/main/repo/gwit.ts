@@ -593,4 +593,14 @@ export class Gwit {
       return;
     });
   }
+
+  listTree(hash: string): Cancellable<string[]> {
+    return cancellableX(this.git("ls-tree", "-r", "--name-only", hash), (out) =>
+      out.trim() ? out.trim().split("\n") : [],
+    );
+  }
+
+  catFile(hash: string, path: string): Cancellable<string> {
+    return cancellableX(this.git("cat-file", "blob", `${hash}:${path}`), (out) => out);
+  }
 }

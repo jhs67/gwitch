@@ -30,6 +30,8 @@ import {
   STAGE_PATCH,
   UNSTAGE_PATCH,
   DISCARD_PATCH,
+  GET_COMMIT_TREE,
+  GET_FILE_CONTENT,
 } from "@ipc/ipc";
 
 const gwitchApi = {
@@ -132,6 +134,11 @@ const gwitchApi = {
   unstagePatch: (patch: string): Promise<void> => ipcRenderer.invoke(UNSTAGE_PATCH, patch),
 
   discardPatch: (patch: string): Promise<void> => ipcRenderer.invoke(DISCARD_PATCH, patch),
+
+  getCommitTree: (hash: string): Promise<string[]> => ipcRenderer.invoke(GET_COMMIT_TREE, hash),
+
+  getFileContent: (hash: string, path: string): Promise<string> =>
+    ipcRenderer.invoke(GET_FILE_CONTENT, hash, path),
 };
 
 export type GwitchApi = typeof gwitchApi;

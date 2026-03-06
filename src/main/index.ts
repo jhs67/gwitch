@@ -25,6 +25,8 @@ import {
   STAGE_PATCH,
   UNSTAGE_PATCH,
   DISCARD_PATCH,
+  GET_COMMIT_TREE,
+  GET_FILE_CONTENT,
 } from "@ipc/ipc";
 export const gwitch = new Gwitch();
 
@@ -128,6 +130,14 @@ ipcMain.handle(STAGE_PATCH, (_event, patch: string, toAdd: string[]) => {
 
 ipcMain.handle(UNSTAGE_PATCH, (_event, patch: string) => {
   return gwitch.loaderFor(_event.sender)?.unstagePatch(patch);
+});
+
+ipcMain.handle(GET_COMMIT_TREE, (_event, hash: string) => {
+  return gwitch.loaderFor(_event.sender)?.listTree(hash);
+});
+
+ipcMain.handle(GET_FILE_CONTENT, (_event, hash: string, path: string) => {
+  return gwitch.loaderFor(_event.sender)?.catFile(hash, path);
 });
 
 ipcMain.handle(DISCARD_PATCH, (_event, patch: string) => {
