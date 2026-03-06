@@ -6,28 +6,35 @@ import { buildFileTree, FileTreeNode } from "@renderer/repo/file_tree";
 import { FileTree } from "./FileTree";
 import { FileContent } from "./FileContent";
 
-export function CommitFiles() {
+export function CommitFiles({
+  selectedPath,
+  onSelectPath,
+  svgTextMode,
+}: {
+  selectedPath: string | undefined;
+  onSelectPath: (path: string | undefined) => void;
+  svgTextMode: boolean;
+}) {
   const focusCommit = useSelector((state: RootState) => state.repo.focusCommit);
   const [data, setData] = useState<{ hash: string; nodes: FileTreeNode[] } | null>(null);
-  const [selectedPath, setSelectedPath] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (!focusCommit) return;
     gwitch.getCommitTree(focusCommit).then((paths) => {
       setData({ hash: focusCommit, nodes: buildFileTree(paths) });
-      setSelectedPath(undefined);
+      onSelectPath(undefined);
     });
-  }, [focusCommit]);
+  }, [focusCommit, onSelectPath]);
 
   const nodes = data !== null && data.hash === focusCommit ? data.nodes : [];
 
   return (
     <Allotment>
       <Allotment.Pane minSize={120} preferredSize={220}>
-        <FileTree nodes={nodes} selected={selectedPath} onSelect={setSelectedPath} />
+        <FileTree nodes={nodes} selected={selectedPath} onSelect={onSelectPath} />
       </Allotment.Pane>
       <Allotment.Pane>
-        <FileContent hash={focusCommit} path={selectedPath} />
+        <FileContent hash={focusCommit} path={selectedPath} svgTextMode={svgTextMode} />
       </Allotment.Pane>
     </Allotment>
   );

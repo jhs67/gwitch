@@ -1,3 +1,4 @@
+import { useCallback, useState } from "react";
 import { Allotment } from "allotment";
 import "allotment/dist/style.css";
 import { Log } from "../Log";
@@ -25,6 +26,9 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
     borderBottom: `1px solid ${theme.colors.softBorder}`,
     backgroundColor: theme.colors.background,
   },
+  spacer: {
+    flex: "1 1 auto",
+  },
   tab: {
     padding: "3px 10px",
     cursor: "pointer",
@@ -50,6 +54,15 @@ export function History() {
   const dispatch = useDispatch();
   const split = useSelector((state: RootState) => state.layout.historySplit);
   const historyMode = useSelector((state: RootState) => state.layout.historyMode);
+  const [selectedPath, setSelectedPath] = useState<string | undefined>(undefined);
+  const [svgTextMode, setSvgTextMode] = useState(false);
+
+  const handleSelectPath = useCallback((path: string | undefined) => {
+    setSelectedPath(path);
+    setSvgTextMode(false);
+  }, []);
+
+  const isSvgSelected = historyMode === "files" && !!selectedPath?.toLowerCase().endsWith(".svg");
 
   return (
     <Allotment
@@ -77,9 +90,26 @@ export function History() {
             >
               Files
             </div>
+            <div className={classes.spacer} />
+            {isSvgSelected && (
+              <div
+                className={classNames(classes.tab, { [classes.activeTab]: svgTextMode })}
+                onClick={() => setSvgTextMode((m) => !m)}
+              >
+                {svgTextMode ? "Image" : "Text"}
+              </div>
+            )}
           </div>
           <div className={classes.body}>
-            {historyMode === "diff" ? <Commit /> : <CommitFiles />}
+            {historyMode === "diff" ? (
+              <Commit />
+            ) : (
+              <CommitFiles
+                selectedPath={selectedPath}
+                onSelectPath={handleSelectPath}
+                svgTextMode={svgTextMode}
+              />
+            )}
           </div>
         </div>
       </Allotment.Pane>

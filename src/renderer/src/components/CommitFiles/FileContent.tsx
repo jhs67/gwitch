@@ -47,12 +47,15 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
 export function FileContent({
   hash,
   path,
+  svgTextMode,
 }: {
   hash: string | undefined;
   path: string | undefined;
+  svgTextMode: boolean;
 }) {
   const classes = useStyles();
   const mime = path ? imageMime(path) : undefined;
+  const isSvg = mime === "image/svg+xml";
   const [fetched, setFetched] = useState<{
     hash: string;
     path: string;
@@ -61,13 +64,12 @@ export function FileContent({
 
   useEffect(() => {
     if (!hash || !path) return;
-    const fetch = mime
-      ? gwitch.getFileContentBase64(hash, path)
-      : gwitch.getFileContent(hash, path);
+    const fetch =
+      mime && !isSvg ? gwitch.getFileContentBase64(hash, path) : gwitch.getFileContent(hash, path);
     fetch
       .then((text) => setFetched({ hash, path, content: text }))
       .catch(() => setFetched({ hash, path, content: null }));
-  }, [hash, path, mime]);
+  }, [hash, path, mime, isSvg]);
 
   const isCurrent = fetched !== null && fetched.hash === hash && fetched.path === path;
   const loading = !!(hash && path) && !isCurrent;
@@ -82,7 +84,12 @@ export function FileContent({
         <div className={classes.placeholder}>Loading…</div>
       ) : content === null ? (
         <div className={classes.placeholder}>Unable to load file.</div>
-      ) : mime ? (
+      ) : isSvg && !svgTextMode ? (
+        <img
+          className={classes.image}
+          src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(content)}`}
+        />
+      ) : mime && !isSvg ? (
         <img className={classes.image} src={`data:${mime};base64,${content}`} />
       ) : isBinary ? (
         <div className={classes.placeholder}>Binary file.</div>
