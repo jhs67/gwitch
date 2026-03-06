@@ -8,14 +8,5 @@
   "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "cSpell.words": [
-    "appmenu",
-    "gitmodules",
-    "gwit",
-    "Gwitch",
-    "marshallofsound",
-    "relocator",
-    "Resizer",
-    "unstage"
-  ]
+  "cSpell.words": ["appmenu", "gitmodules", "gwit", "Gwitch", "unstage"]
 }
