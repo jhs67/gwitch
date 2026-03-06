@@ -9,7 +9,7 @@ import {
   DiffLineOrigin,
 } from "@ipc/repo-types";
 import { RepoPath } from "@ipc/repo";
-import { exec, execRc, RcResult } from "./exec";
+import { exec, execRc, execBuffer, RcResult } from "./exec";
 import { Cancellable, cancellableRun, cancellableX } from "./cancellable";
 import { gitPath } from "./git_path";
 
@@ -602,5 +602,13 @@ export class Gwit {
 
   catFile(hash: string, path: string): Cancellable<string> {
     return cancellableX(this.git("cat-file", "blob", `${hash}:${path}`), (out) => out);
+  }
+
+  catFileBase64(hash: string, path: string): Cancellable<string> {
+    const opts = { cwd: this.repoPath };
+    return cancellableX(
+      execBuffer(this.cmd!, ["cat-file", "blob", `${hash}:${path}`], opts),
+      (buf) => buf.toString("base64"),
+    );
   }
 }

@@ -24,6 +24,7 @@ export const POPUP_MENU = "popup-menu";
 // File tree / content — renderer invokes to browse commit contents
 export const GET_COMMIT_TREE = "get-commit-tree";
 export const GET_FILE_CONTENT = "get-file-content";
+export const GET_FILE_CONTENT_BASE64 = "get-file-content-base64";
 
 // Mutation channels — renderer invokes to modify the repo
 export const DISCARD_CHANGES = "discard-changes";

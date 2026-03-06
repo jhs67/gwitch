@@ -156,6 +156,10 @@ export class RepoLoaderMain {
     return this.gwit.catFile(hash, path).result;
   }
 
+  async catFileBase64(hash: string, path: string): Promise<string> {
+    return this.gwit.catFileBase64(hash, path).result;
+  }
+
   async discardChanges(files: string[]): Promise<void> {
     await this.gwit.checkoutFiles(files).result;
   }

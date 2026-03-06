@@ -32,6 +32,7 @@ import {
   DISCARD_PATCH,
   GET_COMMIT_TREE,
   GET_FILE_CONTENT,
+  GET_FILE_CONTENT_BASE64,
 } from "@ipc/ipc";
 
 const gwitchApi = {
@@ -139,6 +140,9 @@ const gwitchApi = {
 
   getFileContent: (hash: string, path: string): Promise<string> =>
     ipcRenderer.invoke(GET_FILE_CONTENT, hash, path),
+
+  getFileContentBase64: (hash: string, path: string): Promise<string> =>
+    ipcRenderer.invoke(GET_FILE_CONTENT_BASE64, hash, path),
 };
 
 export type GwitchApi = typeof gwitchApi;

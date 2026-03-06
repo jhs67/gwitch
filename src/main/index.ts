@@ -27,6 +27,7 @@ import {
   DISCARD_PATCH,
   GET_COMMIT_TREE,
   GET_FILE_CONTENT,
+  GET_FILE_CONTENT_BASE64,
 } from "@ipc/ipc";
 export const gwitch = new Gwitch();
 
@@ -138,6 +139,10 @@ ipcMain.handle(GET_COMMIT_TREE, (_event, hash: string) => {
 
 ipcMain.handle(GET_FILE_CONTENT, (_event, hash: string, path: string) => {
   return gwitch.loaderFor(_event.sender)?.catFile(hash, path);
+});
+
+ipcMain.handle(GET_FILE_CONTENT_BASE64, (_event, hash: string, path: string) => {
+  return gwitch.loaderFor(_event.sender)?.catFileBase64(hash, path);
 });
 
 ipcMain.handle(DISCARD_PATCH, (_event, patch: string) => {

@@ -50,6 +50,33 @@ export function execRc(
   };
 }
 
+export function execBuffer(cmd: string, args: string[], opts: SpawnOptions): Cancellable<Buffer> {
+  let accept: (r: Buffer) => void;
+  let reject: (err: Error) => void;
+  const r = new Promise<Buffer>((a, rej) => {
+    accept = a;
+    reject = rej;
+  });
+
+  const child = spawn(cmd, args, opts);
+  const chunks: Buffer[] = [];
+  child.stdout!.on("data", (chunk: Buffer) => chunks.push(chunk));
+  child.on("error", (err) => reject(err));
+  child.on("close", (code) => {
+    if (code !== 0)
+      reject(new Error(`command '${cmd} ${args.join(" ")}' failed with exit code ${code}`));
+    else accept(Buffer.concat(chunks));
+  });
+
+  return {
+    cancel: () => {
+      child.kill();
+      reject(new CancelledError());
+    },
+    result: r,
+  };
+}
+
 export function exec(
   cmd: string,
   args: string[],
