@@ -148,7 +148,7 @@ export class RepoLoaderMain {
     this.amend = false;
   }
 
-  async listTree(hash: string): Promise<string[]> {
+  async listTree(hash: string): Promise<{ path: string; submoduleHash?: string }[]> {
     return this.gwit.listTree(hash).result;
   }
 

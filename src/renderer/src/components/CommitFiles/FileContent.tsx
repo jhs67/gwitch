@@ -48,10 +48,12 @@ export function FileContent({
   hash,
   path,
   svgTextMode,
+  submoduleHash,
 }: {
   hash: string | undefined;
   path: string | undefined;
   svgTextMode: boolean;
+  submoduleHash: string | undefined;
 }) {
   const classes = useStyles();
   const mime = path ? imageMime(path) : undefined;
@@ -63,16 +65,16 @@ export function FileContent({
   } | null>(null);
 
   useEffect(() => {
-    if (!hash || !path) return;
+    if (!hash || !path || submoduleHash) return;
     const fetch =
       mime && !isSvg ? gwitch.getFileContentBase64(hash, path) : gwitch.getFileContent(hash, path);
     fetch
       .then((text) => setFetched({ hash, path, content: text }))
       .catch(() => setFetched({ hash, path, content: null }));
-  }, [hash, path, mime, isSvg]);
+  }, [hash, path, mime, isSvg, submoduleHash]);
 
   const isCurrent = fetched !== null && fetched.hash === hash && fetched.path === path;
-  const loading = !!(hash && path) && !isCurrent;
+  const loading = !!(hash && path) && !submoduleHash && !isCurrent;
   const content = isCurrent ? fetched!.content : null;
   const isBinary = !mime && content !== null && content.includes("\x00");
 
@@ -80,6 +82,8 @@ export function FileContent({
     <div className={classes.container}>
       {!path ? (
         <div className={classes.placeholder}>Select a file to view its contents.</div>
+      ) : submoduleHash ? (
+        <pre className={classes.content}>Subproject commit {submoduleHash}</pre>
       ) : loading ? (
         <div className={classes.placeholder}>Loading…</div>
       ) : content === null ? (

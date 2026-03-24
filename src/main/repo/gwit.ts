@@ -594,10 +594,20 @@ export class Gwit {
     });
   }
 
-  listTree(hash: string): Cancellable<string[]> {
-    return cancellableX(this.git("ls-tree", "-r", "--name-only", hash), (out) =>
-      out.trim() ? out.trim().split("\n") : [],
-    );
+  listTree(hash: string): Cancellable<{ path: string; submoduleHash?: string }[]> {
+    return cancellableX(this.git("ls-tree", "-r", hash), (out) => {
+      if (!out.trim()) return [];
+      return out
+        .trim()
+        .split("\n")
+        .map((line) => {
+          const tab = line.indexOf("\t");
+          const info = line.slice(0, tab);
+          const path = line.slice(tab + 1);
+          const parts = info.split(" ");
+          return parts[0] === "160000" ? { path, submoduleHash: parts[2] } : { path };
+        });
+    });
   }
 
   catFile(hash: string, path: string): Cancellable<string> {

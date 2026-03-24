@@ -136,7 +136,8 @@ const gwitchApi = {
 
   discardPatch: (patch: string): Promise<void> => ipcRenderer.invoke(DISCARD_PATCH, patch),
 
-  getCommitTree: (hash: string): Promise<string[]> => ipcRenderer.invoke(GET_COMMIT_TREE, hash),
+  getCommitTree: (hash: string): Promise<{ path: string; submoduleHash?: string }[]> =>
+    ipcRenderer.invoke(GET_COMMIT_TREE, hash),
 
   getFileContent: (hash: string, path: string): Promise<string> =>
     ipcRenderer.invoke(GET_FILE_CONTENT, hash, path),
