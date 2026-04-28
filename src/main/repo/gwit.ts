@@ -1,4 +1,5 @@
 import { join, resolve } from "node:path";
+import { lstatSync, readlinkSync } from "node:fs";
 import {
   RepoRef,
   Commit,
@@ -497,7 +498,35 @@ export class Gwit {
   diffFileUntracked(file: string) {
     return cancellableX(
       this.gitRc("diff", "-M50", "-C50", "--no-index", "--", "/dev/null", file),
-      (res) => parseDiff(res.out).patches[0],
+      (res): FileStatus => {
+        const patch = parseDiff(res.out).patches[0];
+        if (patch !== undefined) return patch;
+        // git diff --no-index produces no output for untracked symlinks.
+        // Synthesize an "added" patch showing the link target as content.
+        const fullPath = resolve(this.repoPath!, file);
+        const stat = lstatSync(fullPath, { throwIfNoEntry: false });
+        if (stat?.isSymbolicLink()) {
+          const target = readlinkSync(fullPath);
+          return {
+            status: "A",
+            fileName: file,
+            newFile: file,
+            newMode: "120000",
+            hunks: [
+              {
+                header: "@@ -0,0 +1 @@",
+                oldStart: 0,
+                oldCount: 0,
+                newStart: 1,
+                newCount: 1,
+                lines: [{ origin: "+", content: target, oldLine: -1, newLine: 1 }],
+              },
+            ],
+          };
+        }
+        // Non-symlink with no diff output: return an empty-hunk patch.
+        return { status: "A", fileName: file, newFile: file, hunks: [] };
+      },
     );
   }
 
