@@ -475,7 +475,7 @@ export class Gwit {
 
   stageStatus() {
     // cSpell:ignore uall
-    return cancellableX(this.git("status", "-z", "-uall"), (out) => {
+    return cancellableX(this.git("--no-optional-locks", "status", "-z", "-uall"), (out) => {
       const r: StageFileStatus[] = [];
       const lines = out.split("\x00");
       while (lines.length > 1) {
