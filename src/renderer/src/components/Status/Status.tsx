@@ -111,25 +111,35 @@ const useStyles = createUseStyles((theme: GwitchTheme) => ({
         },
       },
       "& .commitButtons": {
-        paddingTop: "9px",
-        paddingBottom: "9px",
+        padding: "8px",
         display: "flex",
+        flexWrap: "wrap",
+        gap: "6px 8px",
+        alignItems: "center",
 
         "& .box": {
           display: "flex",
           justifyContent: "center",
-        },
-        "& .fixup": {
-          flexGrow: 1,
-          flexShrink: 1,
+          flexShrink: 0,
         },
         "& .fixupLabel": {
-          marginRight: "3px",
+          whiteSpace: "nowrap",
+        },
+        "& .rightGroup": {
+          display: "flex",
+          flex: "1 0 auto",
+          alignItems: "center",
+          minWidth: "min-content",
+        },
+        "& .spacer": {
+          flex: "1 1 auto",
+        },
+        "& label.disabled": {
+          color: theme.colors.button.disabled.primary,
         },
       },
       "& .commitButton": {
         userSelect: "none",
-        float: "right",
         padding: "4px 14px",
         borderStyle: "solid",
         borderWidth: "1px",
@@ -312,21 +322,7 @@ function CommitCompose({ loader }: { loader: RepoLoader }) {
       <div className="commitButtons">
         <div className="box">
           <div>
-            <label>
-              <input
-                className="amend"
-                disabled={amendDisabled}
-                type="checkbox"
-                checked={amend}
-                onChange={toggleAmend}
-              />
-              Amend
-            </label>
-          </div>
-        </div>
-        <div className="box fixup">
-          <div>
-            <label className="fixupLabel">
+            <label className={classNames("fixupLabel", { disabled: fixupDisabled })}>
               Fixup{" "}
               <select
                 value={fixup}
@@ -345,13 +341,30 @@ function CommitCompose({ loader }: { loader: RepoLoader }) {
             </label>
           </div>
         </div>
-        <div className="box">
-          <div>
-            <div
-              className={classNames("commitButton", { disabled })}
-              onClick={!disabled ? commitClick : void 0}
-            >
-              Commit
+        <div className="rightGroup">
+          <div className="box">
+            <div>
+              <label className={classNames({ disabled: amendDisabled })}>
+                <input
+                  className="amend"
+                  disabled={amendDisabled}
+                  type="checkbox"
+                  checked={amend}
+                  onChange={toggleAmend}
+                />
+                Amend
+              </label>
+            </div>
+          </div>
+          <div className="spacer" />
+          <div className="box">
+            <div>
+              <div
+                className={classNames("commitButton", { disabled })}
+                onClick={!disabled ? commitClick : void 0}
+              >
+                Commit
+              </div>
             </div>
           </div>
         </div>
