@@ -5,13 +5,14 @@ import { relative } from "path";
 class Ignored {
   ignored?: boolean;
   pending?: Cancellable<boolean>;
-  changed?: undefined | true;
+  watching?: boolean;
 }
 
 export class Watcher {
   private watcher: FSWatcher;
   private ignoresMap = new Map<string, Ignored>();
   private ignore?: (path: string, i: Ignored) => void;
+  private ready = false;
 
   constructor(
     cwd: string,
@@ -33,14 +34,18 @@ export class Watcher {
             i.pending = undefined;
             i.ignored = r;
             if (!i.ignored) {
-              this.watcher.add(path);
-              // check for deferred change result pending ignore update
-              if (i.changed) hook([path]);
+              if (!i.watching) {
+                this.watcher.add(path);
+                i.watching = true;
+              }
+              if (i.watching && this.ready) hook([path]);
+            } else {
+              if (i.watching) {
+                this.watcher.unwatch(path);
+                i.watching = false;
+              }
             }
-            i.changed = undefined;
-
-            // roll back the _readyCount
-            this.watcher._emitReady();
+            if (!this.ready) this.watcher._emitReady();
           })
           .catch((err) => {
             if (!(err instanceof CancelledError)) throw err;
@@ -50,17 +55,13 @@ export class Watcher {
       opts.ignored = (path: string, stat?: unknown) => {
         if (stat) return false; // ignore the call with the stat
 
-        // check for a current ignores record for this path
         const p = relative(cwd, path);
         const i = this.ignores(p);
         if (i.ignored != null) return i.ignored;
 
-        // start a check if there is no current
         if (i.pending == null) {
-          // start the ignore query
           if (this.ignore) this.ignore(p, i);
-          // keep the watcher from being ready until the ignore result completes
-          this.watcher._incrReadyCount();
+          if (!this.ready) this.watcher._incrReadyCount();
         }
         return true;
       };
@@ -74,11 +75,7 @@ export class Watcher {
         const i = this.ignores(path);
 
         if (i.ignored == null) {
-          // changed file that we're not sure is ignored
-          i.changed = true;
           this.ignore(path, i);
-          // keep the watcher from being ready until the ignore result completes
-          this.watcher._incrReadyCount();
           return;
         }
       }
@@ -87,17 +84,12 @@ export class Watcher {
     };
 
     this.watcher.on("ready", () => {
+      this.ready = true;
       hook([]);
     });
-    this.watcher.on("change", (path) => {
-      changed(path);
-    });
-    this.watcher.on("unlink", (path) => {
-      changed(path);
-    });
-    this.watcher.on("add", (path) => {
-      changed(path);
-    });
+    this.watcher.on("change", (path) => changed(path));
+    this.watcher.on("unlink", (path) => changed(path));
+    this.watcher.on("add", (path) => changed(path));
   }
 
   invalidateIgnores() {
@@ -106,15 +98,10 @@ export class Watcher {
         // restart any in-progress queries
         if (i.pending.cancel) i.pending.cancel();
         if (this.ignore) this.ignore(path, i);
-      } else if (i.ignored === true) {
-        // if it was ignored, clear and try again
+      } else {
+        // re-check regardless of previous result; gitignore rules changed
         i.ignored = undefined;
         if (this.ignore) this.ignore(path, i);
-        // keep the watcher from being ready until the ignore result completes
-        this.watcher._incrReadyCount();
-      } else {
-        // clear the result but defer the check until the file changes
-        i.ignored = undefined;
       }
     }
   }
