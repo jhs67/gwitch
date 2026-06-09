@@ -3,8 +3,8 @@ import { FileDiff } from "./FileDiff";
 
 export function Diff({
   patch,
-  diffLimit,
-  addLimit,
+  diffLimit = 200,
+  addLimit = 50,
   setShow,
   show,
   patchRef,
@@ -16,9 +16,6 @@ export function Diff({
   show: { [source: string]: boolean };
   patchRef?: (f: FileStatus, el: HTMLDivElement) => void;
 }) {
-  if (!diffLimit) diffLimit = 200;
-  if (!addLimit) addLimit = 50;
-
   return (
     <div>
       {patch.map((p) => {

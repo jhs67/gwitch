@@ -150,7 +150,7 @@ interface FileDiffProps {
   origin?: number;
   clickLine?: ((a: MouseEvent) => void) | undefined;
   actions?: LineOption[];
-  lineRefs?: LineRefType[];
+  lineRefs?: React.RefObject<LineRefType[]>;
   containerRef?: React.Ref<HTMLDivElement>;
 }
 
@@ -193,8 +193,15 @@ export function FileDiff({
 
   const lines = (hunks || []).reduce((p, n) => p + n.lines.length, 0);
   const large = status === "A" || status === "D" ? lines > addLimit : lines > diffLimit;
-  if (show == null) show = !large;
-  let cursor = origin || 0;
+  const effectiveShow = show ?? !large;
+  const hunkOrigins: number[] = [];
+  {
+    let off = origin || 0;
+    for (const h of hunks || []) {
+      hunkOrigins.push(off);
+      off += h.lines.length;
+    }
+  }
 
   return (
     <div
@@ -202,10 +209,10 @@ export function FileDiff({
       onMouseDown={clickLine && ((ev) => clickLine(ev.nativeEvent))}
       ref={containerRef}
     >
-      <div className="header" onClick={() => setShow(!show)}>
+      <div className="header" onClick={() => setShow(!effectiveShow)}>
         <div className="name">{patch.newFile || patch.oldFile}</div>
         {!loading && !binary ? (
-          <div className="expand">{<img src={show ? ContractUrl : ExpandUrl} />}</div>
+          <div className="expand">{<img src={effectiveShow ? ContractUrl : ExpandUrl} />}</div>
         ) : null}
       </div>
       {msgs.map((m, i) => (
@@ -215,7 +222,7 @@ export function FileDiff({
       ))}
       {loading ? (
         <div className="loading">Loading...</div>
-      ) : hunks == null ? null : !show ? (
+      ) : hunks == null ? null : !effectiveShow ? (
         <div className="large" onClick={() => setShow(true)}>
           {lines} lines: click to open
         </div>
@@ -223,7 +230,7 @@ export function FileDiff({
         <table>
           <tbody>
             {hunks.map((h, i) => {
-              const origin = cursor;
+              const hunkStart = hunkOrigins[i];
               return (
                 <Fragment key={i}>
                   <tr className="hunk">
@@ -239,7 +246,7 @@ export function FileDiff({
                               <div
                                 key={a.label}
                                 onClick={() =>
-                                  a.act({ start: origin, end: origin + h.lines.length - 1 })
+                                  a.act({ start: hunkStart, end: hunkStart + h.lines.length - 1 })
                                 }
                               >
                                 {a.label}
@@ -251,8 +258,7 @@ export function FileDiff({
                     </td>
                   </tr>
                   {h.lines.map((l, j) => {
-                    const line = cursor;
-                    cursor += 1;
+                    const line = hunkStart + j;
                     return (
                       <tr
                         className={classNames("diff", {
@@ -264,7 +270,7 @@ export function FileDiff({
                         ref={
                           lineRefs &&
                           ((v) => {
-                            lineRefs[line] = v;
+                            lineRefs.current[line] = v;
                           })
                         }
                       >

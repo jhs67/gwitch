@@ -60,8 +60,8 @@ export interface LineOption {
 
 export function SelectDiff({
   patch,
-  diffLimit,
-  addLimit,
+  diffLimit = 200,
+  addLimit = 50,
   setShow,
   show,
   lines,
@@ -143,14 +143,6 @@ export function SelectDiff({
     buttonsRef.current?.classList.remove("pending");
   };
 
-  if (!diffLimit) diffLimit = 200;
-  if (!addLimit) addLimit = 50;
-
-  if (lastPatch.current !== patch) {
-    lastPatch.current = patch;
-    if (selectRef.current != null) setSelectRange(undefined);
-  }
-
   const getLine = function (e: HTMLElement): number | undefined {
     if (e === scrollRef.current) return;
     if (e.nodeName !== "TR") return getLine(e.parentElement!);
@@ -165,6 +157,25 @@ export function SelectDiff({
       start: Math.min(line, anchorRef.current!),
       end: Math.max(line, anchorRef.current!),
     });
+  };
+
+  const positionButtons = () => {
+    if (!lines || !buttonsRef.current || !selectRef.current) return;
+    const sel = lineRefs.current[selectRef.current.start];
+    const top =
+      sel!.offsetTop +
+      sel!.parentElement!.offsetTop +
+      sel!.parentElement!.parentElement!.offsetTop +
+      1;
+    const eel = lineRefs.current[selectRef.current.end];
+    const bot =
+      eel!.offsetTop +
+      eel!.parentElement!.offsetTop +
+      eel!.parentElement!.parentElement!.offsetTop +
+      3;
+    const ceil = scrollRef.current!.scrollTop;
+    const set = Math.max(top, Math.min(ceil, bot));
+    buttonsRef.current.style.top = `${set}px`;
   };
 
   const onUp = () => {
@@ -189,24 +200,13 @@ export function SelectDiff({
     hideButtons();
   };
 
-  const positionButtons = () => {
-    if (!lines || !buttonsRef.current || !selectRef.current) return;
-    const sel = lineRefs.current[selectRef.current.start];
-    const top =
-      sel!.offsetTop +
-      sel!.parentElement!.offsetTop +
-      sel!.parentElement!.parentElement!.offsetTop +
-      1;
-    const eel = lineRefs.current[selectRef.current.end];
-    const bot =
-      eel!.offsetTop +
-      eel!.parentElement!.offsetTop +
-      eel!.parentElement!.parentElement!.offsetTop +
-      3;
-    const ceil = scrollRef.current!.scrollTop;
-    const set = Math.max(top, Math.min(ceil, bot));
-    buttonsRef.current.style.top = `${set}px`;
-  };
+  useEffect(() => {
+    if (lastPatch.current !== patch) {
+      lastPatch.current = patch;
+      if (selectRef.current != null) setSelectRange(undefined);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [patch]);
 
   useEffect(() => {
     if (selectRef.current) {
@@ -220,7 +220,15 @@ export function SelectDiff({
     }
   });
 
-  let cursor = 0;
+  const patchOrigins: number[] = [];
+  {
+    let off = 0;
+    for (const p of patch) {
+      patchOrigins.push(off);
+      off += (p.hunks || []).reduce((s, h) => s + h.lines.length, 0);
+    }
+  }
+  // eslint-disable-next-line react-hooks/refs
   lineRefs.current.length = 0;
   return (
     <div ref={scrollRef} className={classes.selectScroll} onScroll={() => positionButtons()}>
@@ -234,12 +242,8 @@ export function SelectDiff({
             ))}
           </div>
         ) : null}
-        {patch.map((p) => {
+        {patch.map((p, i) => {
           const file = p.fileName;
-
-          const origin = cursor;
-          cursor += (p.hunks || []).reduce((p, h) => p + h.lines.length, 0);
-
           return (
             <FileDiff
               patch={p}
@@ -248,7 +252,7 @@ export function SelectDiff({
               show={show[file]}
               setShow={(state: boolean) => setShow(file, state)}
               key={file}
-              origin={origin}
+              origin={patchOrigins[i]}
               clickLine={clickStart}
               actions={
                 lines &&
@@ -257,7 +261,7 @@ export function SelectDiff({
                   act: async (range) => startAction(l.act, range),
                 }))
               }
-              lineRefs={lineRefs.current}
+              lineRefs={lineRefs}
             />
           );
         })}

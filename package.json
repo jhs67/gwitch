@@ -46,10 +46,10 @@
     "classnames": "^2.5.1",
     "color": "^5.0.0",
     "deep-equal": "^2.2.3",
-    "electron": "^40.6.1",
+    "electron": "^42.3.3",
     "electron-builder": "^26.0.12",
     "electron-vite": "^5.0.0",
-    "eslint": "^9.23.0",
+    "eslint": "^9.39.4",
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
@@ -61,8 +61,8 @@
     "react-jss": "^10.10.0",
     "react-redux": "^9.2.0",
     "redux": "^5.0.1",
-    "typescript": "^5.8.2",
+    "typescript": "^6.0.3",
     "vite": "^7.3.1",
-    "vite-plugin-electron-renderer": "^0.14.6"
+    "vite-plugin-electron-renderer": "^1.0.0"
   }
 }
