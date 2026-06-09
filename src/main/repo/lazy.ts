@@ -68,8 +68,8 @@ export class LazyUpdater {
 
     const n = Date.now();
     const timeout = Math.min(
-      (this.dirtyStart || n) + this.timeout - n,
-      (this.dirtyStart || n) + this.quiescent - n,
+      this.dirtyStart! + this.timeout - n,
+      this.quietStart! + this.quiescent - n,
     );
 
     if (timeout > 0) {
