@@ -33,7 +33,9 @@ export class RepoLoader {
     // Set up per-window subscriptions — these persist for the window lifetime.
     gwitch.subscribeRefs((msg) => {
       this.dispatch(setRepoRefs(msg.refs));
-      if (msg.head !== undefined) this.dispatch(setRepoHead(msg.head));
+      // head is undefined for a detached HEAD; dispatch it so a stale branch
+      // name from a previous checkout doesn't stick around.
+      this.dispatch(setRepoHead(msg.head));
       this.dispatch(setCommits(msg.commits));
       if (msg.focusCommit !== undefined) this.dispatch(setFocusCommit(msg.focusCommit));
     });
@@ -66,10 +68,13 @@ export class RepoLoader {
         this.currentAmend = amend;
         gwitch.setAmend(amend);
 
-        const r = refs.find((r) => r.refName === head);
-        const h = r?.hash || head;
-        const c = commits.find((c) => c.hash === h);
-        const m = `${c?.subject}${c?.body && "\n\n"}${c?.body}`;
+        // Resolve the amend target from the HEAD ref, which is present whether
+        // HEAD is attached to a branch or dangling.
+        const h =
+          refs.find((r) => r.refName === "HEAD")?.hash ??
+          refs.find((r) => r.refName === head)?.hash;
+        const c = h ? commits.find((c) => c.hash === h) : undefined;
+        const m = c ? (c.body ? `${c.subject}\n\n${c.body}` : c.subject) : "";
         if (amend && commitMessage === "") this.dispatch(setCommitMessage(m));
         if (!amend && commitMessage === m) this.dispatch(setCommitMessage(""));
       }

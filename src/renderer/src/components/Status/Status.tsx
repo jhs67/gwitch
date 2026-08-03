@@ -286,13 +286,16 @@ function CommitCompose({ loader }: { loader: RepoLoader }) {
   const dispatch = useDispatch();
 
   const fixups = useMemo(() => {
-    if (!head) return [];
-    const r = refs.find((r) => r.refName === head);
-    const upstreams = (r && r.type === "heads" ? r.upstreams : []).map((r) => {
-      const s = refs.find((s) => s.refName === r);
-      return s ? s.hash : r;
+    const branch = head ? refs.find((r) => r.refName === head) : undefined;
+    // The HEAD ref is present whether HEAD is attached to a branch or dangling.
+    const headHash = refs.find((r) => r.refName === "HEAD")?.hash ?? branch?.hash;
+    if (!headHash) return [];
+    // Upstreams are abbreviated names (e.g. "origin/main"), matching a ref's name.
+    const upstreams = (branch?.type === "heads" ? branch.upstreams : []).map((u) => {
+      const s = refs.find((s) => s.name === u || s.refName === u);
+      return s ? s.hash : u;
     });
-    return getFixupCommits(commits, r ? r.hash : head, upstreams);
+    return getFixupCommits(commits, headHash, upstreams);
   }, [commits, refs, head]);
 
   const toggleAmend = () => {

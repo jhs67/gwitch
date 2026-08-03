@@ -41,7 +41,7 @@ export function setFocusCommit(commit: string): RepoStateActions {
   return { type: SET_FOCUS_COMMIT, commit };
 }
 
-export function setRepoHead(head: string): RepoStateActions {
+export function setRepoHead(head: string | undefined): RepoStateActions {
   return { type: SET_REPO_HEAD, head };
 }
 
