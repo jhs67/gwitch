@@ -3,7 +3,7 @@ import { BrowserWindow, dialog, nativeTheme, app, WebContents } from "electron";
 import { WindowManager } from "./window-manager";
 import { setAppMenu } from "./appmenu";
 import { RepoPath } from "@ipc/repo";
-import { basename, join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { RepoLoaderMain } from "./repo/loader";
 
 export type ThemeType = "light" | "dark" | "system";
@@ -109,8 +109,12 @@ export default class Gwitch {
   }
 
   async openOther(window: BrowserWindow): Promise<void> {
+    // Electron 43 defaults the dialog to the Downloads folder, so start beside
+    // the most recently opened repository instead.
+    const [recent] = this.recent.all();
     const result = await dialog.showOpenDialog({
       title: "Open Repository",
+      defaultPath: recent ? dirname(recent) : undefined,
       properties: ["openDirectory"],
     });
 

@@ -17,7 +17,7 @@ import { gitPath } from "./git_path";
 function parseNameStatus(out: string): FileStatus[] {
   const z: FileStatus[] = [];
   const records = out.trim().split("\x00");
-  for (let i = 0; i < records.length - 1; ) {
+  for (let i = 0; i < records.length - 1;) {
     const r = records[i++];
     const a = records[i++];
     const status = r[0] as StatusLetter;

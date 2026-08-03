@@ -79,8 +79,7 @@ export type StatusMessage = {
 };
 
 export type FocusPatchMessage =
-  | { type: "files"; hash: string; files: FileStatus[] }
-  | { type: "diff"; diff: FileStatus };
+  { type: "files"; hash: string; files: FileStatus[] } | { type: "diff"; diff: FileStatus };
 
 export type SubmodulesMessage = {
   submodules: Submodule[];

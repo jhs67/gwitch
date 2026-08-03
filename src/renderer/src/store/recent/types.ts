@@ -21,6 +21,4 @@ type RemoveRecentRepoAction = {
 };
 
 export type RecentReposAction =
-  | SetRecentReposAction
-  | ResetRecentReposAction
-  | RemoveRecentRepoAction;
+  SetRecentReposAction | ResetRecentReposAction | RemoveRecentRepoAction;
