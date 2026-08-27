@@ -90,6 +90,11 @@ export class Watcher {
           this.ignore(path, i);
           return;
         }
+
+        // events for an ignored path can't affect the view of the repo;
+        // when the ignore rules change invalidateIgnores() reports the
+        // paths that become visible
+        if (i.ignored) return;
       }
 
       hook([path]);
