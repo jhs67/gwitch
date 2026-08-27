@@ -57,7 +57,8 @@ export class IgnoreBatch {
           if (this.batch?.jobs.length === 0 && this.batch.cancel) this.batch.cancel();
         } else {
           // remove it from the pending list
-          this.pending.splice(this.pending.indexOf(job), 1);
+          const pi = this.pending.indexOf(job);
+          if (pi !== -1) this.pending.splice(pi, 1);
         }
         reject(new CancelledError());
       },

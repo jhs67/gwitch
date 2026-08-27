@@ -6,6 +6,7 @@ class Ignored {
   ignored?: boolean;
   pending?: Cancellable<boolean>;
   watching?: boolean;
+  counted?: boolean;
 }
 
 export class Watcher {
@@ -28,6 +29,8 @@ export class Watcher {
 
     if (ignore) {
       this.ignore = (path: string, i: Ignored) => {
+        // the last known answer; undefined while it has never been resolved
+        const known = i.ignored;
         i.pending = ignore(path);
         i.pending.result
           .then((r) => {
@@ -38,14 +41,20 @@ export class Watcher {
                 this.watcher.add(path);
                 i.watching = true;
               }
-              if (i.watching && this.ready) hook([path]);
+              // only report the path when it has become visible; a re-check
+              // that confirms an already watched path is not a change
+              if (known !== false && this.ready) hook([path]);
             } else {
               if (i.watching) {
                 this.watcher.unwatch(path);
                 i.watching = false;
               }
             }
-            if (!this.ready) this.watcher._emitReady();
+            // only balance ready counts that were taken out in opts.ignored
+            if (i.counted && !this.ready) {
+              i.counted = false;
+              this.watcher._emitReady();
+            }
           })
           .catch((err) => {
             if (!(err instanceof CancelledError)) throw err;
@@ -61,7 +70,10 @@ export class Watcher {
 
         if (i.pending == null) {
           if (this.ignore) this.ignore(p, i);
-          if (!this.ready) this.watcher._incrReadyCount();
+          if (!this.ready) {
+            i.counted = true;
+            this.watcher._incrReadyCount();
+          }
         }
         return true;
       };
@@ -84,6 +96,9 @@ export class Watcher {
     };
 
     this.watcher.on("ready", () => {
+      // chokidar can emit ready more than once: add() captures _emitReady
+      // before it is swapped out, so a late add can re-fire it
+      if (this.ready) return;
       this.ready = true;
       hook([]);
     });
@@ -93,16 +108,15 @@ export class Watcher {
   }
 
   invalidateIgnores() {
+    if (!this.ignore) return;
     for (const [path, i] of this.ignoresMap.entries()) {
-      if (i.pending != null) {
-        // restart any in-progress queries
-        if (i.pending.cancel) i.pending.cancel();
-        if (this.ignore) this.ignore(path, i);
-      } else {
-        // re-check regardless of previous result; gitignore rules changed
-        i.ignored = undefined;
-        if (this.ignore) this.ignore(path, i);
-      }
+      // restart any in-progress queries
+      if (i.pending?.cancel) i.pending.cancel();
+      // re-check regardless of previous result; gitignore rules changed.
+      // the previous result is kept so the query can tell whether the state
+      // actually changed, and so opts.ignored keeps answering consistently
+      // until the new result arrives
+      this.ignore(path, i);
     }
   }
 
